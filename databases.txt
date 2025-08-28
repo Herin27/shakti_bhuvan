@@ -1,0 +1,16 @@
+CREATE TABLE rooms (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    description TEXT,
+    price DECIMAL(10,2),
+    discount_price DECIMAL(10,2),
+    size VARCHAR(100),
+    bed_type VARCHAR(100),
+    guests VARCHAR(100),
+    rating FLOAT,
+    reviews INT,
+    image VARCHAR(255),
+    amenities TEXT, -- JSON or comma separated
+    features TEXT,  -- JSON or comma separated
+    policies TEXT   -- JSON or comma separated
+);

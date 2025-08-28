@@ -1,0 +1,154 @@
+/* ===========================
+   Navbar Global Styles
+=========================== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    background-color: #fdfbf6;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    background-color: #eacb74;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-text h1 {
+    font-size: 20px;
+    margin: 0;
+    color: #8b6c4a;
+}
+
+.logo-text span {
+    font-size: 12px;
+    color: #b29b85;
+}
+
+.nav-links {
+    display: flex;
+    gap: 25px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #8b6c4a;
+    font-weight: 500;
+    position: relative;
+}
+
+.nav-links a.active {
+    color: #eacb74;
+}
+
+.nav-links a.active::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    width: 100%;
+    height: 2px;
+    background-color: #eacb74;
+}
+
+.contact-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 14px;
+    color: #8b6c4a;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.contact-info i {
+    margin-right: 5px;
+}
+
+.book-btn {
+    background-color: #eacb74;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+}
+
+.book-btn:hover {
+    background-color: #d4b85f;
+}
+
+
+/* ===========================
+   Responsive Design
+=========================== */
+
+/* Tablets */
+@media (max-width: 992px) {
+  .navbar {
+    padding: 12px 25px;
+    flex-wrap: wrap;
+  }
+  .nav-links {
+    gap: 15px;
+  }
+  .contact-info {
+    gap: 12px;
+    font-size: 13px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 20px;
+  }
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .contact-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 10px;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 12px;
+  }
+  .logo-text h1 {
+    font-size: 18px;
+  }
+  .logo-text span {
+    font-size: 11px;
+  }
+  .nav-links a {
+    font-size: 14px;
+  }
+}
