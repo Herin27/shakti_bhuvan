@@ -50,6 +50,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt2->bind_param("issd", $room_id, $checkin, $checkout, $final_price);
 
         if ($stmt2->execute()) {
+            // ✅ Update room status to Occupied
+            $update = $conn->prepare("UPDATE rooms SET status = 'Occupied' WHERE id = ?");
+            $update->bind_param("i", $room_id);
+            $update->execute();
+
             // ✅ Save booking details in SESSION for payment.php
             $_SESSION['booking'] = [
                 'room_id'     => $room['id'],
@@ -69,4 +74,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "Room not found.";
     }
 }
+
+// ✅ Auto-release rooms whose checkout date has passed
+$today = date("Y-m-d");
+$conn->query("UPDATE rooms r 
+              LEFT JOIN bookings b ON r.id = b.room_id 
+              SET r.status = 'Available' 
+              WHERE b.checkout < '$today'");
 ?>

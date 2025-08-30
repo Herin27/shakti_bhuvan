@@ -1,3 +1,138 @@
+<?php
+include 'db.php';  // your DB connection file
+
+// ---------- Total Bookings ----------
+$totalBookings = 0;
+$sql = "SELECT COUNT(*) as total FROM bookings";
+$result = $conn->query($sql);
+if ($result && $row = $result->fetch_assoc()) {
+    $totalBookings = $row['total'];
+}
+
+// ---------- Rooms ----------
+$totalRooms = 0;
+$availableRooms = 0;
+
+// Total rooms
+$sql = "SELECT COUNT(*) as total FROM rooms";
+$result = $conn->query($sql);
+if ($result && $row = $result->fetch_assoc()) {
+    $totalRooms = $row['total'];
+}
+
+// Available rooms (not booked today)
+$today = date("Y-m-d");
+$sql = "SELECT COUNT(*) as available 
+        FROM rooms r
+        WHERE r.id NOT IN (
+            SELECT b.room_id FROM bookings b
+            WHERE (b.checkin <= '$today' AND b.checkout >= '$today')
+        )";
+$result = $conn->query($sql);
+if ($result && $row = $result->fetch_assoc()) {
+    $availableRooms = $row['available'];
+}
+
+// ---------- Revenue This Month ----------
+$revenueThisMonth = 0;
+$currentMonth = date("Y-m");
+$sql = "SELECT SUM(total_price) as revenue 
+        FROM bookings 
+        WHERE DATE_FORMAT(checkin, '%Y-%m') = '$currentMonth'";
+$result = $conn->query($sql);
+if ($result && $row = $result->fetch_assoc()) {
+    $revenueThisMonth = $row['revenue'] ?? 0;
+}
+
+// ---------- Occupancy Rate ----------
+$occupancyRate = 0;
+if ($totalRooms > 0) {
+    $occupiedRooms = $totalRooms - $availableRooms;
+    $occupancyRate = round(($occupiedRooms / $totalRooms) * 100, 2);
+}
+
+// ---------- Monthly Revenue (last 6 months) ----------
+$revenueData = [];
+$monthLabels = [];
+$sql = "SELECT DATE_FORMAT(checkin, '%Y-%m') as month, SUM(total_price) as revenue
+        FROM bookings
+        GROUP BY month
+        ORDER BY month DESC
+        LIMIT 6";
+$res = $conn->query($sql);
+if ($res) {
+    while ($row = $res->fetch_assoc()) {
+        $monthLabels[] = $row['month'];
+        $revenueData[] = $row['revenue'];
+    }
+}
+$monthLabels = array_reverse($monthLabels);
+$revenueData = array_reverse($revenueData);
+
+// // ---------- Booking Trends (last 6 months) ----------
+// $bookingData = [];
+// $sql = "SELECT DATE_FORMAT(checkin, '%Y-%m') as month, COUNT(*) as total_bookings
+//         FROM bookings
+//         GROUP BY month
+//         ORDER BY month DESC
+//         LIMIT 6";
+// $res = $conn->query($sql);
+// if ($res) {
+//     while ($row = $res->fetch_assoc()) {
+//         $bookingData[] = $row['total_bookings'];
+//     }
+// }
+// $bookingData = array_reverse($bookingData);
+
+
+// ✅ Fetch room stats
+$totalRooms = 0;
+$available = 0;
+$occupied = 0;
+$maintenance = 0; // you can extend later if you add maintenance status
+
+// Total rooms
+$sql = "SELECT COUNT(*) as total FROM rooms";
+$res = $conn->query($sql);
+if ($res && $row = $res->fetch_assoc()) {
+    $totalRooms = $row['total'];
+}
+
+// Available rooms
+$sql = "SELECT COUNT(*) as total FROM rooms WHERE status = 'Available'";
+$res = $conn->query($sql);
+if ($res && $row = $res->fetch_assoc()) {
+    $available = $row['total'];
+}
+
+// Occupied rooms
+$sql = "SELECT COUNT(*) as total FROM rooms WHERE status = 'Occupied'";
+$res = $conn->query($sql);
+if ($res && $row = $res->fetch_assoc()) {
+    $occupied = $row['total'];
+}
+
+// (Optional) Maintenance rooms
+$sql = "SELECT COUNT(*) as total FROM rooms WHERE status = 'Maintenance'";
+$res = $conn->query($sql);
+if ($res && $row = $res->fetch_assoc()) {
+    $maintenance = $row['total'];
+}
+
+// ✅ Fetch rooms for inventory table
+$roomsData = [];
+$sql = "SELECT * FROM rooms";
+$res = $conn->query($sql);
+if ($res) {
+    while ($row = $res->fetch_assoc()) {
+        $roomsData[] = $row;
+    }
+}
+
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,114 +180,160 @@
       <h1>Dashboard</h1>
       <p class="subtitle">Welcome back to Shakti Bhuvan admin panel</p>
 
-      <div class="cards">
-        <div class="card">
-          <h3>Total Bookings</h3>
-          <p class="value">1,234</p>
-          <span class="note">+12% from last month</span>
-        </div>
-        <div class="card">
-          <h3>Available Rooms</h3>
-          <p class="value">24</p>
-          <span class="note">Out of 50 total rooms</span>
-        </div>
-        <div class="card">
-          <h3>Revenue This Month</h3>
-          <p class="value">₹67,000</p>
-          <span class="note">+8% from last month</span>
-        </div>
-        <div class="card">
-          <h3>Occupancy Rate</h3>
-          <p class="value">78%</p>
-          <span class="note">+5% from last month</span>
-        </div>
+      <div class="container my-5">
+  <h2 class="mb-4 text-center">📊 Admin Dashboard</h2>
+  <div class="row g-4">
+    
+   <div class="row cards g-4">
+    <!-- Total Bookings -->
+    <div class="col-md-3">
+      <div class="card">
+        <h3>Total Bookings</h3>
+        <p class="value"><?= $totalBookings ?></p>
+        <span class="note">All-time</span>
       </div>
+    </div>
 
-      <div class="charts">
-        <div class="chart-box">
-          <h3>Monthly Revenue</h3>
-          <canvas id="revenueChart"></canvas>
-        </div>
-        <div class="chart-box">
-          <h3>Booking Trends</h3>
-          <canvas id="bookingChart"></canvas>
-        </div>
+    <!-- Available Rooms -->
+    <div class="col-md-3">
+      <div class="card">
+        <h3>Available Rooms</h3>
+        <p class="value"><?= $availableRooms ?></p>
+        <span class="note">Out of <?= $totalRooms ?> total rooms</span>
       </div>
+    </div>
+
+    <!-- Revenue This Month -->
+    <div class="col-md-3">
+      <div class="card">
+        <h3>Revenue This Month</h3>
+        <p class="value">₹<?= number_format($revenueThisMonth, 2) ?></p>
+        <span class="note"><?= date("F Y") ?></span>
+      </div>
+    </div>
+
+    <!-- Occupancy Rate -->
+    <div class="col-md-3">
+      <div class="card">
+        <h3>Occupancy Rate</h3>
+        <p class="value"><?= $occupancyRate ?>%</p>
+        <span class="note">Based on <?= $totalRooms ?> rooms</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+      <div class="charts container my-5">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="chart-box p-3 bg-white shadow rounded">
+        <h3>Monthly Revenue</h3>
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+    <!-- <div class="col-md-6">
+      <div class="chart-box p-3 bg-white shadow rounded">
+        <h3>Booking Trends</h3>
+        <canvas id="bookingChart"></canvas>
+      </div>
+    </div> -->
+  </div>
+</div>
     </section>
 
-    <!-- Manage Rooms Section -->
-    <section id="rooms" class="section">
-      <h1>Manage Rooms</h1>
-      <p class="subtitle">Add, edit, and manage your room inventory</p>
 
-      <div class="cards">
-        <div class="card"><p class="value">28</p><h3>Total Rooms</h3></div>
-        <div class="card"><p class="value" style="color:green;">20</p><h3>Available</h3></div>
-        <div class="card"><p class="value">6</p><h3>Occupied</h3></div>
-        <div class="card"><p class="value" style="color:red;">2</p><h3>Maintenance</h3></div>
+<!-- ✅ Manage Rooms Section -->
+<section id="rooms" class="section container my-5">
+  <h1>Manage Rooms</h1>
+  <p class="subtitle">Add, edit, and manage your room inventory</p>
+
+  <div class="row cards g-4 mb-5">
+    <!-- Total Rooms -->
+    <div class="col-md-3">
+      <div class="card p-3 shadow text-center">
+        <p class="value fs-3 fw-bold"><?= $totalRooms ?></p>
+        <h3>Total Rooms</h3>
       </div>
+    </div>
 
-      <div class="table-box">
-        <h3>Room Inventory</h3>
-        <table>
+    <!-- Available Rooms -->
+    <div class="col-md-3">
+      <div class="card p-3 shadow text-center">
+        <p class="value fs-3 fw-bold text-success"><?= $available ?></p>
+        <h3>Available</h3>
+      </div>
+    </div>
+
+    <!-- Occupied Rooms -->
+    <div class="col-md-3">
+      <div class="card p-3 shadow text-center">
+        <p class="value fs-3 fw-bold text-warning"><?= $occupied ?></p>
+        <h3>Occupied</h3>
+      </div>
+    </div>
+
+    <!-- Maintenance Rooms -->
+    <div class="col-md-3">
+      <div class="card p-3 shadow text-center">
+        <p class="value fs-3 fw-bold text-danger"><?= $maintenance ?></p>
+        <h3>Maintenance</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Room Inventory Table -->
+  <div class="card shadow border-0 rounded p-4">
+    <h2 class="mb-4">Room Inventory</h2>
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead class="table-light">
           <tr>
             <th>Room ID</th>
             <th>Name</th>
             <th>Type</th>
             <th>Price/Night</th>
             <th>Capacity</th>
-            <th>Occupancy</th>
             <th>Amenities</th>
             <th>Status</th>
-            <th>Actions</th>
           </tr>
-          <tr>
-            <td>RM001</td>
-            <td>Deluxe Suite</td>
-            <td>Suite</td>
-            <td>₹4,500</td>
-            <td>4 guests</td>
-            <td>0/5</td>
-            <td>WiFi, AC, TV +1</td>
-            <td><span class="status confirmed">Available</span></td>
-            <td>...</td>
-          </tr>
-          <tr>
-            <td>RM002</td>
-            <td>Premium Room</td>
-            <td>Premium</td>
-            <td>₹3,200</td>
-            <td>2 guests</td>
-            <td>2/8</td>
-            <td>WiFi, AC, TV +1</td>
-            <td><span class="status confirmed">Available</span></td>
-            <td>...</td>
-          </tr>
-          <tr>
-            <td>RM003</td>
-            <td>Standard Room</td>
-            <td>Standard</td>
-            <td>₹2,500</td>
-            <td>2 guests</td>
-            <td>5/12</td>
-            <td>WiFi, TV</td>
-            <td><span class="status pending">Maintenance</span></td>
-            <td>...</td>
-          </tr>
-          <tr>
-            <td>RM004</td>
-            <td>Family Suite</td>
-            <td>Suite</td>
-            <td>₹5,200</td>
-            <td>6 guests</td>
-            <td>1/3</td>
-            <td>WiFi, AC, TV +2</td>
-            <td><span class="status confirmed">Available</span></td>
-            <td>...</td>
-          </tr>
-        </table>
-      </div>
-    </section>
+        </thead>
+        <tbody>
+          <?php if (!empty($roomsData)): ?>
+            <?php foreach ($roomsData as $room): ?>
+              <tr>
+                <td>RM<?= str_pad($room['id'], 3, "0", STR_PAD_LEFT) ?></td>
+                <td><?= htmlspecialchars($room['name']) ?></td>
+                <td><?= $room['bed_type'] ?></td>
+                <td>₹<?= number_format($room['price'], 2) ?></td>
+                <td><?= $room['guests'] ?> Guests</td>
+                <td>
+                  <?php 
+                  $amenities = explode(",", $room['amenities']);
+                  foreach ($amenities as $a) {
+                      echo '<span class="badge bg-light text-dark me-1">'.trim($a).'</span>';
+                  }
+                  ?>
+                </td>
+                <td>
+                  <?php if ($room['status'] == 'Available'): ?>
+                    <span class="badge bg-success">Available</span>
+                  <?php elseif ($room['status'] == 'Occupied'): ?>
+                    <span class="badge bg-warning text-dark">Occupied</span>
+                  <?php else: ?>
+                    <span class="badge bg-danger">Maintenance</span>
+                  <?php endif; ?>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr><td colspan="7" class="text-center">No rooms found</td></tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section> 
 
     <!-- Bookings Section -->
 <section id="bookings" class="section">
@@ -793,77 +974,110 @@
     });
   });
 
-  // Charts
-  new Chart(document.getElementById('revenueChart'), {
-    type: 'bar',
-    data: {
-      labels: ["Jan","Feb","Mar","Apr","May","Jun"],
-      datasets: [{
-        label: "Revenue",
-        data: [45000, 50000, 47000, 60000, 58000, 65000],
-        backgroundColor: "#e6b450"
-      }]
-    }
-  });
+  // new Chart(document.getElementById('revenueChart'), {
+  //   type: 'bar',
+  //   data: {
+  //     labels: ["Jan","Feb","Mar","Apr","May","Jun"],
+  //     datasets: [{
+  //       label: "Revenue",
+  //       data: [45000, 50000, 47000, 60000, 58000, 65000],
+  //       backgroundColor: "#e6b450"
+  //     }]
+  //   }
+  // });
 
-  new Chart(document.getElementById('bookingChart'), {
-    type: 'line',
-    data: {
-      labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
-      datasets: [{
-        label: "Bookings",
-        data: [10,18,14,20,25,32,28],
-        borderColor: "#e6b450",
-        fill: false
-      }]
-    }
-  });
+  // new Chart(document.getElementById('bookingChart'), {
+  //   type: 'line',
+  //   data: {
+  //     labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],
+  //     datasets: [{
+  //       label: "Bookings",
+  //       data: [10,18,14,20,25,32,28],
+  //       borderColor: "#e6b450",
+  //       fill: false
+  //     }]
+  //   }
+  // });
 
-  new Chart(document.getElementById("revenueChart"), {
-      type: "bar",
-      data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-        datasets: [{
-          data: [450000, 510000, 480000, 610000, 580000, 670000],
-          backgroundColor: "#f4c361",
-          borderRadius: 10, // rounded bars
-          barThickness: 45
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: "#5c4a32" }
-          },
-          y: {
-            ticks: { color: "#5c4a32" },
-            grid: { color: "rgba(0,0,0,0.05)" }
-          }
-        }
-      }
-    });
+  // new Chart(document.getElementById("revenueChart"), {
+  //     type: "bar",
+  //     data: {
+  //       labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+  //       datasets: [{
+  //         data: [450000, 510000, 480000, 610000, 580000, 670000],
+  //         backgroundColor: "#f4c361",
+  //         borderRadius: 10, // rounded bars
+  //         barThickness: 45
+  //       }]
+  //     },
+  //     options: {
+  //       responsive: true,
+  //       plugins: { legend: { display: false } },
+  //       scales: {
+  //         x: {
+  //           grid: { display: false },
+  //           ticks: { color: "#5c4a32" }
+  //         },
+  //         y: {
+  //           ticks: { color: "#5c4a32" },
+  //           grid: { color: "rgba(0,0,0,0.05)" }
+  //         }
+  //       }
+  //     }
+  //   });
 
-    // Payment Methods Chart
-    new Chart(document.getElementById("paymentChart"), {
-      type: "doughnut",
-      data: {
-        labels: ["UPI", "Credit Card", "Debit Card", "Bank Transfer", "Wallet"],
-        datasets: [{
-          data: [45, 30, 15, 8, 2],
-          backgroundColor: ["#6366f1", "#22c55e", "#fbbf24", "#ef4444", "#06b6d4"],
-          borderWidth: 2,
-          cutout: "65%"
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } }
-      }
-    });
+  //   // Payment Methods Chart
+  //   new Chart(document.getElementById("paymentChart"), {
+  //     type: "doughnut",
+  //     data: {
+  //       labels: ["UPI", "Credit Card", "Debit Card", "Bank Transfer", "Wallet"],
+  //       datasets: [{
+  //         data: [45, 30, 15, 8, 2],
+  //         backgroundColor: ["#6366f1", "#22c55e", "#fbbf24", "#ef4444", "#06b6d4"],
+  //         borderWidth: 2,
+  //         cutout: "65%"
+  //       }]
+  //     },
+  //     options: {
+  //       responsive: true,
+  //       plugins: { legend: { display: false } }
+  //     }
+  //   });
 
   </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Revenue Chart
+  const ctx1 = document.getElementById('revenueChart');
+  new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels: <?= json_encode($monthLabels) ?>,
+      datasets: [{
+        label: 'Revenue',
+        data: <?= json_encode($revenueData) ?>,
+        borderColor: 'green',
+        backgroundColor: 'rgba(0, 128, 0, 0.2)',
+        tension: 0.3,
+        fill: true
+      }]
+    }
+  });
+
+  // Booking Trends Chart
+  const ctx2 = document.getElementById('bookingChart');
+  new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: <?= json_encode($monthLabels) ?>,
+      datasets: [{
+        label: 'Bookings',
+        data: <?= json_encode($bookingData) ?>,
+        backgroundColor: 'rgba(0, 123, 255, 0.7)'
+      }]
+    }
+  });
+</script>
 </body>
 </html>
