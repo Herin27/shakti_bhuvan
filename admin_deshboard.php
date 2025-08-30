@@ -141,6 +141,15 @@ if ($res) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/admin.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
   <style>
     /* Ensure hidden sections are not visible */
     .hidden { display: none !important; }
@@ -273,66 +282,91 @@ if ($res) {
       </div>
     </div>
 
-    <!-- Maintenance Rooms -->
-    <div class="col-md-3">
-      <div class="card p-3 shadow text-center">
-        <p class="value fs-3 fw-bold text-danger"><?= $maintenance ?></p>
-        <h3>Maintenance</h3>
-      </div>
-    </div>
+    
   </div>
 
   <!-- ✅ Room Inventory Table -->
-  <div class="card shadow border-0 rounded p-4">
-    <h2 class="mb-4">Room Inventory</h2>
-    <div class="table-responsive">
-      <table class="table align-middle">
-        <thead class="table-light">
-          <tr>
-            <th>Room ID</th>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Price/Night</th>
-            <th>Capacity</th>
-            <th>Amenities</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php if (!empty($roomsData)): ?>
-            <?php foreach ($roomsData as $room): ?>
-              <tr>
-                <td>RM<?= str_pad($room['id'], 3, "0", STR_PAD_LEFT) ?></td>
-                <td><?= htmlspecialchars($room['name']) ?></td>
-                <td><?= $room['bed_type'] ?></td>
-                <td>₹<?= number_format($room['price'], 2) ?></td>
-                <td><?= $room['guests'] ?> Guests</td>
-                <td>
-                  <?php 
-                  $amenities = explode(",", $room['amenities']);
-                  foreach ($amenities as $a) {
-                      echo '<span class="badge bg-light text-dark me-1">'.trim($a).'</span>';
-                  }
-                  ?>
-                </td>
-                <td>
-                  <?php if ($room['status'] == 'Available'): ?>
-                    <span class="badge bg-success">Available</span>
-                  <?php elseif ($room['status'] == 'Occupied'): ?>
-                    <span class="badge bg-warning text-dark">Occupied</span>
-                  <?php else: ?>
-                    <span class="badge bg-danger">Maintenance</span>
-                  <?php endif; ?>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          <?php else: ?>
-            <tr><td colspan="7" class="text-center">No rooms found</td></tr>
-          <?php endif; ?>
-        </tbody>
-      </table>
-    </div>
+<div class="card shadow border-0 rounded p-4">
+  <h2 class="mb-4">Room Inventory</h2>
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Room ID</th>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Price/Night</th>
+          <th>Capacity</th>
+          <th>Amenities</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php if (!empty($roomsData)): ?>
+          <?php foreach ($roomsData as $room): ?>
+            <tr>
+              <td>RM<?= str_pad($room['id'], 3, "0", STR_PAD_LEFT) ?></td>
+              <td><?= htmlspecialchars($room['name']) ?></td>
+              <td><?= $room['bed_type'] ?></td>
+              <td>₹<?= number_format($room['price'], 2) ?></td>
+              <td><?= $room['guests'] ?> Guests</td>
+              <td>
+                <?php 
+                $amenities = explode(",", $room['amenities']);
+                foreach ($amenities as $a) {
+                    echo '<span class="badge bg-light text-dark me-1">'.trim($a).'</span>';
+                }
+                ?>
+              </td>
+              <td>
+                <?php if ($room['status'] == 'Available'): ?>
+                  <span class="badge bg-success">Available</span>
+                <?php elseif ($room['status'] == 'Occupied'): ?>
+                  <span class="badge bg-warning text-dark">Occupied</span>
+                <?php else: ?>
+                  <span class="badge bg-danger">Maintenance</span>
+                <?php endif; ?>
+              </td>
+              <td>
+                <!-- ✅ Actions Dropdown (hidden until click) -->
+                <div class="dropdown text-end">
+                  <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li>
+                      <a class="dropdown-item" href="view_details.php?id=<?= $room['id'] ?>">
+                        <i class="bi bi-eye me-2"></i> View Details
+                      </a>
+                    </li>
+                    <li>
+                      <a class="dropdown-item" href="edit_room.php?id=<?= $room['id'] ?>">
+                        <i class="bi bi-pencil-square me-2"></i> Edit Room
+                      </a>
+                    </li>
+                    <li>
+                      <form action="delete_room.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this room?');">
+                        <input type="hidden" name="room_id" value="<?= $room['id'] ?>">
+                        <button type="submit" class="dropdown-item text-danger">
+                          <i class="bi bi-trash me-2"></i> Delete Room
+                        </button>
+                      </form>
+                    </li>
+                  </ul>
+                </div>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <tr><td colspan="8" class="text-center">No rooms found</td></tr>
+        <?php endif; ?>
+      </tbody>
+    </table>
   </div>
+</div>
+
+
 </section> 
 
     <!-- Bookings Section -->

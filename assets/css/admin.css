@@ -404,3 +404,23 @@ td:has(> .star) {
 .settings-card input[type="checkbox"]:checked + .toggle::after {
   transform: translateX(20px);
 }
+.dropdown-menu {
+  border-radius: 10px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: #ffeaea;
+}
