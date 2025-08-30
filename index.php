@@ -116,17 +116,20 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
         <button class="contact-btn"><a href="contact.php" style="color: #fff; text-decoration: none;">Contact Us</a></button>
     </div>
 
+    <form action="search.php" method="POST">
     <div class="search-box">
-        <!-- <span>Check-in Date</span> -->
-        <input type="date" placeholder="Check-in Date">
-        <input type="date" placeholder="Check-out Date">
-        <select>
-            <option>1 Guest</option>
-            <option>2 Guests</option>
-            <option>3 Guests</option>
+        <input type="date" name="checkin" required>
+        <input type="date" name="checkout" required>
+        <select name="guests" required>
+            <option value="1">1 Guest</option>
+            <option value="2">2 Guests</option>
+            <option value="3">3 Guests</option>
+            <option value="4">4 Guests</option>
         </select>
-        <button>Search Rooms</button>
+        <button type="submit">Search Rooms</button>
     </div>
+</form>
+
 </div>
 
 <section class="featured-rooms">

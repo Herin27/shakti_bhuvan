@@ -40,27 +40,19 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
 <section class="search-section">
   <h2>Our Rooms & Suites</h2>
   <p>Choose from our selection of comfortable and luxurious accommodations</p>
-  <form action="rooms.php" method="GET" class="search-bar">
-    <div class="form-group">
-      <label>Check-in</label>
-      <input type="date" name="checkin" required>
+  <form action="search.php" method="POST">
+    <div class="search-box">
+        <input type="date" name="checkin" required>
+        <input type="date" name="checkout" required>
+        <select name="guests" required>
+            <option value="1">1 Guest</option>
+            <option value="2">2 Guests</option>
+            <option value="3">3 Guests</option>
+            <option value="4">4 Guests</option>
+        </select>
+        <button type="submit">Search Rooms</button>
     </div>
-    <div class="form-group">
-      <label>Check-out</label>
-      <input type="date" name="checkout" required>
-    </div>
-    <div class="form-group">
-      <label>Guests</label>
-      <select name="guests">
-        <option value="1">1 Guest</option>
-        <option value="2">2 Guests</option>
-        <option value="3">3 Guests</option>
-        <option value="4">4 Guests</option>
-        <option value="5+">5+ Guests</option>
-      </select>
-    </div>
-    <button type="submit" class="btn">🔍 Search</button>
-  </form>
+</form>
 </section>
 
 <!-- ===== Rooms Listing ===== -->
