@@ -42,8 +42,8 @@ $policies  = array_map('trim', explode(',', $room['policies']));
     </div>
 
     <nav class="nav-links">
-        <a href="index.php" class="active">Home</a>
-        <a href="/rooms.php">Rooms</a>
+        <a href="index.php" >Home</a>
+        <a href="rooms.php" class="active">Rooms</a>
         <a href="contact.php">Contact</a>
     </nav>
 

@@ -1,4 +1,5 @@
 <?php
+session_start();
 include 'db.php'; // Your DB connection file
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -30,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // ✅ Fetch room details
-    $stmt = $conn->prepare("SELECT price, discount_price FROM rooms WHERE id = ?");
+    $stmt = $conn->prepare("SELECT id, name, price, discount_price FROM rooms WHERE id = ?");
     $stmt->bind_param("i", $room_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -44,12 +45,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // ✅ Total Calculation
         $final_price = (($price_per_night - $discount) * $nights) + $tax;
 
-        // ✅ Insert booking
+        // ✅ Insert booking into DB
         $stmt2 = $conn->prepare("INSERT INTO bookings (room_id, checkin, checkout, total_price) VALUES (?, ?, ?, ?)");
         $stmt2->bind_param("issd", $room_id, $checkin, $checkout, $final_price);
 
         if ($stmt2->execute()) {
-            echo "<script>alert('Booking successful! Total: ₹$final_price'); window.location='thankyou.php';</script>";
+            // ✅ Save booking details in SESSION for payment.php
+            $_SESSION['booking'] = [
+                'room_id'     => $room['id'],
+                'room_name'   => $room['name'],
+                'checkin'     => $checkin,
+                'checkout'    => $checkout,
+                'nights'      => $nights,
+                'total_price' => $final_price
+            ];
+
+            header("Location: payment.php");
+            exit;
         } else {
             echo "Error: " . $conn->error;
         }
