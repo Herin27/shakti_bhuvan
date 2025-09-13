@@ -107,7 +107,7 @@
     <div class="footer-col">
       <h4>Contact Info</h4>
       <ul>
-        <li>📍 123 Luxury Lane, Hotel District, Mumbai, MH 400001</li>
+        <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
         <li>📞 +91 98765 43210</li>
         <li>✉️ herin7151@gmail.com </li>
       </ul>

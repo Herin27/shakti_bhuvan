@@ -1,125 +1,165 @@
 <?php
 session_start();
-
-// ✅ Ensure booking session exists
 if (!isset($_SESSION['booking'])) {
     echo "No booking found. Please book a room first.";
     exit;
 }
-
 $booking = $_SESSION['booking'];
-?>
 
+// Razorpay config
+$keyId = "rzp_test_RCCShYsW1Qsowp";   // replace with your Test Key ID
+$keySecret = "OzAJu511WKdQoEZWl5jXu1bA"; // replace with your Test Secret
+
+require('razorpay-php-master/Razorpay.php'); // ✅ install SDK via composer require razorpay/razorpay
+use Razorpay\Api\Api;
+
+$api = new Api($keyId, $keySecret);
+
+// Amount must be in paise (₹100 = 10000)
+$amount = $booking['total_price'] * 100;
+
+// Create order in Razorpay
+$orderData = [
+    'receipt'         => 'RCPT_' . rand(1000,9999),
+    'amount'          => $amount,
+    'currency'        => 'INR',
+    'payment_capture' => 1 // auto capture
+];
+$razorpayOrder = $api->order->create($orderData);
+$orderId = $razorpayOrder['id']; // ✅ real Razorpay order_id
+
+// if ($paymentSuccess) {
+//     $booking_id = $_GET['booking_id'];
+
+//     // Update booking status to Confirmed + Paid
+//     $updateBooking = $conn->prepare("UPDATE bookings 
+//                                      SET status = 'Confirmed', payment_status = 'Paid' 
+//                                      WHERE id = ?");
+//     $updateBooking->bind_param("i", $booking_id);
+//     $updateBooking->execute();
+// }
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Payment Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 500px;
-            background: #fff;
-            margin: 50px auto;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .details {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-        .details p {
-            margin: 6px 0;
-            font-size: 14px;
-        }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        .pay-btn {
-            margin-top: 20px;
-            width: 100%;
-            padding: 12px;
-            background: #28a745;
-            border: none;
-            border-radius: 6px;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .pay-btn:hover {
-            background: #218838;
-        }
-        .payment-methods {
-            margin: 15px 0;
-        }
-        .payment-methods label {
-            font-weight: normal;
-            display: block;
-            margin-bottom: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Payment - Shakti Bhuvan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/view_details.css">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
 
-<div class="container">
-    <h2>Payment Page</h2>
+<header class="navbar">
+  <div class="logo">
+    <div class="logo-icon">S</div>
+    <div class="logo-text">
+      <h1>Shakti Bhuvan</h1>
+      <span>Premium Stays</span>
+    </div>
+  </div>
 
-    <div class="details">
-        <p><strong>Room:</strong> <?php echo htmlspecialchars($booking['room_name']); ?></p>
-        <p><strong>Check-in:</strong> <?php echo htmlspecialchars($booking['checkin']); ?></p>
-        <p><strong>Check-out:</strong> <?php echo htmlspecialchars($booking['checkout']); ?></p>
-        <p><strong>Nights:</strong> <?php echo $booking['nights']; ?></p>
-        <p><strong>Total Price:</strong> ₹<?php echo number_format($booking['total_price'], 2); ?></p>
+  <nav class="nav-links">
+    <a href="index.php">Home</a>
+    <a href="rooms.php">Rooms</a>
+    <a href="contact.php">Contact</a>
+  </nav>
+
+  <div class="contact-info">
+    <span>📞 +91 98765 43210</span>
+    <span>✉️ info@shaktibhuvan.com</span>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Left: Booking Summary -->
+  <div>
+    <h1 class="room-title">Payment</h1>
+    <p class="desc">Complete your payment securely via Razorpay to confirm your booking.</p>
+
+    <div class="card">
+      <h3>Booking Summary</h3>
+      <ul>
+        <li><strong>Room:</strong> <?php echo htmlspecialchars($booking['room_name']); ?></li>
+        <li><strong>Check-in:</strong> <?php echo htmlspecialchars($booking['checkin']); ?></li>
+        <li><strong>Check-out:</strong> <?php echo htmlspecialchars($booking['checkout']); ?></li>
+        <li><strong>Nights:</strong> <?php echo $booking['nights']; ?></li>
+        <li><strong>Total Price:</strong> ₹<?php echo number_format($booking['total_price'], 2); ?></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Right: Razorpay Payment Button -->
+  <div class="booking-box">
+    <h3>Proceed to Payment</h3>
+
+    <div class="price-details">
+      <div class="row total">
+        <span>Total Payable:</span>
+        <strong>₹<?php echo number_format($booking['total_price'], 2); ?></strong>
+      </div>
     </div>
 
-    <form action="thank_you.php" method="post">
-        <input type="hidden" name="room_id" value="<?php echo $booking['room_id']; ?>">
-        <input type="hidden" name="total_price" value="<?php echo $booking['total_price']; ?>">
-
-        <label for="name">Cardholder Name</label>
-        <input type="text" name="name" id="name" required>
-
-        <label for="card">Card Number</label>
-        <input type="number" name="card" id="card" placeholder="1111 2222 3333 4444" required>
-
-        <label for="expiry">Expiry Date (MM/YY)</label>
-        <input type="text" name="expiry" id="expiry" placeholder="MM/YY" required>
-
-        <label for="cvv">CVV</label>
-        <input type="number" name="cvv" id="cvv" required>
-
-        <div class="payment-methods">
-            <label><input type="radio" name="method" value="card" checked> Credit/Debit Card</label>
-            <label><input type="radio" name="method" value="upi"> UPI</label>
-            <label><input type="radio" name="method" value="netbanking"> Net Banking</label>
-        </div>
-
-        <button type="submit" class="pay-btn">Pay Now</button>
-    </form>
+    <button id="payBtn" class="book-btn2">Pay with Razorpay</button>
+    <p class="note">Secure payment powered by Razorpay</p>
+  </div>
 </div>
+
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-col">
+      <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
+      <p>Experience luxury and comfort in our premium rooms with exceptional hospitality and modern amenities.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Our Rooms</a></li>
+        <li><a href="#">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact Info</h4>
+      <ul>
+        <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
+        <li>📞 +91 98765 43210</li>
+        <li>✉️ info@shaktibhuvan.com</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2024 Shakti Bhuvan. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+document.getElementById('payBtn').onclick = function(e){
+    var options = {
+        "key": "<?php echo $keyId; ?>",
+        "amount": "<?php echo $amount; ?>",
+        "currency": "INR",
+        "name": "Shakti Bhuvan",
+        "description": "Room Booking Payment",
+        "order_id": "<?php echo $orderId; ?>", // ✅ real order_id
+        "handler": function (response){
+            window.location.href = "thank_you.php?payment_id=" + response.razorpay_payment_id + "&order_id=<?php echo $orderId; ?>";
+        },
+        "prefill": {
+            "name": "<?php echo $_SESSION['booking']['customer_name'] ?? 'Guest'; ?>",
+            "email": "<?php echo $_SESSION['booking']['email'] ?? ''; ?>",
+            "contact": "<?php echo $_SESSION['booking']['phone'] ?? ''; ?>"
+        },
+        "theme": {
+            "color": "#1e40af"
+        }
+    };
+    var rzp1 = new Razorpay(options);
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
 
 </body>
 </html>

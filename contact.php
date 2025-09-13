@@ -147,7 +147,7 @@
       <div class="icon">📍</div>
       <div>
         <h4>Address</h4>
-        <p>123 Luxury Lane, Hotel District, Mumbai, MH 400001</p>
+        <p>Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</p>
         <span>Prime location in the city center</span>
       </div>
     </div>
@@ -162,14 +162,20 @@
     </div>
 
     <!-- Map Box -->
-    <div class="map-box">
-      <div class="map-placeholder">
-        <span>📍 Our Location</span>
-        <p>Interactive map coming soon</p>
-      </div>
-    </div>
+<div class="map-box" style="width: 100%; max-width: 800px; margin: auto;">
+  <iframe 
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3667.7317323561217!2d72.845482!3d24.3265648!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395d23fbbb6196cf%3A0xfc61656acb2d27fe!2sShakti%20bhawan!5e0!3m2!1sen!2sin!4v1694422945369!5m2!1sen!2sin" 
+    width="100%" 
+    height="400" 
+    style="border:0; border-radius: 12px;" 
+    allowfullscreen="" 
+    loading="lazy" 
+    referrerpolicy="no-referrer-when-downgrade">
+  </iframe>
+</div>
 
-    <!-- Quick Actions -->
+
+    <!-- Quick Actions
     <div class="quick-actions">
       <h4>Quick Actions</h4>
       <ul>
@@ -177,7 +183,7 @@
         <li>📧 Email Our Reservations Team</li>
         <li>💬 Live Chat Support</li>
       </ul>
-    </div>
+    </div> -->
   </div>
 </section>
 
@@ -220,7 +226,7 @@
     <div class="footer-col">
       <h4>Contact Info</h4>
       <ul>
-        <li>📍 123 Luxury Lane, Hotel District, Mumbai, MH 400001</li>
+        <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
         <li>📞 +91 98765 43210</li>
         <li>✉️ info@shaktibhuvan.com</li>
       </ul>
