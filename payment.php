@@ -48,12 +48,23 @@ $orderId = $razorpayOrder['id']; // ✅ real Razorpay order_id
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/view_details.css">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
 </head>
+<style>
+    .logo-icon img {
+    width: 60px;   /* adjust size */
+    height: auto;
+    border-radius: 50%; /* make circular if needed */
+    margin-right: 10px;
+}
+</style>
 <body>
 
 <header class="navbar">
   <div class="logo">
-    <div class="logo-icon">S</div>
+    <div class="logo-icon">
+            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+        </div>
     <div class="logo-text">
       <h1>Shakti Bhuvan</h1>
       <span>Premium Stays</span>
@@ -79,16 +90,23 @@ $orderId = $razorpayOrder['id']; // ✅ real Razorpay order_id
     <p class="desc">Complete your payment securely via Razorpay to confirm your booking.</p>
 
     <div class="card">
-      <h3>Booking Summary</h3>
-      <ul>
-        <li><strong>Room:</strong> <?php echo htmlspecialchars($booking['room_name']); ?></li>
-        <li><strong>Check-in:</strong> <?php echo htmlspecialchars($booking['checkin']); ?></li>
-        <li><strong>Check-out:</strong> <?php echo htmlspecialchars($booking['checkout']); ?></li>
-        <li><strong>Nights:</strong> <?php echo $booking['nights']; ?></li>
-        <li><strong>Total Price:</strong> ₹<?php echo number_format($booking['total_price'], 2); ?></li>
-      </ul>
-    </div>
+  <h3>Booking Summary</h3>
+  <ul>
+    <li><strong>Room:</strong> <?= htmlspecialchars($booking['room_name']); ?></li>
+    <li><strong>Check-in:</strong> <?= htmlspecialchars($booking['checkin']); ?></li>
+    <li><strong>Check-out:</strong> <?= htmlspecialchars($booking['checkout']); ?></li>
+    <li><strong>Nights:</strong> <?= $booking['nights']; ?></li>
+    <li><strong>Extra Beds:</strong> <?= $booking['extra_beds'] ?? 0; ?> × ₹100</li>
+    <li><strong>Discount:</strong> ₹<?= number_format($booking['discount'] ?? 0, 2); ?></li>
+    <li><strong>Total Price:</strong> ₹<?= number_format($booking['total_price'], 2); ?></li>
+  </ul>
+</div>
+
+
   </div>
+
+  
+
 
   <!-- Right: Razorpay Payment Button -->
   <div class="booking-box">

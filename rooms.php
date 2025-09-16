@@ -13,11 +13,14 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./assets/css/rooms.css">
   <link rel="stylesheet" href="./assets/css/navbar.css">
+  <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
 </head>
 <body>
 <header class="navbar">
     <div class="logo">
-        <div class="logo-icon">S</div>
+        <div class="logo-icon">
+            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+        </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>
             <span>Premium Stays</span>
@@ -119,7 +122,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
         <li><a href="#">Home</a></li>
         <li><a href="#">Our Rooms</a></li>
         <li><a href="#">Contact Us</a></li>
-        <!-- <li><a href="#">Amenities</a></li> -->
+        <!--  -->
       </ul>
     </div>
 

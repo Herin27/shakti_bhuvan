@@ -402,6 +402,20 @@ ul li::before {
   transition: opacity 0.3s;
 }
 
+.add-extra-bed-btn {
+  width: 95%;
+  background: linear-gradient(to right, #f6d365, #fda085);
+  border: none;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
 .book-btn:hover {
   opacity: 0.9;
 }

@@ -99,7 +99,7 @@
         <li><a href="#">Home</a></li>
         <li><a href="#">Our Rooms</a></li>
         <li><a href="#">Contact Us</a></li>
-        <!-- <li><a href="#">Amenities</a></li> -->
+        <!--  -->
       </ul>
     </div>
 

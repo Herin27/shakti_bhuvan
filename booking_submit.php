@@ -14,6 +14,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $totalPrice = $_POST['total_price'];
     $createdAt  = date("Y-m-d H:i:s");
 
+
+    // Update session with final submitted values
+// ✅ Update session with final submitted values
+$_SESSION['booking']['customer_name'] = $name;
+$_SESSION['booking']['email'] = $email;
+$_SESSION['booking']['phone'] = $phone;
+$_SESSION['booking']['location'] = $location;
+$_SESSION['booking']['guests'] = $guests;
+$_SESSION['booking']['extra_beds'] = isset($_POST['beds']) ? intval($_POST['beds']) : 0;
+$_SESSION['booking']['discount'] = isset($_POST['discount']) ? floatval($_POST['discount']) : 0;
+$_SESSION['booking']['total_price'] = $totalPrice;
+
+
+
     // 1️⃣ Insert or Update user in users table
     $checkUser = $conn->prepare("SELECT customer_id FROM users WHERE email = ?");
     $checkUser->bind_param("s", $email);

@@ -60,7 +60,9 @@ if (isset($_GET['id'])) {
 
 <header class="navbar">
     <div class="logo">
-        <div class="logo-icon">S</div>
+        <div class="logo-icon">
+            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+        </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>
             <span>Premium Stays</span>

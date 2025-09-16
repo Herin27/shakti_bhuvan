@@ -28,13 +28,24 @@ $taxFee = 500; // same tax as earlier
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/view_details.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
 </head>
+<style>
+    .logo-icon img {
+    width: 60px;   /* adjust size */
+    height: auto;
+    border-radius: 50%; /* make circular if needed */
+    margin-right: 10px;
+}
+</style>
 <body>
 
 <!-- your header (same as before) -->
 <header class="navbar">
   <div class="logo">
-    <div class="logo-icon">S</div>
+    <div class="logo-icon">
+            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+        </div>
     <div class="logo-text">
       <h1>Shakti Bhuvan</h1>
       <span>Premium Stays</span>
@@ -128,7 +139,70 @@ $taxFee = 500; // same tax as earlier
   </form>
 </div>
 
-<footer class="footer"> <!-- same footer as before --> ... </footer>
+<!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+
+            <!-- About -->
+            <div class="footer-col">
+                <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
+                <p>
+                    Experience luxury and comfort in our premium rooms with exceptional hospitality and modern
+                    amenities.
+                </p>
+                <div class="social-icons">
+                    <a href="#">🌐</a>
+
+                    <a href="#">📘</a>
+                    <a href="#">🐦</a>
+                    <a href="#">📸</a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Our Rooms</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    
+                </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="footer-col">
+                <h4>Contact Info</h4>
+                <ul>
+                    <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
+                    <li>📞 +91 98765 43210</li>
+                    <li>✉️ info@shaktibhuvan.com</li>
+                </ul>
+            </div>
+
+            <!-- Services -->
+            <div class="footer-col">
+                <h4>Services</h4>
+                <ul>
+                    <li>24/7 Room Service</li>
+                    <li>Free Wi-Fi</li>
+                    <li>Airport Pickup</li>
+                    <li>Laundry Service</li>
+                    <li>Concierge</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Bottom -->
+        <div class="footer-bottom">
+            <p>© 2024 Shakti Bhuvan. All rights reserved.</p>
+            <div>
+                <a href="#">Privacy Policy</a> |
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>

@@ -38,6 +38,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
 
 </head>
 
@@ -98,17 +99,28 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
     border-radius: 5px;
     cursor: pointer;
 }
+
+.logo-icon img {
+    width: 60px;   /* adjust size */
+    height: auto;
+    border-radius: 50%; /* make circular if needed */
+    margin-right: 10px;
+}
+
 </style>
 
 <body>
     <header class="navbar">
         <div class="logo">
-            <div class="logo-icon">S</div>
-            <div class="logo-text">
-                <h1>Shakti Bhuvan</h1>
-                <span>Premium Stays</span>
-            </div>
+        <div class="logo-icon">
+            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
         </div>
+        <div class="logo-text">
+            <h1>Shakti Bhuvan</h1>
+            <span>Premium Stays</span>
+        </div>
+</div>
+
 
         <nav class="nav-links">
             <a href="index.php" class="active">Home</a>
@@ -341,7 +353,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
                     <li><a href="#">Home</a></li>
                     <li><a href="#">Our Rooms</a></li>
                     <li><a href="#">Contact Us</a></li>
-                    <li><a href="#">Amenities</a></li>
+                    
                 </ul>
             </div>
 

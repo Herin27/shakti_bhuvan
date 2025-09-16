@@ -1,26 +1,22 @@
 <?php
 session_start();
-include 'db.php'; // if needed for additional checks (not strictly required here)
+include 'db.php'; // if needed for additional checks
 
-// A small helper to safely fetch POST data
 function post($key, $default = null) {
     return isset($_POST[$key]) ? trim($_POST[$key]) : $default;
 }
 
-// If user POSTed from view_details.php, create/overwrite session booking
+// Step 1: Initial booking from view_details.php
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['room_id'])) {
-    // sanitize incoming values
     $room_id    = intval(post('room_id'));
     $room_name  = post('room_name', '');
     $checkin    = post('checkin', '');
     $checkout   = post('checkout', '');
-    $nights     = max(0, intval(post('nights', 0)));
-    $postedTotal= (float) post('total_price', 0);
     $roomPrice  = (float) post('room_price', 0);
     $discount   = (float) post('room_discount', 0);
     $taxFee     = (float) post('tax_fee', 500);
+    $extraBeds  = max(0, intval(post('beds', 0))); // capture if sent
 
-    // Server-side validation: ensure dates valid and nights > 0
     try {
         $d1 = new DateTime($checkin);
         $d2 = new DateTime($checkout);
@@ -33,11 +29,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['room_id'])) {
         die("Check-out date must be after check-in date. Please go back and choose valid dates.");
     }
 
-    // Recalculate on server (do not trust client POST entirely)
     $perNight = max(0, $roomPrice - $discount);
-    $calculatedTotal = ($perNight * $calcNights) + $taxFee;
+    $calculatedTotal = ($perNight * $calcNights) + $taxFee + ($extraBeds * 100);
 
-    // Save booking data into session (use server-calculated totals)
     $_SESSION['booking'] = [
         'room_id'      => $room_id,
         'room_name'    => $room_name,
@@ -47,20 +41,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['room_id'])) {
         'price'        => $roomPrice,
         'discount'     => $discount,
         'tax_fee'      => $taxFee,
+        'extra_beds'   => $extraBeds,
         'total_price'  => $calculatedTotal
     ];
-
-    // after setting session we continue to render the confirmation page
 }
 
-// If no session booking is set, we cannot proceed
 if (!isset($_SESSION['booking'])) {
     die("No booking data found. Please select room & dates first.");
 }
 
 $booking = $_SESSION['booking'];
 
-// Extra safety: recompute server-side again
+// Step 2: Handle updates (like user entering beds here)
+$extraBeds = isset($_POST['beds']) ? intval($_POST['beds']) : (isset($booking['extra_beds']) ? $booking['extra_beds'] : 0);
+
 try {
     $d1 = new DateTime($booking['checkin']);
     $d2 = new DateTime($booking['checkout']);
@@ -71,13 +65,16 @@ try {
 if ($nights <= 0) {
     die("Check-out date must be after check-in date. Please go back and choose valid dates.");
 }
-$perNight = max(0, (float)$booking['price'] - (float)$booking['discount']);
-$totalPrice = ($perNight * $nights) + (float)$booking['tax_fee'];
 
-// Update session with server-truth
+$perNight = max(0, (float)$booking['price'] - (float)$booking['discount']);
+$totalPrice = ($perNight * $nights) + (float)$booking['tax_fee'] + ($extraBeds * 100);
+
+// Update session again
+$_SESSION['booking']['extra_beds'] = $extraBeds;
 $_SESSION['booking']['nights'] = $nights;
 $_SESSION['booking']['total_price'] = $totalPrice;
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,10 +83,21 @@ $_SESSION['booking']['total_price'] = $totalPrice;
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/view_details.css">
+  <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
 </head>
+<style>
+    .logo-icon img {
+    width: 60px;   /* adjust size */
+    height: auto;
+    border-radius: 50%; /* make circular if needed */
+    margin-right: 10px;
+}
+</style>
 <body>
 <header class="navbar">
-  <div class="logo"><div class="logo-icon">S</div><div class="logo-text"><h1>Shakti Bhuvan</h1><span>Premium Stays</span></div></div>
+  <div class="logo"><div class="logo-icon">
+            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+        </div><div class="logo-text"><h1>Shakti Bhuvan</h1><span>Premium Stays</span></div></div>
   <nav class="nav-links"><a href="index.php">Home</a><a href="rooms.php" class="active">Rooms</a><a href="contact.php">Contact</a></nav>
   <div class="contact-info"><span>+91 98765 43210</span><span>info@shaktibhuvan.com</span><a href="booking.php" class="book-btn">Book Now</a></div>
 </header>
@@ -130,17 +138,38 @@ $_SESSION['booking']['total_price'] = $totalPrice;
       <label>Guests</label>
       <input type="number" name="guests" class="date-input" min="1" value="1">
 
+      <label>No. of Extra Bed</label>
+      <input type="number" name="beds" class="date-input" min="0" value="<?= $extraBeds ?>">
+      <button type="button" name="addBedBtn" class="add-extra-bed-btn">Add Extra Bed</button>
+<br>
+
+      <!-- <label>Coupon code</label>
+      <div class="form-group">
+  <input type="text" name="coupon" class="date-input" placeholder="Enter Coupon Code" class="form-control">
+  <button type="button" id="applyCouponBtn" class="add-extra-bed-btn">Apply Coupon</button>
+  <small id="couponMessage" style="color:red;"></small>
+</div> -->
+
+<input type="hidden" name="discount" value="0">
+
+
+      <hr>
+
       <!-- Hidden booking details forwarded to booking_submit.php -->
       <input type="hidden" name="room_id" value="<?= htmlspecialchars($booking['room_id']) ?>">
       <input type="hidden" name="checkin" value="<?= htmlspecialchars($booking['checkin']) ?>">
       <input type="hidden" name="checkout" value="<?= htmlspecialchars($booking['checkout']) ?>">
       <input type="hidden" name="total_price" value="<?= htmlspecialchars($totalPrice) ?>">
+      <input type="hidden" name="beds" value="<?= htmlspecialchars($extraBeds) ?>">
 
       <div class="price-details">
         <div class="row"><span>Room Rate (per night)</span><strong>₹<?= number_format($perNight,2) ?></strong></div>
         <div class="row"><span>Nights</span><strong><?= $nights ?></strong></div>
-        <div class="row"><span>Taxes & Fees</span><strong>₹<?= number_format($booking['tax_fee'],2) ?></strong></div>
-        <div class="row total"><span>Total:</span><strong>₹<?= number_format($totalPrice,2) ?></strong></div>
+        <div class="row"><span>Extra Beds</span><strong><?= $extraBeds ?> × ₹100</strong></div>
+<div class="row"><span>Discount</span><strong>₹0.00</strong></div>
+<div class="row total"><span>Total:</span><strong>₹<?= number_format($totalPrice,2) ?></strong></div>
+
+        
       </div>
 
       <button type="submit" class="book-btn2">Submit & Pay</button>
@@ -149,6 +178,164 @@ $_SESSION['booking']['total_price'] = $totalPrice;
   </form>
 </div>
 
-<footer class="footer"> ... </footer>
+<!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+
+            <!-- About -->
+            <div class="footer-col">
+                <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
+                <p>
+                    Experience luxury and comfort in our premium rooms with exceptional hospitality and modern
+                    amenities.
+                </p>
+                <div class="social-icons">
+                    <a href="#">🌐</a>
+
+                    <a href="#">📘</a>
+                    <a href="#">🐦</a>
+                    <a href="#">📸</a>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Our Rooms</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                    
+                </ul>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="footer-col">
+                <h4>Contact Info</h4>
+                <ul>
+                    <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
+                    <li>📞 +91 98765 43210</li>
+                    <li>✉️ info@shaktibhuvan.com</li>
+                </ul>
+            </div>
+
+            <!-- Services -->
+            <div class="footer-col">
+                <h4>Services</h4>
+                <ul>
+                    <li>24/7 Room Service</li>
+                    <li>Free Wi-Fi</li>
+                    <li>Airport Pickup</li>
+                    <li>Laundry Service</li>
+                    <li>Concierge</li>
+                </ul>
+            </div>
+
+        </div>
+
+        <!-- Bottom -->
+        <div class="footer-bottom">
+            <p>© 2024 Shakti Bhuvan. All rights reserved.</p>
+            <div>
+                <a href="#">Privacy Policy</a> |
+                <a href="#">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const bedsInput = document.querySelector("input[name='beds']");
+    const couponInput = document.querySelector("input[name='coupon']");
+    const applyCouponBtn = document.querySelector("#applyCouponBtn");
+    const couponMessage = document.querySelector("#couponMessage");
+
+    const totalPriceField = document.querySelector(".row.total strong");
+    const extraBedRow = document.querySelector(".row:nth-child(3) strong"); 
+    const discountRow = document.querySelector(".row:nth-child(4) strong"); 
+
+    const hiddenTotal = document.querySelector("input[name='total_price']");
+    const hiddenBeds = document.querySelector("input[name='beds']");
+    const hiddenDiscount = document.querySelector("input[name='discount']");
+
+    // Values from PHP
+    const perNight = <?= $perNight ?>;
+    const nights = <?= $nights ?>;
+    const taxFee = <?= $booking['tax_fee'] ?>;
+
+    let discountValue = 0;
+    let discountPercent = 0;
+
+    function updateTotal() {
+        let beds = parseInt(bedsInput.value) || 0;
+        let baseTotal = (perNight * nights) + taxFee + (beds * 100);
+
+        discountValue = (discountPercent / 100) * baseTotal;
+        let finalTotal = baseTotal - discountValue;
+
+        // Update DOM
+        extraBedRow.textContent = beds + " × ₹100";
+        discountRow.textContent = "₹" + discountValue.toLocaleString("en-IN", {minimumFractionDigits: 2});
+        totalPriceField.textContent = "₹" + finalTotal.toLocaleString("en-IN", {minimumFractionDigits: 2});
+
+        // Update hidden fields
+        hiddenTotal.value = finalTotal;
+        hiddenBeds.value = beds;
+        hiddenDiscount.value = discountValue;
+    }
+
+    // Beds update
+    bedsInput.addEventListener("input", updateTotal);
+
+    const addBedBtn = document.querySelector("button[name='addBedBtn']");
+    if (addBedBtn) {
+        addBedBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            bedsInput.value = (parseInt(bedsInput.value) || 0) + 1;
+            updateTotal();
+        });
+    }
+
+    // Coupon Apply (AJAX call)
+    applyCouponBtn.addEventListener("click", function() {
+        let code = couponInput.value.trim();
+        if (!code) {
+            couponMessage.textContent = "Please enter a coupon code";
+            return;
+        }
+
+        fetch("apply_coupon.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: "code=" + encodeURIComponent(code)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                discountPercent = data.discount_percent;
+                couponMessage.style.color = "green";
+                couponMessage.textContent = "Coupon applied: " + discountPercent + "% off";
+            } else {
+                discountPercent = 0;
+                couponMessage.style.color = "red";
+                couponMessage.textContent = data.message;
+            }
+            updateTotal();
+        })
+        .catch(() => {
+            couponMessage.style.color = "red";
+            couponMessage.textContent = "Error applying coupon";
+        });
+    });
+
+    // Initial calculation
+    updateTotal();
+});
+</script>
+
+
+
+
+
 </body>
 </html>
