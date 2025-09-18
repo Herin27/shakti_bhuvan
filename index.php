@@ -111,6 +111,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
             <a href="index.php" class="active">Home</a>
             <a href="rooms.php">Rooms</a>
             <a href="contact.php">Contact</a>
+            <a href="admin.php">admin</a>
         </nav>
 
         <div class="contact-info">

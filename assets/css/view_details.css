@@ -287,6 +287,10 @@ ul li::before {
   font-size: 1.2rem;
 }
 
+.social-icons a:hover {
+  text-decoration: none;
+}
+
 /* Footer Bottom */
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
@@ -420,6 +424,10 @@ ul li::before {
   opacity: 0.9;
 }
 
+
+.social-icons a:hover {
+  text-decoration: none;
+}
 .note {
   font-size: 12px;
   color: #888;

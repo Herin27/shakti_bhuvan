@@ -101,6 +101,9 @@
     background-color: #d4b85f;
 }
 
+.social-icons a:hover {
+  text-decoration: none;
+}
 
 /* ===========================
    Responsive Design

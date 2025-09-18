@@ -263,11 +263,11 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
         <!-- Dashboard Section -->
         <div class="topbar">
             <input type="text" placeholder="Search bookings, rooms, customers...">
-            <div class="icons">
+            <!-- <div class="icons">
                 <span>🔔</span>
                 <span>⚙️</span>
                 <div class="profile">AD</div>
-            </div>
+            </div> -->
         </div>
         <section id="forms" class="section container my-5">
   <div class="text-center mb-5">
@@ -355,10 +355,10 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
                 <div class="charts container my-5">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="chart-box p-3 bg-white shadow rounded">
+                            <!-- <div class="chart-box p-3 bg-white shadow rounded">
                                 <h3>Monthly Revenue</h3>
                                 <canvas id="revenueChart"></canvas>
-                            </div>
+                            </div> -->
                         </div>
                         <!-- <div class="col-md-6">
       <div class="chart-box p-3 bg-white shadow rounded">

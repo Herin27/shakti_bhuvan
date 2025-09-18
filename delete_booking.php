@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "DELETE FROM bookings WHERE id = $id";
 
     if ($conn->query($sql) === TRUE) {
-        header("Location: booking_list.php?msg=deleted");
+        header("Location: ./admin_deshboard.php");
         exit();
     } else {
         echo "Error deleting record: " . $conn->error;

@@ -52,6 +52,10 @@
   font-size: 1.2rem;
 }
 
+.social-icons a:hover {
+  text-decoration: none;
+}
+
 /* Footer Bottom */
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.2);
