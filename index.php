@@ -1,20 +1,5 @@
 <?php
 // Database connection
-// include 'db.php'; // Include the database connection file
-// $result = $conn->query("SELECT background_image FROM hero_section LIMIT 1");
-// $row = $result->fetch_assoc();
-// $bgImage = $row ? $row['background_image'] : 'uploads/default.jpg'; // fallback image
-
-// Fetch all images from hero_section
-// $result = $conn->query("SELECT background_image FROM hero_section");
-// $images = [];
-
-// while ($row = $result->fetch_assoc()) {
-//     $images[] = $row['background_image'];
-// }
-
-
-// Database connection
 include 'db.php'; 
 
 // Fetch all hero images
@@ -350,10 +335,9 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">Our Rooms</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="rooms.php">Our Rooms</a></li>
+                    <li><a href="contact.php">Contact Us</a></li>
                 </ul>
             </div>
 

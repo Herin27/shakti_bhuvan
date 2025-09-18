@@ -95,11 +95,27 @@ $_SESSION['booking']['total_price'] = $totalPrice;
 </style>
 <body>
 <header class="navbar">
-  <div class="logo"><div class="logo-icon">
+    <div class="logo">
+        <div class="logo-icon">
             <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
-        </div><div class="logo-text"><h1>Shakti Bhuvan</h1><span>Premium Stays</span></div></div>
-  <nav class="nav-links"><a href="index.php">Home</a><a href="rooms.php" class="active">Rooms</a><a href="contact.php">Contact</a></nav>
-  <div class="contact-info"><span>+91 98765 43210</span><span>info@shaktibhuvan.com</span><a href="booking.php" class="book-btn">Book Now</a></div>
+        </div>
+        <div class="logo-text">
+            <h1>Shakti Bhuvan</h1>
+            <span>Premium Stays</span>
+        </div>
+    </div>
+
+    <nav class="nav-links">
+        <a href="index.php" >Home</a>
+        <a href="rooms.php">Rooms</a>
+        <a href="contact.php"class="active">Contact</a>
+    </nav>
+
+    <div class="contact-info">
+            <span><i class="fas fa-phone"></i> +91 98765 43210</span>
+            <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
+            <a href="rooms.php" class="book-btn">Book Now</a>
+        </div>
 </header>
 
 <div class="container">
@@ -202,10 +218,9 @@ $_SESSION['booking']['total_price'] = $totalPrice;
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">Our Rooms</a></li>
-                    <li><a href="#">Contact Us</a></li>
-                    
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="rooms.php">Our Rooms</a></li>
+                    <li><a href="contact.php">Contact Us</a></li>
                 </ul>
             </div>
 

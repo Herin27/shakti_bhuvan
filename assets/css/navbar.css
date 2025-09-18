@@ -29,7 +29,12 @@
     align-items: center;
     justify-content: center;
 }
-
+.logo-icon img {
+    width: 60px;   /* adjust size */
+    height: auto;
+    border-radius: 50%; /* make circular if needed */
+    margin-right: 10px;
+}
 .logo-text h1 {
     font-size: 20px;
     margin: 0;

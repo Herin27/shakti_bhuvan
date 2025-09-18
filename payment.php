@@ -48,6 +48,13 @@ $orderId = $razorpayOrder['id']; // ✅ real Razorpay order_id
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/view_details.css">
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
 </head>
 <style>
@@ -61,26 +68,27 @@ $orderId = $razorpayOrder['id']; // ✅ real Razorpay order_id
 <body>
 
 <header class="navbar">
-  <div class="logo">
-    <div class="logo-icon">
+    <div class="logo">
+        <div class="logo-icon">
             <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
         </div>
-    <div class="logo-text">
-      <h1>Shakti Bhuvan</h1>
-      <span>Premium Stays</span>
+        <div class="logo-text">
+            <h1>Shakti Bhuvan</h1>
+            <span>Premium Stays</span>
+        </div>
     </div>
-  </div>
 
-  <nav class="nav-links">
-    <a href="index.php">Home</a>
-    <a href="rooms.php">Rooms</a>
-    <a href="contact.php">Contact</a>
-  </nav>
+    <nav class="nav-links">
+        <a href="index.php" >Home</a>
+        <a href="rooms.php">Rooms</a>
+        <a href="contact.php"class="active">Contact</a>
+    </nav>
 
-  <div class="contact-info">
-    <span>📞 +91 98765 43210</span>
-    <span>✉️ info@shaktibhuvan.com</span>
-  </div>
+    <div class="contact-info">
+            <span><i class="fas fa-phone"></i> +91 98765 43210</span>
+            <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
+            <a href="rooms.php" class="book-btn">Book Now</a>
+        </div>
 </header>
 
 <div class="container">
@@ -133,10 +141,10 @@ $orderId = $razorpayOrder['id']; // ✅ real Razorpay order_id
     <div class="footer-col">
       <h4>Quick Links</h4>
       <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Our Rooms</a></li>
-        <li><a href="#">Contact Us</a></li>
-      </ul>
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="rooms.php">Our Rooms</a></li>
+                    <li><a href="contact.php">Contact Us</a></li>
+                </ul>
     </div>
     <div class="footer-col">
       <h4>Contact Info</h4>

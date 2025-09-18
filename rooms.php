@@ -15,10 +15,23 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
   <link rel="stylesheet" href="./assets/css/navbar.css">
   <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
 </head>
+<style>
+  .logo-icon1 {
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
 <body>
 <header class="navbar">
     <div class="logo">
-        <div class="logo-icon">
+        <div class="logo-icon1">
             <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
         </div>
         <div class="logo-text">
@@ -29,7 +42,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
 
     <nav class="nav-links">
         <a href="index.php">Home</a>
-        <a href="/rooms.php" class="active">Rooms</a>
+        <a href="rooms.php" class="active">Rooms</a>
         <a href="contact.php">Contact</a>
     </nav>
 
@@ -119,11 +132,10 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
     <div class="footer-col">
       <h4>Quick Links</h4>
       <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Our Rooms</a></li>
-        <li><a href="#">Contact Us</a></li>
-        <!--  -->
-      </ul>
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="rooms.php">Our Rooms</a></li>
+                    <li><a href="contact.php">Contact Us</a></li>
+                </ul>
     </div>
 
     <!-- Contact Info -->

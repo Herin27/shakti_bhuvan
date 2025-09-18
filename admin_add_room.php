@@ -236,10 +236,10 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     <div class="footer-col">
       <h4>Quick Links</h4>
       <ul>
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Our Rooms</a></li>
-        <li><a href="#">Contact Us</a></li>
-      </ul>
+                    <li><a href="index.php">Home</a></li>
+                    <li><a href="rooms.php">Our Rooms</a></li>
+                    <li><a href="contact.php">Contact Us</a></li>
+                </ul>
     </div>
     <div class="footer-col">
       <h4>Contact Info</h4>
