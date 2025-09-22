@@ -104,12 +104,13 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
             <h1>Shakti Bhuvan</h1>
             <span>Premium Stays</span>
         </div>
-</div>
+        </div>
 
 
         <nav class="nav-links">
             <a href="index.php" class="active">Home</a>
             <a href="rooms.php">Rooms</a>
+            <a href="gallery.php">Gallery</a>
             <a href="contact.php">Contact</a>
             <a href="admin.php">admin</a>
         </nav>

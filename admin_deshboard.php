@@ -250,12 +250,12 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
             <li class="menu-item" data-section="rooms">Manage Rooms</li>
             <li class="menu-item" data-section="bookings">Bookings</li>
             <li class="menu-item" data-section="customers">Customers</li>
-            <li class="menu-item" data-section="payments">Payments</li>
+            <!-- <li class="menu-item" data-section="payments">Payments</li> -->
             <li class="menu-item" data-section="forms">Forms</li>
             <!-- <li class="menu-item" data-section="reviews">Reviews</li> -->
             <!-- <li class="menu-item" data-section="settings">Settings</li> -->
         </ul>
-        <a href="admin_login.php" class="logout">⏻ Logout</a>
+        <a href="admin.php" class="logout">⏻ Logout</a>
     </aside>
 
     <!-- Main Content -->
@@ -277,7 +277,7 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
 
   <div class="row g-4 justify-content-center">
     <!-- Add Slider Button -->
-    <div class="col-md-5">
+    <div class="col-md-4">
       <div class="card shadow-sm border-0 h-100 text-center p-4">
         <div class="mb-3">
           <i class="bi bi-images fs-1 text-primary"></i>
@@ -289,7 +289,7 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
     </div>
 
     <!-- Add Room Button -->
-    <div class="col-md-5">
+    <div class="col-md-4">
       <div class="card shadow-sm border-0 h-100 text-center p-4">
         <div class="mb-3">
           <i class="bi bi-house-door-fill fs-1 text-success"></i>
@@ -297,6 +297,18 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
         <h5 class="card-title">Add Room</h5>
         <p class="card-text text-muted">Add room details like type, price, and availability.</p>
         <a href="admin_add_room.php" class="btn btn-success w-100">Go to Add Room</a>
+      </div>
+    </div>
+
+    <!-- Add Gallery Image Button -->
+    <div class="col-md-4">
+      <div class="card shadow-sm border-0 h-100 text-center p-4">
+        <div class="mb-3">
+          <i class="bi bi-collection fs-1 text-warning"></i>
+        </div>
+        <h5 class="card-title">Add Gallery Images</h5>
+        <p class="card-text text-muted">Upload and manage images for the gallery.</p>
+        <a href="admin_gallery.php" class="btn btn-warning w-100">Go to Add Gallery</a>
       </div>
     </div>
   </div>
