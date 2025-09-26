@@ -30,28 +30,31 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
 </style>
 <body>
 <header class="navbar">
-    <div class="logo">
-        <div class="logo-icon1">
+        <div class="logo">
+        <div class="logo-icon">
             <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
         </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>
             <span>Premium Stays</span>
         </div>
-    </div>
+        </div>
 
-    <nav class="nav-links">
-        <a href="index.php">Home</a>
-        <a href="rooms.php" class="active">Rooms</a>
-        <a href="contact.php">Contact</a>
-    </nav>
 
-    <div class="contact-info">
-        <span><i class="fas fa-phone"></i> +91 98765 43210</span>
-        <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
-        <a href="rooms.php" class="book-btn">Book Now</a>
-    </div>
-</header>
+        <nav class="nav-links">
+            <a href="index.php" >Home</a>
+            <a href="rooms.php"class="active">Rooms</a>
+            <a href="gallery.php">Gallery</a>
+            <a href="contact.php">Contact</a>
+            <a href="admin.php">admin</a>
+        </nav>
+
+        <div class="contact-info">
+            <span><i class="fas fa-phone"></i> +91 98765 43210</span>
+            <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
+            <a href="rooms.php" class="book-btn">Book Now</a>
+        </div>
+    </header>
 <!-- ===== Search Bar Section ===== -->
 <section class="search-section">
   <h2>Our Rooms & Suites</h2>
@@ -120,11 +123,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
         Experience luxury and comfort in our premium rooms with exceptional hospitality and modern amenities.
       </p>
       <div class="social-icons">
-        <a href="#">🌐</a>
         
-        <a href="#">📘</a>
-        <a href="#">🐦</a>
-        <a href="#">📸</a>
       </div>
     </div>
 
@@ -164,7 +163,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
 
   <!-- Bottom -->
   <div class="footer-bottom">
-    <p>© 2024 Shakti Bhuvan. All rights reserved.</p>
+    <p>© 2025 Shakti Bhuvan. All rights reserved.</p>
     <div>
       <a href="#">Privacy Policy</a> | 
       <a href="#">Terms of Service</a>

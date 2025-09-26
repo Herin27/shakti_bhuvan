@@ -9,7 +9,7 @@
 </head>
 <body>
   <header class="navbar">
-    <div class="logo">
+        <div class="logo">
         <div class="logo-icon">
             <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
         </div>
@@ -17,19 +17,22 @@
             <h1>Shakti Bhuvan</h1>
             <span>Premium Stays</span>
         </div>
-    </div>
+        </div>
 
-    <nav class="nav-links">
-        <a href="index.php" class="active">Home</a>
-        <a href="rooms.php">Rooms</a>
-        <a href="contact.php">Contact</a>
-    </nav>
 
-    <div class="contact-info">
-        <span><i class="fas fa-phone"></i> +91 98765 43210</span>
-        <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
-        <a href="rooms.php" class="book-btn">Book Now</a>
-    </div>
-</header>
+        <nav class="nav-links">
+            <a href="index.php" class="active">Home</a>
+            <a href="rooms.php">Rooms</a>
+            <a href="gallery.php">Gallery</a>
+            <a href="contact.php">Contact</a>
+            <a href="admin.php">admin</a>
+        </nav>
+
+        <div class="contact-info">
+            <span><i class="fas fa-phone"></i> +91 98765 43210</span>
+            <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
+            <a href="rooms.php" class="book-btn">Book Now</a>
+        </div>
+    </header>
 </body>
 </html>

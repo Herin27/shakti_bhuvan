@@ -257,7 +257,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     </div>
   </div>
   <div class="footer-bottom">
-    <p>© 2024 Shakti Bhuvan. All rights reserved.</p>
+    <p>© 2025 Shakti Bhuvan. All rights reserved.</p>
   </div>
 </footer>
 

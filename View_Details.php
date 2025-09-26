@@ -202,7 +202,7 @@ $taxFee = 500; // same tax as earlier
 
         <!-- Bottom -->
         <div class="footer-bottom">
-            <p>© 2024 Shakti Bhuvan. All rights reserved.</p>
+            <p>© 2025Shakti Bhuvan. All rights reserved.</p>
             <div>
                 <a href="#">Privacy Policy</a> |
                 <a href="#">Terms of Service</a>

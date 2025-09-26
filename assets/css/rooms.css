@@ -1,11 +1,11 @@
 * { box-sizing: border-box; }
-img, video { max-width: 100%; height: auto; display: block; }
+/* img, video { max-width: 100%; height: auto; display: block; } */
 
 /* Prevent horizontal scroll on small screens */
 html, body { overflow-x: hidden; }
 
 /* Make edge sections breathe on small screens */
-.navbar,
+
 .footer-container,
 .footer-bottom,
 .room-container { padding-left: 16px; padding-right: 16px; }
@@ -50,7 +50,12 @@ h2 {
   margin-bottom: 20px;
 }
 
-
+.logo-icon img {
+    width: 60px;   /* adjust size */
+    height: auto;
+    border-radius: 50%; /* make circular if needed */
+    margin-right: 10px;
+}
 
 /* Search Box */
 .search-box {

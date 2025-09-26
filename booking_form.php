@@ -250,7 +250,7 @@ $_SESSION['booking']['total_price'] = $totalPrice;
 
         <!-- Bottom -->
         <div class="footer-bottom">
-            <p>© 2024 Shakti Bhuvan. All rights reserved.</p>
+            <p>© 2025 Shakti Bhuvan. All rights reserved.</p>
             <div>
                 <a href="#">Privacy Policy</a> |
                 <a href="#">Terms of Service</a>

@@ -417,89 +417,205 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
             </div>
 
             <!-- ✅ Room Inventory Table -->
-            <div class="card shadow border-0 rounded p-4">
-                <h2 class="mb-4">Room Inventory</h2>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Room ID</th>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Price/Night</th>
-                                <th>Capacity</th>
-                                <th>Amenities</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($roomsData)): ?>
-                            <?php foreach ($roomsData as $room): ?>
-                            <tr>
-                                <td>RM<?= str_pad($room['id'], 3, "0", STR_PAD_LEFT) ?></td>
-                                <td><?= htmlspecialchars($room['name']) ?></td>
-                                <td><?= $room['bed_type'] ?></td>
-                                <td>₹<?= number_format($room['price'], 2) ?></td>
-                                <td><?= $room['guests'] ?> Guests</td>
-                                <td>
-                                    <?php 
-                $amenities = explode(",", $room['amenities']);
-                foreach ($amenities as $a) {
-                    echo '<span class="badge bg-light text-dark me-1">'.trim($a).'</span>';
-                }
-                ?>
-                                </td>
-                                <td>
-                                    <?php if ($room['status'] == 'Available'): ?>
-                                    <span class="badge bg-success">Available</span>
-                                    <?php elseif ($room['status'] == 'Occupied'): ?>
-                                    <span class="badge bg-warning text-dark">Occupied</span>
-                                    <?php else: ?>
-                                    <span class="badge bg-danger">Maintenance</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <!-- ✅ Actions Dropdown (hidden until click) -->
-                                    <div class="dropdown text-end">
-                                        <button class="btn btn-light btn-sm rounded-circle" type="button"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-three-dots-vertical"></i>
+<div class="card shadow border-0 rounded p-4">
+    <h2 class="mb-4">Room Inventory</h2>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Room ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Price/Night</th>
+                    <th>Capacity</th>
+                    <th>Amenities</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($roomsData)): ?>
+                <?php foreach ($roomsData as $room): ?>
+                <tr id="roomRow<?= $room['id'] ?>">
+                    <td>RM<?= str_pad($room['id'], 3, "0", STR_PAD_LEFT) ?></td>
+                    <td class="room-name"><?= htmlspecialchars($room['name']) ?></td>
+                    <td class="room-type"><?= $room['bed_type'] ?></td>
+                    <td class="room-price">₹<?= number_format($room['price'], 2) ?></td>
+                    <td class="room-capacity"><?= $room['guests'] ?> Guests</td>
+                    <td class="room-amenities">
+                        <?php 
+                        $amenities = explode(",", $room['amenities']);
+                        foreach ($amenities as $a) {
+                            echo '<span class="badge bg-light text-dark me-1">'.trim($a).'</span>';
+                        }
+                        ?>
+                    </td>
+                    <td class="room-status">
+                        <?php if ($room['status'] == 'Available'): ?>
+                        <span class="badge bg-success">Available</span>
+                        <?php elseif ($room['status'] == 'Occupied'): ?>
+                        <span class="badge bg-warning text-dark">Occupied</span>
+                        <?php else: ?>
+                        <span class="badge bg-danger">Maintenance</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <div class="dropdown text-end">
+                            <button class="btn btn-light btn-sm rounded-circle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li>
+                                    <a class="dropdown-item" href="view_details.php?id=<?= $room['id'] ?>">
+                                        <i class="bi bi-eye me-2"></i> View Details
+                                    </a>
+                                </li>
+                                <li>
+                                    <!-- ✅ Open Modal Instead of New Page -->
+                                    <button class="dropdown-item editRoomBtn"
+                                        data-id="<?= $room['id'] ?>"
+                                        data-name="<?= htmlspecialchars($room['name']) ?>"
+                                        data-type="<?= $room['bed_type'] ?>"
+                                        data-price="<?= $room['price'] ?>"
+                                        data-capacity="<?= $room['guests'] ?>"
+                                        data-amenities="<?= $room['amenities'] ?>"
+                                        data-status="<?= $room['status'] ?>">
+                                        <i class="bi bi-pencil-square me-2"></i> Edit Room
+                                    </button>
+                                </li>
+                                <li>
+                                    <form action="delete_room.php" method="POST"
+                                        onsubmit="return confirm('Are you sure you want to delete this room?');">
+                                        <input type="hidden" name="room_id" value="<?= $room['id'] ?>">
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <i class="bi bi-trash me-2"></i> Delete Room
                                         </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                            <li>
-                                                <a class="dropdown-item" href="view_details.php?id=<?= $room['id'] ?>">
-                                                    <i class="bi bi-eye me-2"></i> View Details
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="edit_room.php?id=<?= $room['id'] ?>">
-                                                    <i class="bi bi-pencil-square me-2"></i> Edit Room
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <form action="delete_room.php" method="POST"
-                                                    onsubmit="return confirm('Are you sure you want to delete this room?');">
-                                                    <input type="hidden" name="room_id" value="<?= $room['id'] ?>">
-                                                    <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="bi bi-trash me-2"></i> Delete Room
-                                                    </button>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                            <?php else: ?>
-                            <tr>
-                                <td colspan="8" class="text-center">No rooms found</td>
-                            </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+                <?php else: ?>
+                <tr>
+                    <td colspan="8" class="text-center">No rooms found</td>
+                </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ✅ Edit Room Modal -->
+<div class="modal fade" id="editRoomModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="editRoomForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Room</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-            </div>
+                <div class="modal-body">
+                    <input type="hidden" name="room_id" id="editRoomId">
+
+                    <div class="mb-3">
+                        <label class="form-label">Room Name</label>
+                        <input type="text" class="form-control" name="name" id="editRoomName" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bed Type</label>
+                        <input type="text" class="form-control" name="type" id="editRoomType" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Price/Night</label>
+                        <input type="number" class="form-control" name="price" id="editRoomPrice" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Capacity</label>
+                        <input type="number" class="form-control" name="capacity" id="editRoomCapacity" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Amenities (comma separated)</label>
+                        <input type="text" class="form-control" name="amenities" id="editRoomAmenities">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" name="status" id="editRoomStatus">
+                            <option value="Available">Available</option>
+                            <option value="Occupied">Occupied</option>
+                            <option value="Maintenance">Maintenance</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ JavaScript -->
+ 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const editBtns = document.querySelectorAll(".editRoomBtn");
+    const modal = new bootstrap.Modal(document.getElementById("editRoomModal"));
+
+    editBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.getElementById("editRoomId").value = btn.dataset.id;
+            document.getElementById("editRoomName").value = btn.dataset.name;
+            document.getElementById("editRoomType").value = btn.dataset.type;
+            document.getElementById("editRoomPrice").value = btn.dataset.price;
+            document.getElementById("editRoomCapacity").value = btn.dataset.capacity;
+            document.getElementById("editRoomAmenities").value = btn.dataset.amenities;
+            document.getElementById("editRoomStatus").value = btn.dataset.status;
+
+            modal.show();
+        });
+    });
+
+    // ✅ AJAX form submit
+    document.getElementById("editRoomForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        fetch("update_room.php", {
+            method: "POST",
+            body: new FormData(this)
+        })
+        .then(async res => {
+            try {
+                return await res.json();
+            } catch (err) {
+                throw new Error("Invalid JSON response. Maybe PHP error in update_room.php");
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                alert("Room updated successfully!");
+                location.reload();
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error("Fetch error:", err);
+            alert("Something went wrong. Check console.");
+        });
+    });
+});
+</script>
+
+
 
 
         </section>

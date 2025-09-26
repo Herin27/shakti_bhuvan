@@ -129,7 +129,7 @@
     </div>
     <!-- Bottom -->
     <div class="footer-bottom">
-      <p>© 2024 MyHotel. All rights reserved.</p>
+      <p>© 2025 MyHotel. All rights reserved.</p>
       <div>
         <a href="#">Privacy Policy</a> | 
         <a href="#">Terms of Service</a>

@@ -85,12 +85,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
     cursor: pointer;
 }
 
-.logo-icon img {
-    width: 60px;   /* adjust size */
-    height: auto;
-    border-radius: 50%; /* make circular if needed */
-    margin-right: 10px;
-}
+
 
 </style>
 
@@ -258,7 +253,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
                     <div class="user-icon">♡</div>
                     <div>
                         <h4>Priya Sharma</h4>
-                        <span class="location">📍 Mumbai</span>
+                        <span class="location">📍 ahmedabad</span>
                     </div>
                 </div>
             </div>
@@ -276,7 +271,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
                     <div class="user-icon">♡</div>
                     <div>
                         <h4>Rajesh Kumar</h4>
-                        <span class="location">📍 Delhi</span>
+                        <span class="location">📍 mahesana</span>
                     </div>
                 </div>
             </div>
@@ -294,7 +289,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
                     <div class="user-icon">♡</div>
                     <div>
                         <h4>Anita Patel</h4>
-                        <span class="location">📍 Pune</span>
+                        <span class="location">📍 porbandar</span>
                     </div>
                 </div>
             </div>
@@ -369,7 +364,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
 
         <!-- Bottom -->
         <div class="footer-bottom">
-            <p>© 2024 Shakti Bhuvan. All rights reserved.</p>
+            <p>© 2025 Shakti Bhuvan. All rights reserved.</p>
             <div>
                 <a href="#">Privacy Policy</a> |
                 <a href="#">Terms of Service</a>
