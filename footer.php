@@ -112,7 +112,7 @@
       <ul>
         <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
         <li>📞 +91 98765 43210</li>
-        <li>✉️ herin7151@gmail.com </li>
+        <li>✉️ info@shaktibhuvan.com </li>
       </ul>
     </div>
     <!-- Services -->

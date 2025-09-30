@@ -8,7 +8,9 @@ $images = [];
 while ($row = $result->fetch_assoc()) {
     $images[] = $row['background_image'];
 }
-$result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
+
+// Fetch top 3 rooms
+$result_rooms = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
 ?>
 
 <!DOCTYPE html>
@@ -85,7 +87,48 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
     cursor: pointer;
 }
 
-
+.hero-section {
+  position: relative;
+  height: 80vh;
+  color: #fff;
+  overflow: hidden;
+}
+.hero-slider {
+  position: absolute;
+  top:0; left:0; width:100%; height:100%;
+}
+.hero-slider .slide {
+  position: absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+.hero-slider .slide.active {
+  opacity: 1;
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.hero-section::after {
+  content:"";
+  position:absolute;
+  top:0; left:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.4);
+  z-index:1;
+}
+.hero-buttons{
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
 
 </style>
 
@@ -118,15 +161,33 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
     </header>
 
     <div class="hero-section" id="hero-section">
+    <!-- Slider Images -->
+    <div class="hero-slider">
+        <?php if (!empty($images)): ?>
+            <?php foreach ($images as $index => $image): ?>
+                <div class="slide <?php echo $index === 0 ? 'active' : ''; ?>"
+                     style="background-image: url('<?php echo $image; ?>');"></div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="slide active" style="background-image: url('assets/images/default-hero.jpg');"></div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="hero-content">
         <h1>Welcome to <br><span style="color: #f1c45f;">Shakti Bhuvan</span></h1>
         <p>Experience luxury and comfort in our premium rooms with exceptional hospitality and modern amenities</p>
+
         <div class="hero-buttons">
-            <button class="explore-btn"><a href="rooms.php" style="color: #fff; text-decoration: none;">Explore
-                    Rooms</a></button>
-            <button class="contact-btn"><a href="contact.php" style="color: #fff; text-decoration: none;">Contact
-                    Us</a></button>
+            <button class="explore-btn">
+                <a href="rooms.php" style="color: #fff; text-decoration: none;">Explore Rooms</a>
+            </button>
+            <button class="contact-btn">
+                <a href="contact.php" style="color: #fff; text-decoration: none;">Contact Us</a>
+            </button>
         </div>
 
+        <!-- Search form -->
         <form action="search.php" method="POST">
             <div class="search-box">
                 <input type="date" name="checkin" required>
@@ -140,8 +201,21 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
                 <button type="submit">Search Rooms</button>
             </div>
         </form>
-
     </div>
+</div>
+<!-- Slider Script -->
+<script>
+let slides = document.querySelectorAll(".hero-slider .slide");
+let slideIndex = 0;
+function showNextSlide() {
+    slides[slideIndex].classList.remove("active");
+    slideIndex = (slideIndex + 1) % slides.length;
+    slides[slideIndex].classList.add("active");
+}
+if(slides.length > 1) {
+    setInterval(showNextSlide, 4000); // Change every 4 sec
+}
+</script>
 
     <section class="featured-rooms">
         <h2 class="section-title">Our Featured Rooms</h2>
@@ -150,43 +224,49 @@ $result = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
         </p>
 
         <div class="rooms-container">
+    <?php while($row = mysqli_fetch_assoc($result)): ?>
+        <?php 
+            // handle multiple images
+            $images = !empty($row['image']) ? explode(',', $row['image']) : [];
+            $firstImage = !empty($images[0]) ? trim($images[0]) : 'default.jpg'; // fallback if empty
+        ?>
+        <div class="room-card">
+            <!-- Room Image -->
+            <img src="uploads/<?php echo htmlspecialchars($firstImage); ?>" 
+                 alt="<?php echo htmlspecialchars($row['name']); ?>" 
+                 class="room-img">
 
-            <?php while($row = mysqli_fetch_assoc($result)): ?>
-            <div class="room-card">
-                <!-- Room Image -->
-                <img src="uploads/<?php echo $row['image']; ?>" alt="<?php echo $row['name']; ?>" class="room-img">
+            <div class="room-content">
+                <!-- Room Title + Rating -->
+                <div class="room-header">
+                    <h3><?php echo htmlspecialchars($row['name']); ?></h3>
+                    <span class="rating">⭐ <?php echo htmlspecialchars($row['rating']); ?></span>
+                </div>
 
-                <div class="room-content">
-                    <!-- Room Title + Rating -->
-                    <div class="room-header">
-                        <h3><?php echo $row['name']; ?></h3>
-                        <span class="rating">⭐ <?php echo $row['rating']; ?></span>
-                    </div>
+                <!-- Room Description -->
+                <p class="room-desc">
+                    <?php echo htmlspecialchars(substr($row['description'], 0, 70)); ?>...
+                </p>
 
-                    <!-- Room Description -->
-                    <p class="room-desc">
-                        <?php echo substr($row['description'], 0, 70); ?>...
-                    </p>
+                <!-- Amenities -->
+                <div class="features">
+                    <?php 
+                    $amenities = !empty($row['amenities']) ? explode(',', $row['amenities']) : [];
+                    foreach($amenities as $amenity): ?>
+                        <span class="tag"><?php echo htmlspecialchars(trim($amenity)); ?></span>
+                    <?php endforeach; ?>
+                </div>
 
-                    <!-- Amenities (tags like your design) -->
-                    <div class="features">
-                        <?php 
-          $amenities = !empty($row['amenities']) ? explode(',', $row['amenities']) : [];
-          foreach($amenities as $amenity): ?>
-                        <span class="tag"><?php echo trim($amenity); ?></span>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <!-- Price + Button -->
-                    <div class="room-footer">
-                        <span class="price">₹<?php echo $row['price']; ?><small>/night</small></span>
-                        <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="btn">View Details</a>
-                    </div>
+                <!-- Price + Button -->
+                <div class="room-footer">
+                    <span class="price">₹<?php echo htmlspecialchars($row['price']); ?><small>/night</small></span>
+                    <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="btn">View Details</a>
                 </div>
             </div>
-            <?php endwhile; ?>
-
         </div>
+    <?php endwhile; ?>
+</div>
+
 
         <div class="view-all">
             <button>View All Rooms</button>

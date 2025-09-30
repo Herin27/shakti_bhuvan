@@ -16,7 +16,8 @@ if(!$room){
 // ensure numeric values
 $roomPrice = (float)$room['price'];
 $discountPrice = (float)$room['discount_price'];
-$taxFee = 500; // same tax as earlier
+$taxFee = 500; // tax fee
+$images = array_filter(array_map('trim', explode(',', $room['image'])));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -28,24 +29,22 @@ $taxFee = 500; // same tax as earlier
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/view_details.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
   <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
+
+  <style>
+    .logo-icon img { width: 60px; height: auto; border-radius: 50%; margin-right: 10px; }
+
+    /* Slider styles */
+    .room-slider { position: relative; max-width: 900px; height: 370px; margin-bottom: 20px; overflow: hidden; border-radius: 8px; }
+    .slider-wrapper { display: flex; transition: transform 0.4s ease-in-out; }
+    .slider-wrapper img { width: 100%; flex-shrink: 0; object-fit: cover; border-radius: 8px; height: 350px; }
+    .slider-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px 14px; cursor: pointer; border-radius: 50%; font-size: 20px; }
+    .slider-btn.prev { left: 10px; }
+    .slider-btn.next { right: 10px; }
+  </style>
 </head>
-<style>
-    .logo-icon img {
-    width: 60px;   /* adjust size */
-    height: auto;
-    border-radius: 50%; /* make circular if needed */
-    margin-right: 10px;
-}
-</style>
 <body>
 
-<!-- your header (same as before) -->
 <header class="navbar">
     <div class="logo">
         <div class="logo-icon">
@@ -58,22 +57,34 @@ $taxFee = 500; // same tax as earlier
     </div>
 
     <nav class="nav-links">
-        <a href="index.php" >Home</a>
-        <a href="rooms.php">Rooms</a>
-        <a href="contact.php"class="active">Contact</a>
-    </nav>
+      <a href="index.php">Home</a>
+      <a href="rooms.php" class="active">Rooms</a>
+      <a href="gallery.php">Gallery</a>
+      <a href="contact.php">Contact</a>
+      <a href="admin.php">Admin</a>
+  </nav>
 
     <div class="contact-info">
-            <span><i class="fas fa-phone"></i> +91 98765 43210</span>
-            <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
-            <a href="rooms.php" class="book-btn">Book Now</a>
-        </div>
+        <span><i class="fas fa-phone"></i> +91 98765 43210</span>
+        <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
+        <a href="rooms.php" class="book-btn">Book Now</a>
+    </div>
 </header>
 
 <div class="container">
   <!-- Left: Room Info -->
   <div>
-    <div class="room-image"><img src="uploads/<?php echo htmlspecialchars($room['image']); ?>" alt="<?php echo htmlspecialchars($room['name']); ?>"></div>
+    <!-- Room Image Slider -->
+    <div class="room-slider">
+      <div class="slider-wrapper">
+        <?php foreach($images as $img): ?>
+          <img src="uploads/<?php echo htmlspecialchars($img); ?>" alt="<?php echo htmlspecialchars($room['name']); ?>">
+        <?php endforeach; ?>
+      </div>
+      <button class="slider-btn prev">&#10094;</button>
+      <button class="slider-btn next">&#10095;</button>
+    </div>
+
     <h1 class="room-title"><?php echo htmlspecialchars($room['name']); ?></h1>
     <div class="meta"><?php echo $room['size']; ?> • <?php echo $room['bed_type']; ?> • Up to <?php echo $room['guests']; ?> guests</div>
 
@@ -88,17 +99,15 @@ $taxFee = 500; // same tax as earlier
         <?php endforeach; ?>
       </ul>
     </div>
-    <!-- features & policies... (same as earlier) -->
   </div>
 
-  <!-- Right: Booking Box (dynamic date selection + price calc) -->
+  <!-- Right: Booking Box -->
   <form method="post" action="booking_form.php" id="bookNowForm">
     <input type="hidden" name="room_id" value="<?php echo $room['id']; ?>">
     <input type="hidden" name="room_name" value="<?php echo htmlspecialchars($room['name']); ?>">
     <input type="hidden" name="room_price" id="room_price" value="<?php echo $roomPrice; ?>">
     <input type="hidden" name="room_discount" id="room_discount" value="<?php echo $discountPrice; ?>">
     <input type="hidden" name="tax_fee" id="tax_fee" value="<?php echo $taxFee; ?>">
-
     <input type="hidden" name="checkin" id="checkin">
     <input type="hidden" name="checkout" id="checkout">
     <input type="hidden" name="nights" id="nights">
@@ -106,7 +115,6 @@ $taxFee = 500; // same tax as earlier
 
     <div class="booking-box">
       <h3><i class="fa fa-calendar"></i> Book Your Stay</h3>
-
       <div class="calendar-box">
         <label>Select Dates</label>
         <input type="text" id="dateRange" name="dateRange" placeholder="Select Dates">
@@ -132,11 +140,7 @@ $taxFee = 500; // same tax as earlier
         <hr>
         <div class="row total">
           <span>Total</span>
-          <strong id="totalPrice">₹<?php 
-              // default 1 night price shown
-              $defaultTotal = (($roomPrice - $discountPrice) * 1) + $taxFee;
-              echo number_format($defaultTotal,2);
-            ?></strong>
+          <strong id="totalPrice">₹<?php echo number_format((($roomPrice-$discountPrice)+$taxFee),2); ?></strong>
         </div>
       </div>
 
@@ -146,83 +150,39 @@ $taxFee = 500; // same tax as earlier
   </form>
 </div>
 
-<!-- Footer -->
-    <footer class="footer">
-        <div class="footer-container">
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-col">
+      <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
+      <p>Experience luxury and comfort in our premium rooms with exceptional hospitality and modern amenities.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.php">Home</a></li>
+        <li><a href="rooms.php">Our Rooms</a></li>
+        <li><a href="contact.php">Contact Us</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact Info</h4>
+      <ul>
+        <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
+        <li>📞 +91 98765 43210</li>
+        <li>✉️ info@shaktibhuvan.com</li>
+      </ul>
+    </div>
+  </div>
+</footer>
 
-            <!-- About -->
-            <div class="footer-col">
-                <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
-                <p>
-                    Experience luxury and comfort in our premium rooms with exceptional hospitality and modern
-                    amenities.
-                </p>
-                <div class="social-icons">
-                    <a href="#">🌐</a>
-
-                    <a href="#">📘</a>
-                    <a href="#">🐦</a>
-                    <a href="#">📸</a>
-                </div>
-            </div>
-
-            <!-- Quick Links -->
-            <div class="footer-col">
-                <h4>Quick Links</h4>
-                <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="rooms.php">Our Rooms</a></li>
-                    <li><a href="contact.php">Contact Us</a></li>
-                </ul>
-            </div>
-
-            <!-- Contact Info -->
-            <div class="footer-col">
-                <h4>Contact Info</h4>
-                <ul>
-                    <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
-                    <li>📞 +91 98765 43210</li>
-                    <li>✉️ info@shaktibhuvan.com</li>
-                </ul>
-            </div>
-
-            <!-- Services -->
-            <div class="footer-col">
-                <h4>Services</h4>
-                <ul>
-                    <li>24/7 Room Service</li>
-                    <li>Free Wi-Fi</li>
-                    <li>Airport Pickup</li>
-                    <li>Laundry Service</li>
-                    <li>Concierge</li>
-                </ul>
-            </div>
-
-        </div>
-
-        <!-- Bottom -->
-        <div class="footer-bottom">
-            <p>© 2025Shakti Bhuvan. All rights reserved.</p>
-            <div>
-                <a href="#">Privacy Policy</a> |
-                <a href="#">Terms of Service</a>
-            </div>
-        </div>
-    </footer>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-// Formatting helper
 const fmtINR = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
 
-// grab values from server (safe defaults)
 const roomPrice = parseFloat(document.getElementById('room_price').value) || 0;
 const roomDiscount = parseFloat(document.getElementById('room_discount').value) || 0;
 const taxFee = parseFloat(document.getElementById('tax_fee').value) || 0;
 
-const dateRangeEl = document.getElementById('dateRange');
 const checkinEl = document.getElementById('checkin');
 const checkoutEl = document.getElementById('checkout');
 const nightsEl = document.getElementById('nights');
@@ -271,13 +231,10 @@ flatpickr("#dateRange", {
     if (selectedDates.length === 2) {
       const ci = selectedDates[0];
       const co = selectedDates[1];
-
       checkinEl.value = ci.toISOString().split('T')[0];
       checkoutEl.value = co.toISOString().split('T')[0];
-
       updateTotals(ci, co);
     } else {
-      // reset
       checkinEl.value = '';
       checkoutEl.value = '';
       updateTotals(null, null);
@@ -285,7 +242,21 @@ flatpickr("#dateRange", {
   }
 });
 
-// initialize default totals for 1 night (no dates selected)
+// Slider JS
+const slider = document.querySelector('.room-slider');
+const wrapper = slider.querySelector('.slider-wrapper');
+const slides = wrapper.querySelectorAll('img');
+let index = 0;
+
+slider.querySelector('.next').addEventListener('click', () => {
+  index = (index + 1) % slides.length;
+  wrapper.style.transform = `translateX(-${index * 100}%)`;
+});
+slider.querySelector('.prev').addEventListener('click', () => {
+  index = (index - 1 + slides.length) % slides.length;
+  wrapper.style.transform = `translateX(-${index * 100}%)`;
+});
+
 updateTotals(null, null);
 </script>
 </body>

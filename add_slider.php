@@ -3,6 +3,8 @@
 include 'db.php';
 
 $message = "";
+
+// ✅ Handle file upload
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['bg_image'])) {
     $fileName = $_FILES['bg_image']['name'];
     $fileTmp = $_FILES['bg_image']['tmp_name'];
@@ -14,15 +16,38 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['bg_image'])) {
     }
 
     if (move_uploaded_file($fileTmp, $uploadPath)) {
-        $conn->query("TRUNCATE hero_section");
         $stmt = $conn->prepare("INSERT INTO hero_section (background_image) VALUES (?)");
         $stmt->bind_param("s", $uploadPath);
         $stmt->execute();
-        $message = "<p class='success'>✅ Background updated successfully!</p>";
+        $message = "<p class='success'>✅ Image uploaded successfully!</p>";
     } else {
         $message = "<p class='error'>❌ Image upload failed!</p>";
     }
 }
+
+// ✅ Handle delete request
+if (isset($_GET['delete_id'])) {
+    $deleteId = intval($_GET['delete_id']);
+
+    // Get file path from DB
+    $res = $conn->query("SELECT background_image FROM hero_section WHERE id = $deleteId");
+    if ($res && $res->num_rows > 0) {
+        $row = $res->fetch_assoc();
+        $filePath = $row['background_image'];
+
+        // Delete file from server
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+
+        // Delete from DB
+        $conn->query("DELETE FROM hero_section WHERE id = $deleteId");
+        $message = "<p class='success'>🗑️ Image deleted successfully!</p>";
+    }
+}
+
+// Fetch all images
+$result = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -31,108 +56,44 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['bg_image'])) {
   <title>Upload Background - Shakti Bhuvan</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/view_details.css"> <!-- Reuse same CSS -->
+  <link rel="stylesheet" href="./assets/css/view_details.css">
   <style>
-    /* Make page take full height */
-    html, body {
-      height: 100%;
-      margin: 0;
-      display: flex;
-      flex-direction: column;
-    }
+    html, body { height: 100%; margin: 0; display: flex; flex-direction: column; font-family: 'Inter', sans-serif; }
+    .navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 50px; background:#fdfbf6; }
+    .container { flex:1; }
 
-    .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 50px;
-    background-color: #fdfbf6;
-    width: 100%;
-    margin: 0 auto;
-
-}
-
-    /* Main content grows to push footer down */
-    .container {
-      flex: 1;
-    }
-
-    .upload-box {
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 30px;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    .upload-box h2 {
-      margin-bottom: 20px;
-      font-weight: 600;
-      text-align: center;
-    }
-    .upload-box input[type="file"] {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 20px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background: #f9f9f9;
-    }
-    .upload-box button {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      border: none;
-      border-radius: 8px;
-      background: #0077ff;
-      color: #fff;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-    .upload-box button:hover {
-      background: #005ec4;
-    }
+    /* Upload Section */
+    .upload-box { max-width: 600px; margin: 50px auto; padding: 35px; background: linear-gradient(135deg, #ffffff, #fdfbf6); border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); text-align: center; }
+    .upload-box h2 { margin-bottom: 20px; font-weight: 700; font-size: 22px; color: #333; }
+    .upload-box label { display: block; margin-bottom: 10px; font-weight: 600; color: #444; }
+    .upload-box input[type="file"] { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 10px; background: #fafafa; cursor: pointer; }
+    .upload-box button { width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border: none; border-radius: 10px; background: #0077ff; color: #fff; cursor: pointer; }
+    .upload-box button:hover { background: #005ec4; }
     .success { color: green; text-align:center; margin-bottom:15px; }
     .error { color: red; text-align:center; margin-bottom:15px; }
 
-    /* Footer always at bottom */
-    .footer {
-      
-      color: #fff;
-      padding: 20px 0;
+    /* Gallery Section */
+    .slider-gallery { max-width: 1100px; margin: 60px auto; padding: 30px; background: #fff; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .slider-gallery h3 { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 25px; color: #333; }
+    .slider-images { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
+    .slider-card { position: relative; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .slider-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; }
+    .delete-btn {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(255,0,0,0.8); color: #fff;
+      border: none; padding: 6px 10px;
+      border-radius: 6px; cursor: pointer;
+      font-size: 14px; font-weight: 600;
+      transition: background 0.3s ease;
     }
-    .footer-container {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      max-width: 1100px;
-      margin: auto;
-      padding: 0 20px;
-    }
-    .footer-col {
-      flex: 1;
-      min-width: 250px;
-      margin: 15px 0;
-    }
-    .footer-bottom {
-      text-align: center;
-      margin-top: 15px;
-      border-top: 1px solid rgba(255,255,255,0.2);
-      padding-top: 10px;
-    }
-    .footer a { color: #fff; text-decoration: none; }
-    .footer a:hover { text-decoration: underline; }
+    .delete-btn:hover { background: red; }
+    .logo-icon img { width:60px; height:auto; border-radius:50%; margin-right:10px; }
   </style>
 </head>
 <body>
 <header class="navbar">
   <div class="logo">
-    <div class="logo-icon">
-            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
-        </div>
+    <div class="logo-icon"><img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo"></div>
     <div class="logo-text">
       <h1>Shakti Bhuvan</h1>
       <span>Premium Stays</span>
@@ -160,6 +121,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['bg_image'])) {
       <button type="submit">Save Background</button>
     </form>
   </div>
+
+  <!-- Show all uploaded slider images -->
+  <div class="slider-gallery">
+    <h3>All Uploaded Slider Images</h3>
+    <div class="slider-images">
+      <?php while($row = $result->fetch_assoc()): ?>
+        <div class="slider-card">
+          <img src="<?= $row['background_image'] ?>" alt="Slider Image">
+          <a href="?delete_id=<?= $row['id'] ?>" onclick="return confirm('Are you sure you want to delete this image?')">
+            <button type="button" class="delete-btn">Delete</button>
+          </a>
+        </div>
+      <?php endwhile; ?>
+    </div>
+  </div>
 </div>
 
 <footer class="footer">
@@ -171,10 +147,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['bg_image'])) {
     <div class="footer-col">
       <h4>Quick Links</h4>
       <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="rooms.php">Our Rooms</a></li>
-                    <li><a href="contact.php">Contact Us</a></li>
-                </ul>
+        <li><a href="index.php">Home</a></li>
+        <li><a href="rooms.php">Our Rooms</a></li>
+        <li><a href="contact.php">Contact Us</a></li>
+      </ul>
     </div>
     <div class="footer-col">
       <h4>Contact Info</h4>

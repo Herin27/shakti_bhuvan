@@ -1,7 +1,7 @@
 <?php
 include 'db.php';
 
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
     $description = $_POST['description'];
     $price = $_POST['price'];
@@ -16,18 +16,29 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
     $features  = isset($_POST['features']) ? implode(',', $_POST['features']) : '';
     $policies  = isset($_POST['policies']) ? implode(',', $_POST['policies']) : '';
 
-    $image = $_FILES['image']['name'];
-    move_uploaded_file($_FILES['image']['tmp_name'], "uploads/".$image);
+    // multiple images
+    $uploaded_images = [];
+    if (!empty($_FILES['images']['name'][0])) {
+        foreach ($_FILES['images']['name'] as $key => $val) {
+            $file_name = time() . "_" . basename($val);
+            $target = "uploads/" . $file_name;
+            if (move_uploaded_file($_FILES['images']['tmp_name'][$key], $target)) {
+                $uploaded_images[] = $file_name;
+            }
+        }
+    }
+    $images_str = implode(',', $uploaded_images);
 
     $sql = "INSERT INTO rooms 
         (name, description, price, discount_price, size, bed_type, guests, rating, reviews, image, amenities, features, policies) 
         VALUES 
-        ('$name','$description','$price','$discount_price','$size','$bed_type','$guests','$rating','$reviews','$image','$amenities','$features','$policies')";
+        ('$name','$description','$price','$discount_price','$size','$bed_type','$guests','$rating','$reviews','$images_str','$amenities','$features','$policies')";
     
-    mysqli_query($conn,$sql);
+    mysqli_query($conn, $sql);
     echo "<script>alert('Room Added Successfully!');</script>";
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -194,9 +205,11 @@ if($_SERVER['REQUEST_METHOD'] == 'POST'){
       </div>
 
       <div class="form-group">
-        <label>Upload Room Image</label>
-        <input type="file" name="image">
-      </div>
+  <label>Upload Room Images</label>
+  <input type="file" name="images[]" multiple>
+  <small>You can select multiple images</small>
+</div>
+
 
       <h3>Amenities</h3>
       <div class="checkbox-group">
