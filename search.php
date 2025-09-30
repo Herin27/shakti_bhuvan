@@ -28,8 +28,8 @@ if (!empty($checkin) && !empty($checkout) && !empty($guests)) {
     echo '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">';
     echo '<div class="container mt-4">';
     echo '<div class="row">';
+    echo '<h1 class="mb-4">Searched Rooms</h1>';
 
-    echo'<h1>Searched rooms is</h1>';
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             // calculate nights
@@ -37,22 +37,42 @@ if (!empty($checkin) && !empty($checkout) && !empty($guests)) {
             if ($nights < 1) $nights = 1;
             $totalPrice = $row['price'] * $nights;
 
+            // ✅ FIX: Clean image path
+            $imageFile = trim($row['image']);
+            
+            // Case 1: DB already has path (uploads/room1.jpg)
+            if (strpos($imageFile, "uploads/") !== false) {
+                $imagePath = $imageFile;
+            } 
+            // Case 2: Only filename stored (room1.jpg)
+            else {
+                $imagePath = "uploads/" . $imageFile;
+            }
+
+            // Fallback if missing
+            if (empty($imageFile) || !file_exists(__DIR__ . "/" . $imagePath)) {
+                $imagePath = "assets/default-room.jpg";
+            }
+
             echo '
             <div class="col-md-4 mb-4">
-
                 <div class="card shadow-lg border-0 rounded-4">
-                    <img src="uploads/'.$row['image'].'" class="card-img-top rounded-top-4" style="height:200px;object-fit:cover;">
+                    <img src="'.$imagePath.'" 
+                         alt="'.htmlspecialchars($row['name']).'" 
+                         class="card-img-top rounded-top-4" 
+                         style="height:200px;object-fit:cover;">
+                         
                     <div class="card-body">
                         <h5 class="card-title d-flex justify-content-between align-items-center">
-                            '.$row['name'].'
+                            '.htmlspecialchars($row['name']).'
                             <span class="text-warning">⭐ '.$row['rating'].'</span>
                         </h5>
-                        <p class="card-text text-muted" style="height:50px;overflow:hidden;">'.$row['description'].'</p>
+                        <p class="card-text text-muted" style="height:50px;overflow:hidden;">'.htmlspecialchars($row['description']).'</p>
                         
                         <div class="mb-2">';
                         $amenities = explode(",", $row['amenities']);
                         foreach($amenities as $a) {
-                            echo '<span class="badge bg-light text-dark me-1">'.$a.'</span>';
+                            echo '<span class="badge bg-light text-dark me-1">'.trim($a).'</span>';
                         }
                         echo '</div>
 
@@ -62,8 +82,7 @@ if (!empty($checkin) && !empty($checkout) && !empty($guests)) {
                         <a href="View_Details.php?id='.$row['id'].'" class="btn btn-outline-dark w-100">View Details</a>
                     </div>
                 </div>
-            </div>
-            ';
+            </div>';
         }
     } else {
         echo '<p class="text-center">No rooms available for your selection.</p>';
@@ -76,6 +95,5 @@ if (!empty($checkin) && !empty($checkout) && !empty($guests)) {
 }
 
 $conn->close();
-
 include 'footer.php';
 ?>
