@@ -82,17 +82,45 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
   <p>Choose from our selection of comfortable and luxurious accommodations</p>
   <form action="search.php" method="POST">
     <div class="search-box">
-        <input type="date" name="checkin" required>
-        <input type="date" name="checkout" required>
+        <input 
+            type="date" 
+            name="checkin" 
+            id="checkin" 
+            required
+        >
+
+        <input 
+            type="date" 
+            name="checkout" 
+            id="checkout" 
+            required
+        >
+
         <select name="guests" required>
             <option value="1">1 Guest</option>
             <option value="2">2 Guests</option>
             <option value="3">3 Guests</option>
             <option value="4">4 Guests</option>
         </select>
+
         <button type="submit">Search Rooms</button>
     </div>
-  </form>
+</form>
+
+<script>
+    // ✅ Set default check-in to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('checkin').value = today;
+    document.getElementById('checkin').setAttribute('min', today);
+
+    // ✅ Set checkout default to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    document.getElementById('checkout').value = tomorrowStr;
+    document.getElementById('checkout').setAttribute('min', tomorrowStr);
+</script>
+
 </section>
 
 <!-- ===== Rooms Listing ===== -->

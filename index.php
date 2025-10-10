@@ -10,7 +10,9 @@ while ($row = $result->fetch_assoc()) {
 }
 
 // Fetch top 3 rooms
-$result_rooms = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 3");
+// ✅ Fetch featured rooms from database
+$query = "SELECT * FROM rooms WHERE status='Available' ORDER BY id DESC LIMIT 3";
+$result = mysqli_query($conn, $query);
 ?>
 
 <!DOCTYPE html>
@@ -189,18 +191,46 @@ $result_rooms = mysqli_query($conn, "SELECT * FROM rooms ORDER BY id DESC LIMIT 
 
         <!-- Search form -->
         <form action="search.php" method="POST">
-            <div class="search-box">
-                <input type="date" name="checkin" required>
-                <input type="date" name="checkout" required>
-                <select name="guests" required>
-                    <option value="1">1 Guest</option>
-                    <option value="2">2 Guests</option>
-                    <option value="3">3 Guests</option>
-                    <option value="4">4 Guests</option>
-                </select>
-                <button type="submit">Search Rooms</button>
-            </div>
-        </form>
+    <div class="search-box">
+        <input 
+            type="date" 
+            name="checkin" 
+            id="checkin" 
+            required
+        >
+
+        <input 
+            type="date" 
+            name="checkout" 
+            id="checkout" 
+            required
+        >
+
+        <select name="guests" required>
+            <option value="1">1 Guest</option>
+            <option value="2">2 Guests</option>
+            <option value="3">3 Guests</option>
+            <option value="4">4 Guests</option>
+        </select>
+
+        <button type="submit">Search Rooms</button>
+    </div>
+</form>
+
+<script>
+    // ✅ Set default check-in to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('checkin').value = today;
+    document.getElementById('checkin').setAttribute('min', today);
+
+    // ✅ Set checkout default to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    document.getElementById('checkout').value = tomorrowStr;
+    document.getElementById('checkout').setAttribute('min', tomorrowStr);
+</script>
+
     </div>
 </div>
 <!-- Slider Script -->
@@ -218,60 +248,63 @@ if(slides.length > 1) {
 </script>
 
     <section class="featured-rooms">
-        <h2 class="section-title">Our Featured Rooms</h2>
-        <p class="section-subtitle">
-            Discover our carefully curated rooms designed for comfort, luxury, and unforgettable experiences
-        </p>
+    <h2 class="section-title">Our Featured Rooms</h2>
+    <p class="section-subtitle">
+        Discover our carefully curated rooms designed for comfort, luxury, and unforgettable experiences
+    </p>
 
-        <div class="rooms-container">
-    <?php while($row = mysqli_fetch_assoc($result)): ?>
-        <?php 
-            // handle multiple images
-            $images = !empty($row['image']) ? explode(',', $row['image']) : [];
-            $firstImage = !empty($images[0]) ? trim($images[0]) : 'default.jpg'; // fallback if empty
-        ?>
-        <div class="room-card">
-            <!-- Room Image -->
-            <img src="uploads/<?php echo htmlspecialchars($firstImage); ?>" 
-                 alt="<?php echo htmlspecialchars($row['name']); ?>" 
-                 class="room-img">
+    <div class="rooms-container">
+        <?php if ($result && mysqli_num_rows($result) > 0): ?>
+            <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                <?php 
+                    // ✅ Handle multiple images
+                    $images = !empty($row['image']) ? explode(',', $row['image']) : [];
+                    $firstImage = !empty($images[0]) ? trim($images[0]) : 'default.jpg';
+                ?>
+                <div class="room-card">
+                    <!-- Room Image -->
+                    <img src="uploads/<?php echo htmlspecialchars($firstImage); ?>" 
+                        alt="<?php echo htmlspecialchars($row['name']); ?>" 
+                        class="room-img">
 
-            <div class="room-content">
-                <!-- Room Title + Rating -->
-                <div class="room-header">
-                    <h3><?php echo htmlspecialchars($row['name']); ?></h3>
-                    <span class="rating">⭐ <?php echo htmlspecialchars($row['rating']); ?></span>
+                    <div class="room-content">
+                        <!-- Title + Rating -->
+                        <div class="room-header">
+                            <h3><?php echo htmlspecialchars($row['name']); ?></h3>
+                            <span class="rating">⭐ <?php echo htmlspecialchars($row['rating'] ?? '4.5'); ?></span>
+                        </div>
+
+                        <!-- Description -->
+                        <p class="room-desc">
+                            <?php echo htmlspecialchars(substr($row['description'], 0, 70)); ?>...
+                        </p>
+
+                        <!-- Amenities -->
+                        <div class="features">
+                            <?php 
+                            $amenities = !empty($row['amenities']) ? explode(',', $row['amenities']) : [];
+                            foreach($amenities as $amenity): ?>
+                                <span class="tag"><?php echo htmlspecialchars(trim($amenity)); ?></span>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <!-- Price + Button -->
+                        <div class="room-footer">
+                            <span class="price">₹<?php echo htmlspecialchars($row['price']); ?><small>/night</small></span>
+                            <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="btn">View Details</a>
+                        </div>
+                    </div>
                 </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p class="no-rooms">No rooms found at the moment. Please check back later!</p>
+        <?php endif; ?>
+    </div>
 
-                <!-- Room Description -->
-                <p class="room-desc">
-                    <?php echo htmlspecialchars(substr($row['description'], 0, 70)); ?>...
-                </p>
-
-                <!-- Amenities -->
-                <div class="features">
-                    <?php 
-                    $amenities = !empty($row['amenities']) ? explode(',', $row['amenities']) : [];
-                    foreach($amenities as $amenity): ?>
-                        <span class="tag"><?php echo htmlspecialchars(trim($amenity)); ?></span>
-                    <?php endforeach; ?>
-                </div>
-
-                <!-- Price + Button -->
-                <div class="room-footer">
-                    <span class="price">₹<?php echo htmlspecialchars($row['price']); ?><small>/night</small></span>
-                    <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="btn">View Details</a>
-                </div>
-            </div>
-        </div>
-    <?php endwhile; ?>
-</div>
-
-
-        <div class="view-all">
-            <button>View All Rooms</button>
-        </div>
-    </section>
+    <div class="view-all">
+        <a href="rooms.php" class="btn">View All Rooms</a>
+    </div>
+</section>
 
     <section class="amenities">
         <h2 class="section-title">Premium Amenities</h2>

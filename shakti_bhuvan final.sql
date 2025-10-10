@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 17, 2025 at 05:49 AM
+-- Generation Time: Oct 09, 2025 at 05:14 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,17 +40,6 @@ CREATE TABLE `bookings` (
   `status` enum('Confirmed','Pending','Checked-in','Checked-out','Cancelled') DEFAULT 'Pending',
   `payment_status` enum('Paid','Partial','Pending') DEFAULT 'Pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `bookings`
---
-
-INSERT INTO `bookings` (`id`, `customer_name`, `phone`, `guests`, `room_id`, `checkin`, `checkout`, `total_price`, `created_at`, `status`, `payment_status`) VALUES
-(25, 'Herin Patel', '9023897448', 4, 3, '2025-08-31', '2025-09-06', 6500.00, '2025-09-01 08:19:18', 'Confirmed', 'Pending'),
-(27, 'Herin Patel', '902389748', 4, 3, '2025-09-08', '2025-09-12', 4500.00, '2025-09-09 03:35:47', 'Confirmed', 'Pending'),
-(28, 'yug', '09023897448', 3, 3, '2025-09-30', '2025-10-07', 7500.00, '2025-09-11 23:38:18', 'Confirmed', 'Pending'),
-(41, 'Herin Alkeshkumar Patel', '09023897448', 1, 3, '2025-09-15', '2025-09-17', 2600.00, '2025-09-16 07:00:40', 'Confirmed', 'Pending'),
-(42, 'Herin Patel', '452467', 1, 1, '2025-09-15', '2025-09-17', 1800.00, '2025-09-16 07:17:25', 'Confirmed', 'Pending');
 
 -- --------------------------------------------------------
 
@@ -95,6 +84,30 @@ CREATE TABLE `coupons` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `gallery`
+--
+
+CREATE TABLE `gallery` (
+  `id` int(11) NOT NULL,
+  `image_url` varchar(255) NOT NULL,
+  `image_type` enum('Hotel View','Luxury Suite','Deluxe Room','Standard Room') NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `gallery`
+--
+
+INSERT INTO `gallery` (`id`, `image_url`, `image_type`, `created_at`) VALUES
+(2, 'uploads/1758427814_WhatsApp Image 2025-09-20 at 18.57.58_b7a89080.jpg', 'Hotel View', '2025-09-21 04:10:14'),
+(3, 'uploads/1758427814_WhatsApp Image 2025-09-20 at 18.57.59_23e0ed2d.jpg', 'Hotel View', '2025-09-21 04:10:14'),
+(4, 'uploads/1758427814_DSC06359.JPG', 'Hotel View', '2025-09-21 04:10:14'),
+(5, 'uploads/1759234491_DSC06391.JPG', 'Luxury Suite', '2025-09-30 12:14:51'),
+(6, 'uploads/1759234491_DSC06390.JPG', 'Luxury Suite', '2025-09-30 12:14:51');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `hero_section`
 --
 
@@ -108,7 +121,8 @@ CREATE TABLE `hero_section` (
 --
 
 INSERT INTO `hero_section` (`id`, `background_image`) VALUES
-(1, 'uploads/christopher-jolly-GqbU78bdJFM-unsplash.jpg');
+(3, 'uploads/DSC06359.JPG'),
+(4, 'uploads/WhatsApp Image 2025-09-20 at 18.57.59_23e0ed2d.jpg');
 
 -- --------------------------------------------------------
 
@@ -162,9 +176,8 @@ CREATE TABLE `rooms` (
 --
 
 INSERT INTO `rooms` (`id`, `name`, `description`, `price`, `discount_price`, `size`, `bed_type`, `guests`, `rating`, `reviews`, `image`, `amenities`, `features`, `policies`, `created_at`, `status`) VALUES
-(1, 'Deluxe Room', 'Spacious and elegantly designed for comfort', 4000.00, 3500.00, '2', 'King Size Bed', '2', 4.8, 124, 'download (3).jpeg', 'Free Wi-Fi,AC,TV,Swimming Pool,Gym', 'Sea View', 'No Smoking,Pet Friendly,Check-in after 12 PM', '2025-08-23 08:45:23', 'Available'),
-(2, 'Standard Room', 'Comfortable accommodation with essential amenities', 3000.00, 2500.00, '350 sq ft', 'King Size Bed', '2', 4.8, 124, 'christopher-jolly-GqbU78bdJFM-unsplash.jpg', 'Free Wi-Fi,AC', 'Sea View,Smart TV', 'No Smoking', '2025-08-23 08:56:24', 'Occupied'),
-(3, 'Luxury Suite', 'Premium suite with separate living area, private balcony, and luxurious amenities for the ultimate comfort experience.', 6500.00, 5500.00, '600 sq ft', 'King Size Bed', '4', 4.9, 124, 'premium_photo-1661877303180-19a028c21048.avif', 'Free Wi-Fi,AC,Room Service,TV,Mini Bar,Parking,Swimming Pool,Gym', 'Sea View,Balcony,Jacuzzi,Smart TV,Work Desk', 'No Smoking,Pet Friendly,Free Cancellation,Check-in after 12 PM,Check-out before 11 AM', '2025-08-23 08:58:34', 'Occupied');
+(3, 'Luxury Suite', 'Premium suite with separate living area, private balcony, and luxurious amenities for the ultimate comfort experience.', 6500.00, 5500.00, '600 sq ft', 'King Size Bed', '4', 4.9, 124, 'premium_photo-1661877303180-19a028c21048.avif', 'Free Wi-Fi,AC,Room Service,TV,Parking,Swimming Pool', 'Sea View,Balcony,Jacuzzi,Smart TV,Work Desk', 'No Smoking,Pet Friendly,Free Cancellation,Check-in after 12 PM,Check-out before 11 AM', '2025-08-23 08:58:34', 'Available'),
+(4, 'Luxury Suite', 'best', 5000.00, 500.00, '350 sq ft', 'King Size Bed', '2', 4.8, 124, '1759143589_DSC06391.JPG,1759143589_DSC06390.JPG', 'Free Wi-Fi,AC,Room Service,TV,parking', 'Balcony,Smart TV', 'No Smoking', '2025-09-29 10:59:49', 'Available');
 
 -- --------------------------------------------------------
 
@@ -191,8 +204,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`customer_id`, `name`, `email`, `phone`, `location`, `member_since`, `bookings`, `total_spent`, `rating`, `status`, `created_at`) VALUES
-('CUST1953', 'herin', 'patelherin15@gmail.com', '9023897448', 'Gandhinagar ', '2025-09-01', 21, 66050.00, NULL, 'VIP', '2025-09-01 05:30:30'),
-('CUST9430', 'Herin Patel', 'herin7151@gmail.com', '452467', 'Kherava , Mehsana ', '2025-09-01', 22, 76550.00, NULL, 'VIP', '2025-09-01 03:35:43');
+('CUST1953', 'herin', 'patelherin15@gmail.com', '9023897448', 'Gandhinagar ', '2025-09-01', 22, 68550.00, NULL, 'VIP', '2025-09-01 05:30:30'),
+('CUST9430', 'Herin Patel', 'herin7151@gmail.com', '452467', 'Kherava , Mehsana ', '2025-09-01', 23, 79050.00, NULL, 'VIP', '2025-09-01 03:35:43');
 
 --
 -- Indexes for dumped tables
@@ -209,6 +222,12 @@ ALTER TABLE `bookings`
 -- Indexes for table `contact_messages`
 --
 ALTER TABLE `contact_messages`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `gallery`
+--
+ALTER TABLE `gallery`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -244,7 +263,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT for table `contact_messages`
@@ -253,10 +272,16 @@ ALTER TABLE `contact_messages`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
+-- AUTO_INCREMENT for table `gallery`
+--
+ALTER TABLE `gallery`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
 -- AUTO_INCREMENT for table `hero_section`
 --
 ALTER TABLE `hero_section`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -268,7 +293,7 @@ ALTER TABLE `payments`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Constraints for dumped tables
