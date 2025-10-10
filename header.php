@@ -21,7 +21,7 @@
 
 
         <nav class="nav-links">
-            <a href="index.php" class="active">Home</a>
+            <a href="index.php">Home</a>
             <a href="rooms.php">Rooms</a>
             <a href="gallery.php">Gallery</a>
             <a href="contact.php">Contact</a>

@@ -1,6 +1,7 @@
 <?php
 // Database connection
 include 'db.php';
+include 'header.php';
 
 $message = "";
 
@@ -58,8 +59,8 @@ $result = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/view_details.css">
   <style>
-    html, body { height: 100%; margin: 0; display: flex; flex-direction: column; font-family: 'Inter', sans-serif; }
-    .navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 50px; background:#fdfbf6; }
+    /* html, body { height: 100%; margin: 0; display: flex; flex-direction: column; font-family: 'Inter', sans-serif; } */
+    
     .container { flex:1; }
 
     /* Upload Section */
@@ -91,25 +92,32 @@ $result = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
   </style>
 </head>
 <body>
-<header class="navbar">
-  <div class="logo">
-    <div class="logo-icon"><img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo"></div>
-    <div class="logo-text">
-      <h1>Shakti Bhuvan</h1>
-      <span>Premium Stays</span>
-    </div>
-  </div>
-  <nav class="nav-links">
-    <a href="index.php">Home</a>
-    <a href="rooms.php">Rooms</a>
-    <a href="contact.php">Contact</a>
-  </nav>
-  <div class="contact-info">
-    <span>+91 98765 43210</span>
-    <span>info@shaktibhuvan.com</span>
-    <a href="booking.php" class="book-btn">Book Now</a>
-  </div>
-</header>
+<!-- <header class="navbar">
+        <div class="logo">
+        <div class="logo-icon">
+            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+        </div>
+        <div class="logo-text">
+            <h1>Shakti Bhuvan</h1>
+            <span>Premium Stays</span>
+        </div>
+        </div>
+
+
+        <nav class="nav-links">
+            <a href="index.php" class="active">Home</a>
+            <a href="rooms.php">Rooms</a>
+            <a href="gallery.php">Gallery</a>
+            <a href="contact.php">Contact</a>
+            <a href="admin.php">admin</a>
+        </nav>
+
+        <div class="contact-info">
+            <span><i class="fas fa-phone"></i> +91 98765 43210</span>
+            <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
+            <a href="rooms.php" class="book-btn">Book Now</a>
+        </div>
+    </header> -->
 
 <div class="container">
   <div class="upload-box">
@@ -138,32 +146,6 @@ $result = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
   </div>
 </div>
 
-<footer class="footer">
-  <div class="footer-container">
-    <div class="footer-col">
-      <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
-      <p>Experience luxury and comfort in our premium rooms with exceptional hospitality and modern amenities.</p>
-    </div>
-    <div class="footer-col">
-      <h4>Quick Links</h4>
-      <ul>
-        <li><a href="index.php">Home</a></li>
-        <li><a href="rooms.php">Our Rooms</a></li>
-        <li><a href="contact.php">Contact Us</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Contact Info</h4>
-      <ul>
-        <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
-        <li>📞 +91 98765 43210</li>
-        <li>✉️ info@shaktibhuvan.com</li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <p>© 2025 Shakti Bhuvan. All rights reserved.</p>
-  </div>
-</footer>
+<?php include 'footer.php'; ?>
 </body>
 </html>

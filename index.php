@@ -2,6 +2,7 @@
 // Database connection
 include 'db.php'; 
 
+
 // Fetch all hero images
 $result = $conn->query("SELECT background_image FROM hero_section");
 $images = [];

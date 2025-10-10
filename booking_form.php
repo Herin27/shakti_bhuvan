@@ -108,7 +108,9 @@ $_SESSION['booking']['total_price'] = $totalPrice;
     <nav class="nav-links">
         <a href="index.php" >Home</a>
         <a href="rooms.php">Rooms</a>
-        <a href="contact.php"class="active">Contact</a>
+        <a href="gallery.php">Gallery</a>
+        <a href="contact.php">Contact</a>
+        <a href="admin.php">admin</a>
     </nav>
 
     <div class="contact-info">
