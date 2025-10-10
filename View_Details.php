@@ -16,7 +16,6 @@ if(!$room){
 // ensure numeric values
 $roomPrice = (float)$room['price'];
 $discountPrice = (float)$room['discount_price'];
-$taxFee = 500; // tax fee
 $images = array_filter(array_map('trim', explode(',', $room['image'])));
 ?>
 <!DOCTYPE html>
@@ -46,29 +45,29 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
 <body>
 
 <header class="navbar">
-    <div class="logo">
-        <div class="logo-icon">
-            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
-        </div>
-        <div class="logo-text">
-            <h1>Shakti Bhuvan</h1>
-            <span>Premium Stays</span>
-        </div>
+  <div class="logo">
+    <div class="logo-icon">
+      <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
     </div>
+    <div class="logo-text">
+      <h1>Shakti Bhuvan</h1>
+      <span>Premium Stays</span>
+    </div>
+  </div>
 
-    <nav class="nav-links">
-      <a href="index.php">Home</a>
-      <a href="rooms.php" class="active">Rooms</a>
-      <a href="gallery.php">Gallery</a>
-      <a href="contact.php">Contact</a>
-      <a href="admin.php">Admin</a>
+  <nav class="nav-links">
+    <a href="index.php">Home</a>
+    <a href="rooms.php" class="active">Rooms</a>
+    <a href="gallery.php">Gallery</a>
+    <a href="contact.php">Contact</a>
+    <a href="admin.php">Admin</a>
   </nav>
 
-    <div class="contact-info">
-        <span><i class="fas fa-phone"></i> +91 98765 43210</span>
-        <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
-        <a href="rooms.php" class="book-btn">Book Now</a>
-    </div>
+  <div class="contact-info">
+    <span><i class="fas fa-phone"></i> +91 98765 43210</span>
+    <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
+    <a href="rooms.php" class="book-btn">Book Now</a>
+  </div>
 </header>
 
 <div class="container">
@@ -88,7 +87,10 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
     <h1 class="room-title"><?php echo htmlspecialchars($room['name']); ?></h1>
     <div class="meta"><?php echo $room['size']; ?> • <?php echo $room['bed_type']; ?> • Up to <?php echo $room['guests']; ?> guests</div>
 
-    <div class="price-box">₹<?php echo number_format($roomPrice,2); ?> <del>₹<?php echo number_format($discountPrice,2); ?></del></div>
+    <div class="price-box">
+      ₹<?php echo number_format($roomPrice,2); ?> 
+      <del>₹<?php echo number_format($discountPrice,2); ?></del>
+    </div>
     <p class="desc"><?php echo $room['description']; ?></p>
 
     <div class="card">
@@ -107,7 +109,6 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
     <input type="hidden" name="room_name" value="<?php echo htmlspecialchars($room['name']); ?>">
     <input type="hidden" name="room_price" id="room_price" value="<?php echo $roomPrice; ?>">
     <input type="hidden" name="room_discount" id="room_discount" value="<?php echo $discountPrice; ?>">
-    <input type="hidden" name="tax_fee" id="tax_fee" value="<?php echo $taxFee; ?>">
     <input type="hidden" name="checkin" id="checkin">
     <input type="hidden" name="checkout" id="checkout">
     <input type="hidden" name="nights" id="nights">
@@ -134,13 +135,13 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
           <strong id="showNights">—</strong>
         </div>
         <div class="row">
-          <span>Taxes & fees</span>
-          <strong id="roomTax">₹<?php echo number_format($taxFee,2); ?></strong>
+          <span id="taxLabel">Taxes & fees (—)</span>
+          <strong id="roomTax">₹0.00</strong>
         </div>
         <hr>
         <div class="row total">
           <span>Total</span>
-          <strong id="totalPrice">₹<?php echo number_format((($roomPrice-$discountPrice)+$taxFee),2); ?></strong>
+          <strong id="totalPrice">₹0.00</strong>
         </div>
       </div>
 
@@ -181,7 +182,6 @@ const fmtINR = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', cu
 
 const roomPrice = parseFloat(document.getElementById('room_price').value) || 0;
 const roomDiscount = parseFloat(document.getElementById('room_discount').value) || 0;
-const taxFee = parseFloat(document.getElementById('tax_fee').value) || 0;
 
 const checkinEl = document.getElementById('checkin');
 const checkoutEl = document.getElementById('checkout');
@@ -189,13 +189,28 @@ const nightsEl = document.getElementById('nights');
 const hiddenTotalEl = document.getElementById('hiddenTotalPrice');
 const showNightsEl = document.getElementById('showNights');
 const totalPriceEl = document.getElementById('totalPrice');
+const roomTaxEl = document.getElementById('roomTax');
 const bookBtn = document.getElementById('bookNowBtn');
+const taxLabel = document.getElementById('taxLabel');
 
+// ✅ Function to get GST rate according to price
+function getGstRate(price) {
+  if (price < 1000) return 0;
+  else if (price >= 1000 && price <= 7500) return 5;
+  else return 18;
+}
+
+// ✅ Function to update totals dynamically
 function updateTotals(checkinDate, checkoutDate) {
   if (!checkinDate || !checkoutDate) {
     showNightsEl.innerText = '—';
-    totalPriceEl.innerText = fmtINR((roomPrice - roomDiscount) * 1 + taxFee);
-    hiddenTotalEl.value = ((roomPrice - roomDiscount) * 1 + taxFee).toFixed(2);
+    const gstRate = getGstRate(roomPrice);
+    const gstAmount = ((roomPrice - roomDiscount) * gstRate) / 100;
+    taxLabel.innerText = `Taxes & fees (${gstRate}%)`;
+    roomTaxEl.innerText = fmtINR(gstAmount);
+    const total = (roomPrice - roomDiscount) + gstAmount;
+    totalPriceEl.innerText = fmtINR(total);
+    hiddenTotalEl.value = total.toFixed(2);
     nightsEl.value = 1;
     bookBtn.disabled = true;
     return;
@@ -213,15 +228,20 @@ function updateTotals(checkinDate, checkoutDate) {
   }
 
   const perNight = (roomPrice - roomDiscount);
-  const total = (perNight * nights) + taxFee;
+  const gstRate = getGstRate(roomPrice);
+  const gstAmount = ((perNight * nights) * gstRate) / 100; // GST on total stay
+  const total = (perNight * nights) + gstAmount;
 
   showNightsEl.innerText = nights;
+  taxLabel.innerText = `Taxes & fees (${gstRate}%)`;
+  roomTaxEl.innerText = fmtINR(gstAmount);
   totalPriceEl.innerText = fmtINR(total);
   hiddenTotalEl.value = total.toFixed(2);
   nightsEl.value = nights;
   bookBtn.disabled = false;
 }
 
+// ✅ Flatpickr date selector
 flatpickr("#dateRange", {
   mode: "range",
   inline: false,
@@ -242,7 +262,7 @@ flatpickr("#dateRange", {
   }
 });
 
-// Slider JS
+// ✅ Image slider logic
 const slider = document.querySelector('.room-slider');
 const wrapper = slider.querySelector('.slider-wrapper');
 const slides = wrapper.querySelectorAll('img');
@@ -257,7 +277,9 @@ slider.querySelector('.prev').addEventListener('click', () => {
   wrapper.style.transform = `translateX(-${index * 100}%)`;
 });
 
+// Initialize totals
 updateTotals(null, null);
 </script>
+
 </body>
 </html>

@@ -474,15 +474,17 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
                                 <li>
                                     <!-- ✅ Open Modal Instead of New Page -->
                                     <button class="dropdown-item editRoomBtn"
-                                        data-id="<?= $room['id'] ?>"
-                                        data-name="<?= htmlspecialchars($room['name']) ?>"
-                                        data-type="<?= $room['bed_type'] ?>"
-                                        data-price="<?= $room['price'] ?>"
-                                        data-capacity="<?= $room['guests'] ?>"
-                                        data-amenities="<?= $room['amenities'] ?>"
-                                        data-status="<?= $room['status'] ?>">
-                                        <i class="bi bi-pencil-square me-2"></i> Edit Room
-                                    </button>
+    data-id="<?= $room['id'] ?>"
+    data-name="<?= htmlspecialchars($room['name']) ?>"
+    data-type="<?= $room['bed_type'] ?>"
+    data-price="<?= $room['price'] ?>"
+    data-capacity="<?= $room['guests'] ?>"
+    data-amenities="<?= $room['amenities'] ?>"
+    data-status="<?= $room['status'] ?>"
+    data-image="<?= $room['image'] ? 'uploads/'.$room['image'] : '' ?>">
+    <i class="bi bi-pencil-square me-2"></i> Edit Room
+</button>
+
                                 </li>
                                 <li>
                                     <form action="delete_room.php" method="POST"
@@ -512,7 +514,7 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
 <div class="modal fade" id="editRoomModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form id="editRoomForm">
+            <form id="editRoomForm" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Room</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -553,7 +555,23 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
                             <option value="Maintenance">Maintenance</option>
                         </select>
                     </div>
+
+                    <!-- ✅ Room Image Section -->
+                    <div class="mb-3">
+                        <label class="form-label">Room Image</label>
+                        <div id="currentRoomImageContainer" style="text-align:center;">
+                            <img id="currentRoomImage" src="" alt="Room Image" 
+                                 style="width: 200px; border-radius:10px; display:none; margin-bottom:10px;">
+                            <div>
+                                <button type="button" id="deleteImageBtn" class="btn btn-danger btn-sm" style="display:none;">Delete Image</button>
+                            </div>
+                        </div>
+
+                        <!-- <input type="file" name="image" id="editRoomImage" class="form-control mt-3">
+                        <small class="text-muted">Upload a new image to replace the current one</small> -->
+                    </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success">Save Changes</button>
@@ -564,11 +582,12 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
 </div>
 
 <!-- ✅ JavaScript -->
- 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const editBtns = document.querySelectorAll(".editRoomBtn");
     const modal = new bootstrap.Modal(document.getElementById("editRoomModal"));
+    const deleteImageBtn = document.getElementById("deleteImageBtn");
+    const image = document.getElementById("currentRoomImage");
 
     editBtns.forEach(btn => {
         btn.addEventListener("click", () => {
@@ -580,178 +599,78 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("editRoomAmenities").value = btn.dataset.amenities;
             document.getElementById("editRoomStatus").value = btn.dataset.status;
 
+            if (btn.dataset.image) {
+    let imgPath = btn.dataset.image.replace(/^\.?\//, ""); // remove ./ or /
+    document.getElementById("currentRoomImage").src = imgPath;
+    document.getElementById("currentRoomImage").style.display = "block";
+    deleteImageBtn.style.display = "inline-block";
+} else {
+    document.getElementById("currentRoomImage").style.display = "none";
+    deleteImageBtn.style.display = "none";
+}
+
             modal.show();
         });
     });
 
-    // ✅ AJAX form submit
+    // ✅ Delete image
+    deleteImageBtn.addEventListener("click", () => {
+        const roomId = document.getElementById("editRoomId").value;
+        if (confirm("Are you sure you want to delete this image?")) {
+            fetch("update_room.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ action: "delete_image", room_id: roomId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Image deleted successfully!");
+                    image.style.display = "none";
+                    deleteImageBtn.style.display = "none";
+                } else {
+                    alert("Error deleting image: " + data.message);
+                }
+            });
+        }
+    });
+
+    // ✅ Update room (and refresh image dynamically)
     document.getElementById("editRoomForm").addEventListener("submit", function(e) {
         e.preventDefault();
-
         fetch("update_room.php", {
             method: "POST",
             body: new FormData(this)
         })
-        .then(async res => {
-            try {
-                return await res.json();
-            } catch (err) {
-                throw new Error("Invalid JSON response. Maybe PHP error in update_room.php");
-            }
-        })
+        .then(res => res.json())
         .then(data => {
             if (data.success) {
                 alert("Room updated successfully!");
-                location.reload();
+                if (data.image) {
+                    image.src = data.image;
+                    image.style.display = "block";
+                    deleteImageBtn.style.display = "inline-block";
+                }
+                // You can reload only if you want to refresh room list:
+                // location.reload();
             } else {
                 alert("Error: " + data.message);
             }
         })
-        .catch(err => {
-            console.error("Fetch error:", err);
-            alert("Something went wrong. Check console.");
-        });
+        .catch(err => console.error("Fetch error:", err));
     });
 });
+
+
+
 </script>
 
 
 
 
-        </section>
-
-        <section id="rooms" class="section container my-5">
-            <h1>Manage Rooms</h1>
-            <p class="subtitle">Add, edit, and manage your room inventory</p>
-
-            <div class="row cards g-4 mb-5">
-                <!-- Total Rooms -->
-                <div class="col-md-3">
-                    <div class="card p-3 shadow text-center">
-                        <p class="value fs-3 fw-bold"><?= $totalRooms ?></p>
-                        <h3>Total Rooms</h3>
-                    </div>
-                </div>
-
-                <!-- Available Rooms -->
-                <div class="col-md-3">
-                    <div class="card p-3 shadow text-center">
-                        <p class="value fs-3 fw-bold text-success"><?= $available ?></p>
-                        <h3>Available</h3>
-                    </div>
-                </div>
-
-                <!-- Occupied Rooms -->
-                <div class="col-md-3">
-                    <div class="card p-3 shadow text-center">
-                        <p class="value fs-3 fw-bold text-warning"><?= $occupied ?></p>
-                        <h3>Occupied</h3>
-                    </div>
-                </div>
 
 
-            </div>
-
-            <!-- ✅ Room Inventory Table -->
-            <div class="card shadow border-0 rounded p-4">
-                <h2 class="mb-4">Room Inventory</h2>
-                <div class="table-responsive">
-                    <table class="table align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Room ID</th>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Price/Night</th>
-                                <th>Capacity</th>
-                                <th>Amenities</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($roomsData)): ?>
-                            <?php foreach ($roomsData as $room): ?>
-                            <tr>
-                                <td>RM<?= str_pad($room['id'], 3, "0", STR_PAD_LEFT) ?></td>
-                                <td><?= htmlspecialchars($room['name']) ?></td>
-                                <td><?= $room['bed_type'] ?></td>
-                                <td>₹<?= number_format($room['price'], 2) ?></td>
-                                <td><?= $room['guests'] ?> Guests</td>
-                                <td>
-                                    <?php 
-                $amenities = explode(",", $room['amenities']);
-                foreach ($amenities as $a) {
-                    echo '<span class="badge bg-light text-dark me-1">'.trim($a).'</span>';
-                }
-                ?>
-                                </td>
-                                <td>
-                                    <?php if ($room['status'] == 'Available'): ?>
-                                    <span class="badge bg-success">Available</span>
-                                    <?php elseif ($room['status'] == 'Occupied'): ?>
-                                    <span class="badge bg-warning text-dark">Occupied</span>
-                                    <?php else: ?>
-                                    <span class="badge bg-danger">Maintenance</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-light btn-sm rounded-circle" type="button"
-                                            data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="bi bi-three-dots-vertical"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <!-- View Button -->
-                                            <li>
-                                                <a class="dropdown-item"
-                                                    href="view_booking.php?id=<?= $row['booking_id'] ?>">
-                                                    <i class="bi bi-eye me-2"></i> View
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="edit_room.php?id=<?= $room['id'] ?>">
-                                                    <i class="bi bi-pencil-square me-2"></i> Edit Room
-                                                </a>
-                                            </li>
-                                            <!-- Delete Button -->
-                                            <li>
-                                                <form method="POST" action="delete_booking.php" class="d-inline"
-                                                    onsubmit="return confirmDelete(this);">
-                                                    <input type="hidden" name="id" value="<?= $row['booking_id'] ?>">
-                                                    <input type="hidden" name="details"
-                                                        value="Booking ID: <?= $row['booking_id'] ?> | Name: <?= $row['name'] ?> | Room: <?= $row['room_number'] ?> | Date: <?= $row['booking_date'] ?>">
-                                                    <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="bi bi-trash me-2"></i> Delete
-                                                    </button>
-                                                </form>
-                                            </li>
-
-                                            <script>
-                                            function confirmDelete(form) {
-                                                let details = form.querySelector("input[name='details']").value;
-                                                return confirm("Are you sure you want to delete this booking?\n\n" +
-                                                    details);
-                                            }
-                                            </script>
-
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                            <?php endforeach; ?>
-                            <?php else: ?>
-                            <tr>
-                                <td colspan="8" class="text-center">No rooms found</td>
-                            </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-
-        </section>
+        
 
 
 
