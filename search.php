@@ -11,6 +11,7 @@ $checkout = $_POST['checkout'] ?? '';
 $guests = $_POST['guests'] ?? '';
 
 if (!empty($checkin) && !empty($checkout) && !empty($guests)) {
+
     $sql = "
         SELECT * FROM rooms r
         WHERE r.guests >= ?
@@ -32,25 +33,19 @@ if (!empty($checkin) && !empty($checkout) && !empty($guests)) {
 
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
-            // calculate nights
+
+            // Nights calculation
             $nights = (strtotime($checkout) - strtotime($checkin)) / (60 * 60 * 24);
             if ($nights < 1) $nights = 1;
             $totalPrice = $row['price'] * $nights;
 
-            // ✅ FIX: Clean image path
-            $imageFile = trim($row['image']);
-            
-            // Case 1: DB already has path (uploads/room1.jpg)
-            if (strpos($imageFile, "uploads/") !== false) {
-                $imagePath = $imageFile;
-            } 
-            // Case 2: Only filename stored (room1.jpg)
-            else {
-                $imagePath = "uploads/" . $imageFile;
-            }
+            // 👍 MULTIPLE IMAGE FIX
+            $images = !empty($row['image']) ? explode(",", $row['image']) : [];
+            $firstImage = trim($images[0] ?? "");
+            $imagePath = "uploads/" . $firstImage;
 
-            // Fallback if missing
-            if (empty($imageFile) || !file_exists(__DIR__ . "/" . $imagePath)) {
+            // If file missing, show default image
+            if (empty($firstImage) || !file_exists("uploads/" . $firstImage)) {
                 $imagePath = "assets/default-room.jpg";
             }
 
@@ -67,13 +62,16 @@ if (!empty($checkin) && !empty($checkout) && !empty($guests)) {
                             '.htmlspecialchars($row['name']).'
                             <span class="text-warning">⭐ '.$row['rating'].'</span>
                         </h5>
+
                         <p class="card-text text-muted" style="height:50px;overflow:hidden;">'.htmlspecialchars($row['description']).'</p>
-                        
+
                         <div class="mb-2">';
+                        
                         $amenities = explode(",", $row['amenities']);
-                        foreach($amenities as $a) {
+                        foreach ($amenities as $a) {
                             echo '<span class="badge bg-light text-dark me-1">'.trim($a).'</span>';
                         }
+
                         echo '</div>
 
                         <h6 class="fw-bold text-success">₹'.$row['price'].'/night</h6>
@@ -96,4 +94,4 @@ if (!empty($checkin) && !empty($checkout) && !empty($guests)) {
 
 $conn->close();
 include 'footer.php';
-?>
+?>  

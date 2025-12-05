@@ -133,27 +133,122 @@ if ($res) {
 
 
 // ---- Booking Stats ----
+// $totalBookings = 0;
+// $confirmed = $checkedIn = $pending = $cancelled = 0;
+
+// $statsQuery = $conn->query("
+//     SELECT status, COUNT(*) AS count 
+//     FROM bookings 
+//     GROUP BY status
+// ");
+
+// // $statsQuery = $conn->query("SELECT status, COUNT(*) as count FROM bookings GROUP BY status");
+// while ($row = $statsQuery->fetch_assoc()) {
+//     $totalBookings += $row['count'];
+//     switch ($row['status']) {
+//         case 'Confirmed': $confirmed = $row['count']; break;
+//         case 'Checked-in': $checkedIn = $row['count']; break;
+//         case 'Pending': $pending = $row['count']; break;
+//         case 'Cancelled': $cancelled = $row['count']; break;
+//     }
+// }
+
+// // ---- Fetch All Bookings with Room Details ----
+// $bookingsQuery = $conn->query("
+//     SELECT 
+//         b.id AS booking_id,
+//         b.customer_name,
+//         b.phone AS customer_phone,
+//         r.name AS room_name,
+//         b.checkin,
+//         b.checkout,
+//         b.guests,
+//         b.total_price,
+//         b.status,
+//         b.payment_status
+//     FROM bookings b
+//     JOIN rooms r ON b.room_id = r.id
+//     ORDER BY b.id DESC
+// ");
+
+// if (!$bookingsQuery) {
+//     die("SQL ERROR: " . $conn->error);
+// }
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// ======= EXPORT CSV (optional) =======
+if (isset($_GET['export']) && $_GET['export'] === 'bookings') {
+    $exportQ = $conn->query("
+        SELECT 
+            b.id AS booking_id,
+            b.customer_name,
+            b.phone,
+            COALESCE(r.name, 'Unknown') AS room_name,
+            b.checkin,
+            b.checkout,
+            b.guests,
+            b.total_price,
+            b.status,
+            b.payment_status,
+            b.created_at
+        FROM bookings b
+        LEFT JOIN rooms r ON b.room_id = r.id
+        ORDER BY b.id DESC
+    ");
+    if (!$exportQ) {
+        die("SQL Error: " . $conn->error);
+    }
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename=bookings_export.csv');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['Booking ID','Customer Name','Phone','Room','Checkin','Checkout','Guests','Amount','Status','Payment','Created At']);
+    while ($r = $exportQ->fetch_assoc()) {
+        fputcsv($out, [
+            'BK' . str_pad($r['booking_id'], 3, '0', STR_PAD_LEFT),
+            $r['customer_name'],
+            $r['phone'],
+            $r['room_name'],
+            $r['checkin'],
+            $r['checkout'],
+            $r['guests'],
+            number_format($r['total_price'], 2),
+            $r['status'],
+            $r['payment_status'],
+            $r['created_at'],
+        ]);
+    }
+    fclose($out);
+    exit;
+}
+
+// ======= Stats =======
 $totalBookings = 0;
 $confirmed = $checkedIn = $pending = $cancelled = 0;
 
-$statsQuery = $conn->query("SELECT status, COUNT(*) as count FROM bookings GROUP BY status");
-while ($row = $statsQuery->fetch_assoc()) {
-    $totalBookings += $row['count'];
-    switch ($row['status']) {
-        case 'Confirmed': $confirmed = $row['count']; break;
-        case 'Checked-in': $checkedIn = $row['count']; break;
-        case 'Pending': $pending = $row['count']; break;
-        case 'Cancelled': $cancelled = $row['count']; break;
+$statsQuery = $conn->query("SELECT status, COUNT(*) AS count FROM bookings GROUP BY status");
+if (!$statsQuery) {
+    die("SQL Error (stats): " . $conn->error);
+}
+while ($s = $statsQuery->fetch_assoc()) {
+    $totalBookings += (int)$s['count'];
+    switch ($s['status']) {
+        case 'Confirmed': $confirmed = (int)$s['count']; break;
+        case 'Checked-in': $checkedIn = (int)$s['count']; break;
+        case 'Pending': $pending = (int)$s['count']; break;
+        case 'Cancelled': $cancelled = (int)$s['count']; break;
     }
 }
 
-// ---- Fetch All Bookings with Room Details ----
+// ======= Fetch bookings with room name =======
 $bookingsQuery = $conn->query("
     SELECT 
         b.id AS booking_id,
         b.customer_name,
-        b.phone AS customer_phone,
-        r.name AS room_name,
+        b.phone,
+        COALESCE(r.name, 'Unknown') AS room_name,
         b.checkin,
         b.checkout,
         b.guests,
@@ -161,9 +256,15 @@ $bookingsQuery = $conn->query("
         b.status,
         b.payment_status
     FROM bookings b
-    JOIN rooms r ON b.room_id = r.id
+    LEFT JOIN rooms r ON b.room_id = r.id
     ORDER BY b.id DESC
 ");
+
+if (!$bookingsQuery) {
+    die("SQL Error (bookings): " . $conn->error);
+}
+
+
 
 
 
@@ -270,49 +371,49 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
             </div> -->
         </div>
         <section id="forms" class="section container my-5">
-  <div class="text-center mb-5">
-    <h2 class="fw-bold">Manage Website Content</h2>
-    <p class="text-muted">Choose an option below to add new content to your website.</p>
-  </div>
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Manage Website Content</h2>
+                <p class="text-muted">Choose an option below to add new content to your website.</p>
+            </div>
 
-  <div class="row g-4 justify-content-center">
-    <!-- Add Slider Button -->
-    <div class="col-md-4">
-      <div class="card shadow-sm border-0 h-100 text-center p-4">
-        <div class="mb-3">
-          <i class="bi bi-images fs-1 text-primary"></i>
-        </div>
-        <h5 class="card-title">Add Slider</h5>
-        <p class="card-text text-muted">Upload new slider images with titles and descriptions.</p>
-        <a href="add_slider.php" class="btn btn-primary w-100">Go to Add Slider</a>
-      </div>
-    </div>
+            <div class="row g-4 justify-content-center">
+                <!-- Add Slider Button -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100 text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-images fs-1 text-primary"></i>
+                        </div>
+                        <h5 class="card-title">Add Slider</h5>
+                        <p class="card-text text-muted">Upload new slider images with titles and descriptions.</p>
+                        <a href="add_slider.php" class="btn btn-primary w-100">Go to Add Slider</a>
+                    </div>
+                </div>
 
-    <!-- Add Room Button -->
-    <div class="col-md-4">
-      <div class="card shadow-sm border-0 h-100 text-center p-4">
-        <div class="mb-3">
-          <i class="bi bi-house-door-fill fs-1 text-success"></i>
-        </div>
-        <h5 class="card-title">Add Room</h5>
-        <p class="card-text text-muted">Add room details like type, price, and availability.</p>
-        <a href="admin_add_room.php" class="btn btn-success w-100">Go to Add Room</a>
-      </div>
-    </div>
+                <!-- Add Room Button -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100 text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-house-door-fill fs-1 text-success"></i>
+                        </div>
+                        <h5 class="card-title">Add Room</h5>
+                        <p class="card-text text-muted">Add room details like type, price, and availability.</p>
+                        <a href="admin_add_room.php" class="btn btn-success w-100">Go to Add Room</a>
+                    </div>
+                </div>
 
-    <!-- Add Gallery Image Button -->
-    <div class="col-md-4">
-      <div class="card shadow-sm border-0 h-100 text-center p-4">
-        <div class="mb-3">
-          <i class="bi bi-collection fs-1 text-warning"></i>
-        </div>
-        <h5 class="card-title">Add Gallery Images</h5>
-        <p class="card-text text-muted">Upload and manage images for the gallery.</p>
-        <a href="admin_gallery.php" class="btn btn-warning w-100">Go to Add Gallery</a>
-      </div>
-    </div>
-  </div>
-</section>
+                <!-- Add Gallery Image Button -->
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 h-100 text-center p-4">
+                        <div class="mb-3">
+                            <i class="bi bi-collection fs-1 text-warning"></i>
+                        </div>
+                        <h5 class="card-title">Add Gallery Images</h5>
+                        <p class="card-text text-muted">Upload and manage images for the gallery.</p>
+                        <a href="admin_gallery.php" class="btn btn-warning w-100">Go to Add Gallery</a>
+                    </div>
+                </div>
+            </div>
+        </section>
 
 
         <section id="dashboard" class="section active">
@@ -417,329 +518,335 @@ $result = $conn->query("SELECT * FROM users ORDER BY created_at DESC");
             </div>
 
             <!-- ✅ Room Inventory Table -->
-<div class="card shadow border-0 rounded p-4">
-    <h2 class="mb-4">Room Inventory</h2>
-    <div class="table-responsive">
-        <table class="table align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Room ID</th>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Price/Night</th>
-                    <th>Capacity</th>
-                    <th>Amenities</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (!empty($roomsData)): ?>
-                <?php foreach ($roomsData as $room): ?>
-                <tr id="roomRow<?= $room['id'] ?>">
-                    <td>RM<?= str_pad($room['id'], 3, "0", STR_PAD_LEFT) ?></td>
-                    <td class="room-name"><?= htmlspecialchars($room['name']) ?></td>
-                    <td class="room-type"><?= $room['bed_type'] ?></td>
-                    <td class="room-price">₹<?= number_format($room['price'], 2) ?></td>
-                    <td class="room-capacity"><?= $room['guests'] ?> Guests</td>
-                    <td class="room-amenities">
-                        <?php 
+            <div class="card shadow border-0 rounded p-4">
+                <h2 class="mb-4">Room Inventory</h2>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Room ID</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Price/Night</th>
+                                <th>Capacity</th>
+                                <th>Amenities</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($roomsData)): ?>
+                            <?php foreach ($roomsData as $room): ?>
+                            <tr id="roomRow<?= $room['id'] ?>">
+                                <td>RM<?= str_pad($room['id'], 3, "0", STR_PAD_LEFT) ?></td>
+                                <td class="room-name"><?= htmlspecialchars($room['name']) ?></td>
+                                <td class="room-type"><?= $room['bed_type'] ?></td>
+                                <td class="room-price">₹<?= number_format($room['price'], 2) ?></td>
+                                <td class="room-capacity"><?= $room['guests'] ?> Guests</td>
+                                <td class="room-amenities">
+                                    <?php 
                         $amenities = explode(",", $room['amenities']);
                         foreach ($amenities as $a) {
                             echo '<span class="badge bg-light text-dark me-1">'.trim($a).'</span>';
                         }
                         ?>
-                    </td>
-                    <td class="room-status">
-                        <?php if ($room['status'] == 'Available'): ?>
-                        <span class="badge bg-success">Available</span>
-                        <?php elseif ($room['status'] == 'Occupied'): ?>
-                        <span class="badge bg-warning text-dark">Occupied</span>
-                        <?php else: ?>
-                        <span class="badge bg-danger">Maintenance</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <div class="dropdown text-end">
-                            <button class="btn btn-light btn-sm rounded-circle" type="button"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-three-dots-vertical"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                <li>
-                                    <a class="dropdown-item" href="view_details.php?id=<?= $room['id'] ?>">
-                                        <i class="bi bi-eye me-2"></i> View Details
-                                    </a>
-                                </li>
-                                <li>
-                                    <!-- ✅ Open Modal Instead of New Page -->
-                                    <button class="dropdown-item editRoomBtn"
-    data-id="<?= $room['id'] ?>"
-    data-name="<?= htmlspecialchars($room['name']) ?>"
-    data-type="<?= $room['bed_type'] ?>"
-    data-price="<?= $room['price'] ?>"
-    data-capacity="<?= $room['guests'] ?>"
-    data-amenities="<?= $room['amenities'] ?>"
-    data-status="<?= $room['status'] ?>"
-    data-image="<?= $room['image'] ? 'uploads/'.$room['image'] : '' ?>">
-    <i class="bi bi-pencil-square me-2"></i> Edit Room
-</button>
-
-                                </li>
-                                <li>
-                                    <form action="delete_room.php" method="POST"
-                                        onsubmit="return confirm('Are you sure you want to delete this room?');">
-                                        <input type="hidden" name="room_id" value="<?= $room['id'] ?>">
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="bi bi-trash me-2"></i> Delete Room
+                                </td>
+                                <td class="room-status">
+                                    <?php if ($room['status'] == 'Available'): ?>
+                                    <span class="badge bg-success">Available</span>
+                                    <?php elseif ($room['status'] == 'Occupied'): ?>
+                                    <span class="badge bg-warning text-dark">Occupied</span>
+                                    <?php else: ?>
+                                    <span class="badge bg-danger">Maintenance</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <div class="dropdown text-end">
+                                        <button class="btn btn-light btn-sm rounded-circle" type="button"
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-three-dots-vertical"></i>
                                         </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-                <?php else: ?>
-                <tr>
-                    <td colspan="8" class="text-center">No rooms found</td>
-                </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            <li>
+                                                <a class="dropdown-item" href="view_details.php?id=<?= $room['id'] ?>">
+                                                    <i class="bi bi-eye me-2"></i> View Details
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <!-- ✅ Open Modal Instead of New Page -->
+                                                <button class="dropdown-item editRoomBtn" data-id="<?= $room['id'] ?>"
+                                                    data-name="<?= htmlspecialchars($room['name']) ?>"
+                                                    data-type="<?= $room['bed_type'] ?>"
+                                                    data-price="<?= $room['price'] ?>"
+                                                    data-capacity="<?= $room['guests'] ?>"
+                                                    data-amenities="<?= $room['amenities'] ?>"
+                                                    data-status="<?= $room['status'] ?>"
+                                                    data-image="<?= $room['image'] ? 'uploads/'.$room['image'] : '' ?>">
+                                                    <i class="bi bi-pencil-square me-2"></i> Edit Room
+                                                </button>
 
-<!-- ✅ Edit Room Modal -->
-<div class="modal fade" id="editRoomModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form id="editRoomForm" enctype="multipart/form-data">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Room</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </li>
+                                            <li>
+                                                <form action="delete_room.php" method="POST"
+                                                    onsubmit="return confirm('Are you sure you want to delete this room?');">
+                                                    <input type="hidden" name="room_id" value="<?= $room['id'] ?>">
+                                                    <button type="submit" class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash me-2"></i> Delete Room
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php else: ?>
+                            <tr>
+                                <td colspan="8" class="text-center">No rooms found</td>
+                            </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="modal-body">
-                    <input type="hidden" name="room_id" id="editRoomId">
+            </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Room Name</label>
-                        <input type="text" class="form-control" name="name" id="editRoomName" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Bed Type</label>
-                        <input type="text" class="form-control" name="type" id="editRoomType" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Price/Night</label>
-                        <input type="number" class="form-control" name="price" id="editRoomPrice" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Capacity</label>
-                        <input type="number" class="form-control" name="capacity" id="editRoomCapacity" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Amenities (comma separated)</label>
-                        <input type="text" class="form-control" name="amenities" id="editRoomAmenities">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" name="status" id="editRoomStatus">
-                            <option value="Available">Available</option>
-                            <option value="Occupied">Occupied</option>
-                            <option value="Maintenance">Maintenance</option>
-                        </select>
-                    </div>
-
-                    <!-- ✅ Room Image Section -->
-                    <div class="mb-3">
-                        <label class="form-label">Room Image</label>
-                        <div id="currentRoomImageContainer" style="text-align:center;">
-                            <img id="currentRoomImage" src="" alt="Room Image" 
-                                 style="width: 200px; border-radius:10px; display:none; margin-bottom:10px;">
-                            <div>
-                                <button type="button" id="deleteImageBtn" class="btn btn-danger btn-sm" style="display:none;">Delete Image</button>
+            <!-- ✅ Edit Room Modal -->
+            <div class="modal fade" id="editRoomModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <form id="editRoomForm" enctype="multipart/form-data">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Edit Room</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                        </div>
+                            <div class="modal-body">
+                                <input type="hidden" name="room_id" id="editRoomId">
 
-                        <!-- <input type="file" name="image" id="editRoomImage" class="form-control mt-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Room Name</label>
+                                    <input type="text" class="form-control" name="name" id="editRoomName" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Bed Type</label>
+                                    <input type="text" class="form-control" name="type" id="editRoomType" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Price/Night</label>
+                                    <input type="number" class="form-control" name="price" id="editRoomPrice" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Capacity</label>
+                                    <input type="number" class="form-control" name="capacity" id="editRoomCapacity"
+                                        required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Amenities (comma separated)</label>
+                                    <input type="text" class="form-control" name="amenities" id="editRoomAmenities">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" name="status" id="editRoomStatus">
+                                        <option value="Available">Available</option>
+                                        <option value="Occupied">Occupied</option>
+                                        <option value="Maintenance">Maintenance</option>
+                                    </select>
+                                </div>
+
+                                <!-- ✅ Room Image Section -->
+                                <div class="mb-3">
+                                    <label class="form-label">Room Image</label>
+                                    <div id="currentRoomImageContainer" style="text-align:center;">
+                                        <img id="currentRoomImage" src="" alt="Room Image"
+                                            style="width: 200px; border-radius:10px; display:none; margin-bottom:10px;">
+                                        <div>
+                                            <button type="button" id="deleteImageBtn" class="btn btn-danger btn-sm"
+                                                style="display:none;">Delete Image</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- <input type="file" name="image" id="editRoomImage" class="form-control mt-3">
                         <small class="text-muted">Upload a new image to replace the current one</small> -->
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ✅ JavaScript -->
+            <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const editBtns = document.querySelectorAll(".editRoomBtn");
+                const modal = new bootstrap.Modal(document.getElementById("editRoomModal"));
+                const deleteImageBtn = document.getElementById("deleteImageBtn");
+                const image = document.getElementById("currentRoomImage");
+
+                editBtns.forEach(btn => {
+                    btn.addEventListener("click", () => {
+                        document.getElementById("editRoomId").value = btn.dataset.id;
+                        document.getElementById("editRoomName").value = btn.dataset.name;
+                        document.getElementById("editRoomType").value = btn.dataset.type;
+                        document.getElementById("editRoomPrice").value = btn.dataset.price;
+                        document.getElementById("editRoomCapacity").value = btn.dataset
+                        .capacity;
+                        document.getElementById("editRoomAmenities").value = btn.dataset
+                            .amenities;
+                        document.getElementById("editRoomStatus").value = btn.dataset.status;
+
+                        if (btn.dataset.image) {
+                            let imgPath = btn.dataset.image.replace(/^\.?\//,
+                            ""); // remove ./ or /
+                            document.getElementById("currentRoomImage").src = imgPath;
+                            document.getElementById("currentRoomImage").style.display = "block";
+                            deleteImageBtn.style.display = "inline-block";
+                        } else {
+                            document.getElementById("currentRoomImage").style.display = "none";
+                            deleteImageBtn.style.display = "none";
+                        }
+
+                        modal.show();
+                    });
+                });
+
+                // ✅ Delete image
+                deleteImageBtn.addEventListener("click", () => {
+                    const roomId = document.getElementById("editRoomId").value;
+                    if (confirm("Are you sure you want to delete this image?")) {
+                        fetch("update_room.php", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/x-www-form-urlencoded"
+                                },
+                                body: new URLSearchParams({
+                                    action: "delete_image",
+                                    room_id: roomId
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    alert("Image deleted successfully!");
+                                    image.style.display = "none";
+                                    deleteImageBtn.style.display = "none";
+                                } else {
+                                    alert("Error deleting image: " + data.message);
+                                }
+                            });
+                    }
+                });
+
+                // ✅ Update room (and refresh image dynamically)
+                document.getElementById("editRoomForm").addEventListener("submit", function(e) {
+                    e.preventDefault();
+                    fetch("update_room.php", {
+                            method: "POST",
+                            body: new FormData(this)
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert("Room updated successfully!");
+                                if (data.image) {
+                                    image.src = data.image;
+                                    image.style.display = "block";
+                                    deleteImageBtn.style.display = "inline-block";
+                                }
+                                // You can reload only if you want to refresh room list:
+                                // location.reload();
+                            } else {
+                                alert("Error: " + data.message);
+                            }
+                        })
+                        .catch(err => console.error("Fetch error:", err));
+                });
+            });
+            </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <section id="bookings" class="section">
+                <h1>Bookings Management</h1>
+                <p class="subtitle">Manage all customer bookings and reservations</p>
+
+                <!-- Booking Stats -->
+                <div class="cards">
+                    <div class="card">
+                        <p class="value"><?= $totalBookings ?></p>
+                        <h3>Total Bookings</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value text-success"><?= $confirmed ?></p>
+                        <h3>Confirmed</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value text-primary"><?= $checkedIn ?></p>
+                        <h3>Checked In</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value text-warning"><?= $pending ?></p>
+                        <h3>Pending</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value text-danger"><?= $cancelled ?></p>
+                        <h3>Cancelled</h3>
                     </div>
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Save Changes</button>
+                <!-- Search + Filter -->
+                <div class="filter-bar">
+                    <input type="text" id="searchBox" placeholder="Search by booking ID, customer name, or room...">
+                    <select id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Checked-in">Checked In</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                    <button class="export-btn">⬇ Export Bookings</button>
                 </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<!-- ✅ JavaScript -->
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    const editBtns = document.querySelectorAll(".editRoomBtn");
-    const modal = new bootstrap.Modal(document.getElementById("editRoomModal"));
-    const deleteImageBtn = document.getElementById("deleteImageBtn");
-    const image = document.getElementById("currentRoomImage");
-
-    editBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            document.getElementById("editRoomId").value = btn.dataset.id;
-            document.getElementById("editRoomName").value = btn.dataset.name;
-            document.getElementById("editRoomType").value = btn.dataset.type;
-            document.getElementById("editRoomPrice").value = btn.dataset.price;
-            document.getElementById("editRoomCapacity").value = btn.dataset.capacity;
-            document.getElementById("editRoomAmenities").value = btn.dataset.amenities;
-            document.getElementById("editRoomStatus").value = btn.dataset.status;
-
-            if (btn.dataset.image) {
-    let imgPath = btn.dataset.image.replace(/^\.?\//, ""); // remove ./ or /
-    document.getElementById("currentRoomImage").src = imgPath;
-    document.getElementById("currentRoomImage").style.display = "block";
-    deleteImageBtn.style.display = "inline-block";
-} else {
-    document.getElementById("currentRoomImage").style.display = "none";
-    deleteImageBtn.style.display = "none";
-}
-
-            modal.show();
-        });
-    });
-
-    // ✅ Delete image
-    deleteImageBtn.addEventListener("click", () => {
-        const roomId = document.getElementById("editRoomId").value;
-        if (confirm("Are you sure you want to delete this image?")) {
-            fetch("update_room.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ action: "delete_image", room_id: roomId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Image deleted successfully!");
-                    image.style.display = "none";
-                    deleteImageBtn.style.display = "none";
-                } else {
-                    alert("Error deleting image: " + data.message);
-                }
-            });
-        }
-    });
-
-    // ✅ Update room (and refresh image dynamically)
-    document.getElementById("editRoomForm").addEventListener("submit", function(e) {
-        e.preventDefault();
-        fetch("update_room.php", {
-            method: "POST",
-            body: new FormData(this)
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert("Room updated successfully!");
-                if (data.image) {
-                    image.src = data.image;
-                    image.style.display = "block";
-                    deleteImageBtn.style.display = "inline-block";
-                }
-                // You can reload only if you want to refresh room list:
-                // location.reload();
-            } else {
-                alert("Error: " + data.message);
-            }
-        })
-        .catch(err => console.error("Fetch error:", err));
-    });
-});
-
-
-
-</script>
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-        <section id="bookings" class="section">
-            <h1>Bookings Management</h1>
-            <p class="subtitle">Manage all customer bookings and reservations</p>
-
-            <!-- Booking Stats -->
-            <div class="cards">
-                <div class="card">
-                    <p class="value"><?= $totalBookings ?></p>
-                    <h3>Total Bookings</h3>
-                </div>
-                <div class="card">
-                    <p class="value text-success"><?= $confirmed ?></p>
-                    <h3>Confirmed</h3>
-                </div>
-                <div class="card">
-                    <p class="value text-primary"><?= $checkedIn ?></p>
-                    <h3>Checked In</h3>
-                </div>
-                <div class="card">
-                    <p class="value text-warning"><?= $pending ?></p>
-                    <h3>Pending</h3>
-                </div>
-                <div class="card">
-                    <p class="value text-danger"><?= $cancelled ?></p>
-                    <h3>Cancelled</h3>
-                </div>
-            </div>
-
-            <!-- Search + Filter -->
-            <div class="filter-bar">
-                <input type="text" id="searchBox" placeholder="Search by booking ID, customer name, or room...">
-                <select id="statusFilter">
-                    <option value="">All Status</option>
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Checked-in">Checked In</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Cancelled">Cancelled</option>
-                </select>
-                <button class="export-btn">⬇ Export Bookings</button>
-            </div>
-
-            <!-- Bookings Table -->
-            <div class="table-box">
-                <h3>All Bookings</h3>
-                <table id="bookingsTable" class="table">
-                    <thead>
-                        <tr>
-                            <th>Booking ID</th>
-                            <th>Customer</th>
-                            <th>Room</th>
-                            <th>Dates</th>
-                            <th>Guests</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Payment</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($bookingsQuery->num_rows > 0): ?>
-                        <?php while ($row = $bookingsQuery->fetch_assoc()): ?>
-                        <?php
+                <!-- Bookings Table -->
+                <div class="table-box">
+                    <h3>All Bookings</h3>
+                    <table id="bookingsTable" class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Customer</th>
+                                <th>Room</th>
+                                <th>Dates</th>
+                                <th>Guests</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($bookingsQuery->num_rows > 0): ?>
+                            <?php while ($row = $bookingsQuery->fetch_assoc()): ?>
+                            <?php
                         // ✅ Assign background color based on status
                         $statusClass = "";
                         switch ($row['status']) {
@@ -750,26 +857,153 @@ document.addEventListener("DOMContentLoaded", () => {
                             default: $statusClass = "bg-secondary text-white"; break;
                         }
                     ?>
+                            <tr>
+                                <td>BK<?= str_pad($row['booking_id'], 3, "0", STR_PAD_LEFT) ?></td>
+                                <td>
+                                    <?= htmlspecialchars($row['customer_name']) ?><br>
+                                    <small><?= htmlspecialchars($row['customer_phone']) ?></small>
+                                </td>
+                                <td><?= htmlspecialchars($row['room_name']) ?></td>
+                                <td><?= $row['checkin'] ?> → <?= $row['checkout'] ?></td>
+                                <td><?= $row['guests'] ?></td>
+                                <td>₹<?= number_format($row['total_price'], 2) ?></td>
+                                <td>
+                                    <span class="badge <?= $statusClass ?>">
+                                        <?= $row['status'] ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span
+                                        class="badge <?= $row['payment_status'] === 'paid' ? 'bg-success' : 'bg-secondary' ?>">
+                                        <?= ucfirst($row['payment_status']) ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-light btn-sm rounded-circle" type="button"
+                                            data-bs-toggle="dropdown">
+                                            <i class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li>
+                                                <a class="dropdown-item"
+                                                    href="view_booking.php?id=<?= $row['booking_id'] ?>">
+                                                    <i class="bi bi-eye me-2"></i> View
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item"
+                                                    href="edit_booking.php?id=<?= $row['booking_id'] ?>">
+                                                    <i class="bi bi-pencil me-2"></i> Edit
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <form method="POST" action="delete_booking.php"
+                                                    onsubmit="return confirm('Delete this booking?');">
+                                                    <input type="hidden" name="id" value="<?= $row['booking_id'] ?>">
+                                                    <button class="dropdown-item text-danger">
+                                                        <i class="bi bi-trash me-2"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endwhile; ?>
+                            <?php else: ?>
+                            <tr>
+                                <td colspan="9" class="text-center">No bookings found</td>
+                            </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+
+
+            <!-- Customers Section -->
+            <section id="customers" class="section">
+                <h1>Customer Management</h1>
+                <p class="subtitle">Manage all customer information and relationships</p>
+
+                <!-- Stats Cards -->
+                <div class="cards">
+                    <div class="card">
+                        <p class="value"><?= $totalCustomers ?></p>
+                        <h3>Total Customers</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value" style="color: green;"><?= $activeCustomers ?></p>
+                        <h3>Active Customers</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value" style="color: orange;"><?= $vipCustomers ?></p>
+                        <h3>VIP Customers</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value">₹<?= number_format($avgLifetimeValue, 2) ?></p>
+                        <h3>Avg. Lifetime Value</h3>
+                    </div>
+                </div>
+
+                <!-- Search + Actions -->
+                <div class="filter-bar">
+                    <input type="text" placeholder="Search customers by name, email, or phone number..."
+                        id="searchInput">
+                    <div class="actions">
+                        <button class="export-btn">⬇ Export Data</button>
+                        <button class="add-btn">➕ Add Customer</button>
+                    </div>
+                </div>
+
+                <!-- Customers Table -->
+                <div class="table-box">
+                    <h3>All Customers</h3>
+                    <table id="customerTable">
                         <tr>
-                            <td>BK<?= str_pad($row['booking_id'], 3, "0", STR_PAD_LEFT) ?></td>
+                            <th>Customer ID</th>
+                            <th>Name</th>
+                            <th>Contact</th>
+                            <th>Location</th>
+                            <th>Bookings</th>
+                            <th>Total Spent</th>
+                            <th>Rating</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                        <tr>
+                            <td><?= $row['customer_id'] ?></td>
                             <td>
-                                <?= htmlspecialchars($row['customer_name']) ?><br>
-                                <small><?= htmlspecialchars($row['customer_phone']) ?></small>
+                                <?= htmlspecialchars($row['name']) ?><br>
+                                <small>Member since <?= $row['member_since'] ?></small>
                             </td>
-                            <td><?= htmlspecialchars($row['room_name']) ?></td>
-                            <td><?= $row['checkin'] ?> → <?= $row['checkout'] ?></td>
-                            <td><?= $row['guests'] ?></td>
-                            <td>₹<?= number_format($row['total_price'], 2) ?></td>
                             <td>
-                                <span class="badge <?= $statusClass ?>">
-                                    <?= $row['status'] ?>
-                                </span>
+                                <?= htmlspecialchars($row['email']) ?><br>
+                                <small><?= htmlspecialchars($row['phone']) ?></small>
+                            </td>
+                            <td><?= htmlspecialchars($row['location']) ?></td>
+                            <td><?= $row['bookings'] ?></td>
+                            <td>₹<?= number_format($row['total_spent'], 2) ?></td>
+                            <td>
+                                <?php if (!empty($row['rating'])): ?>
+                                ⭐ <?= $row['rating'] ?>
+                                <?php else: ?>
+                                No rating
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <span
-                                    class="badge <?= $row['payment_status'] === 'paid' ? 'bg-success' : 'bg-secondary' ?>">
-                                    <?= ucfirst($row['payment_status']) ?>
-                                </span>
+                                <?php if ($row['status'] == "ACTIVE"): ?>
+                                <span class="status active">ACTIVE</span>
+                                <?php elseif ($row['status'] == "VIP"): ?>
+                                <span class="status vip">VIP</span>
+                                <?php else: ?>
+                                <span class="status inactive">INACTIVE</span>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <div class="dropdown">
@@ -780,21 +1014,21 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li>
                                             <a class="dropdown-item"
-                                                href="view_booking.php?id=<?= $row['booking_id'] ?>">
+                                                href="view_customer.php?id=<?= $row['customer_id'] ?>">
                                                 <i class="bi bi-eye me-2"></i> View
                                             </a>
                                         </li>
                                         <li>
                                             <a class="dropdown-item"
-                                                href="edit_booking.php?id=<?= $row['booking_id'] ?>">
+                                                href="edit_customer.php?id=<?= $row['customer_id'] ?>">
                                                 <i class="bi bi-pencil me-2"></i> Edit
                                             </a>
                                         </li>
                                         <li>
-                                            <form method="POST" action="delete_booking.php"
-                                                onsubmit="return confirm('Delete this booking?');">
-                                                <input type="hidden" name="id" value="<?= $row['booking_id'] ?>">
-                                                <button class="dropdown-item text-danger">
+                                            <form method="POST" action="delete_customer.php"
+                                                onsubmit="return confirm('Delete customer <?= $row['name'] ?> (<?= $row['customer_id'] ?>)?');">
+                                                <input type="hidden" name="id" value="<?= $row['customer_id'] ?>">
+                                                <button type="submit" class="dropdown-item text-danger">
                                                     <i class="bi bi-trash me-2"></i> Delete
                                                 </button>
                                             </form>
@@ -804,176 +1038,53 @@ document.addEventListener("DOMContentLoaded", () => {
                             </td>
                         </tr>
                         <?php endwhile; ?>
-                        <?php else: ?>
-                        <tr>
-                            <td colspan="9" class="text-center">No bookings found</td>
-                        </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-
-
-
-        <!-- Customers Section -->
-        <section id="customers" class="section">
-    <h1>Customer Management</h1>
-    <p class="subtitle">Manage all customer information and relationships</p>
-
-    <!-- Stats Cards -->
-    <div class="cards">
-        <div class="card">
-            <p class="value"><?= $totalCustomers ?></p>
-            <h3>Total Customers</h3>
-        </div>
-        <div class="card">
-            <p class="value" style="color: green;"><?= $activeCustomers ?></p>
-            <h3>Active Customers</h3>
-        </div>
-        <div class="card">
-            <p class="value" style="color: orange;"><?= $vipCustomers ?></p>
-            <h3>VIP Customers</h3>
-        </div>
-        <div class="card">
-            <p class="value">₹<?= number_format($avgLifetimeValue, 2) ?></p>
-            <h3>Avg. Lifetime Value</h3>
-        </div>
-    </div>
-
-    <!-- Search + Actions -->
-    <div class="filter-bar">
-        <input type="text" placeholder="Search customers by name, email, or phone number..." id="searchInput">
-        <div class="actions">
-            <button class="export-btn">⬇ Export Data</button>
-            <button class="add-btn">➕ Add Customer</button>
-        </div>
-    </div>
-
-    <!-- Customers Table -->
-    <div class="table-box">
-        <h3>All Customers</h3>
-        <table id="customerTable">
-            <tr>
-                <th>Customer ID</th>
-                <th>Name</th>
-                <th>Contact</th>
-                <th>Location</th>
-                <th>Bookings</th>
-                <th>Total Spent</th>
-                <th>Rating</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-
-            <?php while ($row = $result->fetch_assoc()): ?>
-                <tr>
-                    <td><?= $row['customer_id'] ?></td>
-                    <td>
-                        <?= htmlspecialchars($row['name']) ?><br>
-                        <small>Member since <?= $row['member_since'] ?></small>
-                    </td>
-                    <td>
-                        <?= htmlspecialchars($row['email']) ?><br>
-                        <small><?= htmlspecialchars($row['phone']) ?></small>
-                    </td>
-                    <td><?= htmlspecialchars($row['location']) ?></td>
-                    <td><?= $row['bookings'] ?></td>
-                    <td>₹<?= number_format($row['total_spent'], 2) ?></td>
-                    <td>
-                        <?php if (!empty($row['rating'])): ?>
-                            ⭐ <?= $row['rating'] ?>
-                        <?php else: ?>
-                            No rating
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if ($row['status'] == "ACTIVE"): ?>
-                            <span class="status active">ACTIVE</span>
-                        <?php elseif ($row['status'] == "VIP"): ?>
-                            <span class="status vip">VIP</span>
-                        <?php else: ?>
-                            <span class="status inactive">INACTIVE</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <div class="dropdown">
-                            <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-three-dots-vertical"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li>
-                                    <a class="dropdown-item" href="view_customer.php?id=<?= $row['customer_id'] ?>">
-                                        <i class="bi bi-eye me-2"></i> View
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="edit_customer.php?id=<?= $row['customer_id'] ?>">
-                                        <i class="bi bi-pencil me-2"></i> Edit
-                                    </a>
-                                </li>
-                                <li>
-                                    <form method="POST" action="delete_customer.php" 
-                                          onsubmit="return confirm('Delete customer <?= $row['name'] ?> (<?= $row['customer_id'] ?>)?');">
-                                        <input type="hidden" name="id" value="<?= $row['customer_id'] ?>">
-                                        <button type="submit" class="dropdown-item text-danger">
-                                            <i class="bi bi-trash me-2"></i> Delete
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </div>
-                    </td>
-                </tr>
-            <?php endwhile; ?>
-        </table>
-    </div>
-</section>
-
-<script>
-// Search filter
-document.getElementById("searchInput").addEventListener("keyup", function() {
-    let filter = this.value.toLowerCase();
-    let rows = document.querySelectorAll("#customerTable tr");
-    rows.forEach((row, index) => {
-        if (index === 0) return; // skip header
-        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
-    });
-});
-</script>
-
-
-        <section id="payments" class="section">
-            <h1>Payment Management</h1>
-            <p class="subtitle">Track and manage all payment transactions</p>
-
-            <!-- Stats Cards -->
-            <div class="cards">
-                <div class="card">
-                    <p class="value">₹8.2L</p>
-                    <small style="color:green;">+12% from last month</small>
-                    <h3>Total Revenue</h3>
+                    </table>
                 </div>
-                <div class="card">
-                    <p class="value">1,456</p>
-                    <small style="color:green;">+8% from last month</small>
-                    <h3>Transactions</h3>
-                </div>
-                <div class="card">
-                    <p class="value">98.5%</p>
-                    <small style="color:green;">+0.5% from last month</small>
-                    <h3>Success Rate</h3>
-                </div>
-                <div class="card">
-                    <p class="value">₹563</p>
-                    <small style="color:red;">-2% from last month</small>
-                    <h3>Avg. Transaction</h3>
-                </div>
-            </div>
+            </section>
 
-            <!-- Charts -->
-            <!-- <div class="card">
+            <script>
+            // Search filter
+            document.getElementById("searchInput").addEventListener("keyup", function() {
+                let filter = this.value.toLowerCase();
+                let rows = document.querySelectorAll("#customerTable tr");
+                rows.forEach((row, index) => {
+                    if (index === 0) return; // skip header
+                    row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
+                });
+            });
+            </script>
+
+
+            <section id="payments" class="section">
+                <h1>Payment Management</h1>
+                <p class="subtitle">Track and manage all payment transactions</p>
+
+                <!-- Stats Cards -->
+                <div class="cards">
+                    <div class="card">
+                        <p class="value">₹8.2L</p>
+                        <small style="color:green;">+12% from last month</small>
+                        <h3>Total Revenue</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value">1,456</p>
+                        <small style="color:green;">+8% from last month</small>
+                        <h3>Transactions</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value">98.5%</p>
+                        <small style="color:green;">+0.5% from last month</small>
+                        <h3>Success Rate</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value">₹563</p>
+                        <small style="color:red;">-2% from last month</small>
+                        <h3>Avg. Transaction</h3>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <!-- <div class="card">
       <h3>Monthly Revenue</h3>
       <canvas id="revenueChart"></canvas>
     </div>
@@ -1004,314 +1115,315 @@ document.getElementById("searchInput").addEventListener("keyup", function() {
     </div>
   </div> -->
 
-            <!-- Search + Filter -->
-            <div class="filter-bar">
-                <input type="text" placeholder="Search by payment ID, booking ID, or customer name...">
-                <select>
-                    <option>All Status</option>
-                    <option>Completed</option>
-                    <option>Pending</option>
-                    <option>Failed</option>
-                    <option>Refunded</option>
-                </select>
-                <button class="export-btn">⬇ Export Payments</button>
-            </div>
-
-            <!-- Payments Table -->
-            <div class="table-box">
-                <h3>All Payments</h3>
-                <table>
-                    <tr>
-                        <th>Payment ID</th>
-                        <th>Booking ID</th>
-                        <th>Customer</th>
-                        <th>Amount</th>
-                        <th>Method</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-
-                    <tr>
-                        <td>PAY001</td>
-                        <td>BK001</td>
-                        <td>Rajesh Kumar</td>
-                        <td>₹3,500</td>
-                        <td>UPI</td>
-                        <td>2024-08-15</td>
-                        <td><span class="status completed">✔ Completed</span></td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>PAY002</td>
-                        <td>BK002</td>
-                        <td>Priya Sharma</td>
-                        <td>₹1,250</td>
-                        <td>Credit Card</td>
-                        <td>2024-08-16</td>
-                        <td><span class="status completed">✔ Completed</span></td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>PAY003</td>
-                        <td>BK003</td>
-                        <td>Arjun Patel</td>
-                        <td>₹6,600</td>
-                        <td>Bank Transfer</td>
-                        <td>2024-08-13</td>
-                        <td><span class="status pending">⏳ Pending</span></td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>PAY004</td>
-                        <td>BK004</td>
-                        <td>Sneha Reddy</td>
-                        <td>₹1,800</td>
-                        <td>Debit Card</td>
-                        <td>2024-08-14</td>
-                        <td><span class="status completed">✔ Completed</span></td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>PAY005</td>
-                        <td>BK005</td>
-                        <td>Vikram Singh</td>
-                        <td>₹7,500</td>
-                        <td>UPI</td>
-                        <td>2024-08-18</td>
-                        <td><span class="status failed">❌ Failed</span></td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>PAY006</td>
-                        <td>BK006</td>
-                        <td>Anita Desai</td>
-                        <td>₹2,500</td>
-                        <td>Wallet</td>
-                        <td>2024-08-12</td>
-                        <td><span class="status refunded">↩ Refunded</span></td>
-                        <td>...</td>
-                    </tr>
-                </table>
-            </div>
-        </section>
-        <section id="reviews" class="section">
-            <h1>Reviews Management</h1>
-            <p class="subtitle">Monitor and respond to customer reviews</p>
-
-            <!-- Stats Cards -->
-            <div class="cards">
-                <div class="card">
-                    <p class="value">3.8 ⭐</p>
-                    <h3>Average Rating</h3>
-                </div>
-                <div class="card">
-                    <p class="value">234</p>
-                    <h3>Total Reviews</h3>
-                </div>
-                <div class="card">
-                    <p class="value" style="color:green;">198</p>
-                    <h3>Published</h3>
-                </div>
-                <div class="card">
-                    <p class="value" style="color:orange;">8</p>
-                    <h3>Pending</h3>
-                </div>
-                <div class="card">
-                    <p class="value" style="color:red;">3</p>
-                    <h3>Flagged</h3>
-                </div>
-            </div>
-
-            <!-- Search + Filter -->
-            <div class="filter-bar">
-                <input type="text" placeholder="Search reviews by customer name, title, or content...">
-                <select>
-                    <option>All Ratings</option>
-                    <option>5 Stars</option>
-                    <option>4 Stars</option>
-                    <option>3 Stars</option>
-                    <option>2 Stars</option>
-                    <option>1 Star</option>
-                </select>
-            </div>
-
-            <!-- Reviews Table -->
-            <div class="table-box">
-                <h3>All Reviews</h3>
-                <table>
-                    <tr>
-                        <th>Review ID</th>
-                        <th>Customer</th>
-                        <th>Room</th>
-                        <th>Rating</th>
-                        <th>Title</th>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Helpful</th>
-                        <th>Actions</th>
-                    </tr>
-
-                    <tr>
-                        <td>REV001</td>
-                        <td>Rajesh Kumar <span class="verified">✔ Verified</span></td>
-                        <td>Deluxe Suite</td>
-                        <td>⭐⭐⭐⭐⭐ 5</td>
-                        <td>Exceptional Service and Comfort</td>
-                        <td>2024-08-18</td>
-                        <td><span class="status published">✔ Published</span></td>
-                        <td>👍 12</td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>REV002</td>
-                        <td>Priya Sharma <span class="verified">✔ Verified</span></td>
-                        <td>Standard Room</td>
-                        <td>⭐⭐⭐⭐ 4</td>
-                        <td>Good Value for Money</td>
-                        <td>2024-08-17</td>
-                        <td><span class="status published">✔ Published</span></td>
-                        <td>👍 8</td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>REV003</td>
-                        <td>Arjun Patel <span class="verified">✔ Verified</span></td>
-                        <td>Premium Suite</td>
-                        <td>⭐⭐⭐ 3</td>
-                        <td>Average Experience</td>
-                        <td>2024-08-20</td>
-                        <td><span class="status pending">⏳ Pending</span></td>
-                        <td>👍 3</td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>REV004</td>
-                        <td>Sneha Reddy <span class="verified">✔ Verified</span></td>
-                        <td>Deluxe Room</td>
-                        <td>⭐⭐⭐⭐⭐ 5</td>
-                        <td>Perfect for Business Trip</td>
-                        <td>2024-08-16</td>
-                        <td><span class="status published">✔ Published</span></td>
-                        <td>👍 15</td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>REV005</td>
-                        <td>Vikram Singh <span class="verified">✔ Verified</span></td>
-                        <td>Standard Room</td>
-                        <td>⭐⭐ 2</td>
-                        <td>Disappointing Stay</td>
-                        <td>2024-08-21</td>
-                        <td><span class="status flagged">❌ Flagged</span></td>
-                        <td>👍 2</td>
-                        <td>...</td>
-                    </tr>
-
-                    <tr>
-                        <td>REV006</td>
-                        <td>Anita Desai <span class="verified">✔ Verified</span></td>
-                        <td>Premium Room</td>
-                        <td>⭐⭐⭐⭐ 4</td>
-                        <td>Great Amenities</td>
-                        <td>2024-08-19</td>
-                        <td><span class="status published">✔ Published</span></td>
-                        <td>👍 6</td>
-                        <td>...</td>
-                    </tr>
-                </table>
-            </div>
-        </section>
-
-
-        <!-- setting section -->
-
-        <section id="settings" class="section">
-            <h1>Settings</h1>
-            <p class="subtitle">Configure your hotel management system</p>
-
-            <button class="save-btn">💾 Save Changes</button>
-
-            <div class="settings-grid">
-                <!-- Hotel Information -->
-                <div class="settings-card">
-                    <h3>🏨 Hotel Information</h3>
-                    <label>Hotel Name <input type="text" value="Shakti Bhuvan"></label>
-                    <label>Email <input type="email" value="info@shaktibhuvan.com"></label>
-                    <label>Phone <input type="text" value="+91 98765 43210"></label>
-                    <label>Address <input type="text" value="123 Heritage Street, Mumbai, Maharashtra 400001"></label>
-                    <label>Website <input type="text" value="www.shaktibhuvan.com"></label>
-                    <label>Description
-                        <textarea>A premium boutique hotel offering luxury accommodation with traditional Indian hospitality.</textarea></label>
+                <!-- Search + Filter -->
+                <div class="filter-bar">
+                    <input type="text" placeholder="Search by payment ID, booking ID, or customer name...">
+                    <select>
+                        <option>All Status</option>
+                        <option>Completed</option>
+                        <option>Pending</option>
+                        <option>Failed</option>
+                        <option>Refunded</option>
+                    </select>
+                    <button class="export-btn">⬇ Export Payments</button>
                 </div>
 
-                <!-- Booking Settings -->
-                <div class="settings-card">
-                    <h3>📅 Booking Settings</h3>
-                    <label>Max Advance Booking (days) <input type="number" value="365"></label>
-                    <label>Min Advance Booking (days) <input type="number" value="1"></label>
-                    <label>Check-in Time <input type="time" value="14:00"></label>
-                    <label>Check-out Time <input type="time" value="11:00"></label>
-                    <label>Cancellation Deadline (hours) <input type="number" value="24"></label>
+                <!-- Payments Table -->
+                <div class="table-box">
+                    <h3>All Payments</h3>
+                    <table>
+                        <tr>
+                            <th>Payment ID</th>
+                            <th>Booking ID</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+
+                        <tr>
+                            <td>PAY001</td>
+                            <td>BK001</td>
+                            <td>Rajesh Kumar</td>
+                            <td>₹3,500</td>
+                            <td>UPI</td>
+                            <td>2024-08-15</td>
+                            <td><span class="status completed">✔ Completed</span></td>
+                            <td>...</td>
+                        </tr>
+
+                        <tr>
+                            <td>PAY002</td>
+                            <td>BK002</td>
+                            <td>Priya Sharma</td>
+                            <td>₹1,250</td>
+                            <td>Credit Card</td>
+                            <td>2024-08-16</td>
+                            <td><span class="status completed">✔ Completed</span></td>
+                            <td>...</td>
+                        </tr>
+
+                        <tr>
+                            <td>PAY003</td>
+                            <td>BK003</td>
+                            <td>Arjun Patel</td>
+                            <td>₹6,600</td>
+                            <td>Bank Transfer</td>
+                            <td>2024-08-13</td>
+                            <td><span class="status pending">⏳ Pending</span></td>
+                            <td>...</td>
+                        </tr>
+
+                        <tr>
+                            <td>PAY004</td>
+                            <td>BK004</td>
+                            <td>Sneha Reddy</td>
+                            <td>₹1,800</td>
+                            <td>Debit Card</td>
+                            <td>2024-08-14</td>
+                            <td><span class="status completed">✔ Completed</span></td>
+                            <td>...</td>
+                        </tr>
+
+                        <tr>
+                            <td>PAY005</td>
+                            <td>BK005</td>
+                            <td>Vikram Singh</td>
+                            <td>₹7,500</td>
+                            <td>UPI</td>
+                            <td>2024-08-18</td>
+                            <td><span class="status failed">❌ Failed</span></td>
+                            <td>...</td>
+                        </tr>
+
+                        <tr>
+                            <td>PAY006</td>
+                            <td>BK006</td>
+                            <td>Anita Desai</td>
+                            <td>₹2,500</td>
+                            <td>Wallet</td>
+                            <td>2024-08-12</td>
+                            <td><span class="status refunded">↩ Refunded</span></td>
+                            <td>...</td>
+                        </tr>
+                    </table>
+                </div>
+            </section>
+            <section id="reviews" class="section">
+                <h1>Reviews Management</h1>
+                <p class="subtitle">Monitor and respond to customer reviews</p>
+
+                <!-- Stats Cards -->
+                <div class="cards">
+                    <div class="card">
+                        <p class="value">3.8 ⭐</p>
+                        <h3>Average Rating</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value">234</p>
+                        <h3>Total Reviews</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value" style="color:green;">198</p>
+                        <h3>Published</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value" style="color:orange;">8</p>
+                        <h3>Pending</h3>
+                    </div>
+                    <div class="card">
+                        <p class="value" style="color:red;">3</p>
+                        <h3>Flagged</h3>
+                    </div>
                 </div>
 
-                <!-- Notification Settings -->
-                <div class="settings-card">
-                    <h3>🔔 Notification Settings</h3>
-                    <label><input type="checkbox" checked> Email Notifications</label>
-                    <label><input type="checkbox" checked> SMS Notifications</label>
-                    <label><input type="checkbox" checked> Booking Alerts</label>
-                    <label><input type="checkbox" checked> Payment Alerts</label>
-                    <label><input type="checkbox" checked> Review Alerts</label>
+                <!-- Search + Filter -->
+                <div class="filter-bar">
+                    <input type="text" placeholder="Search reviews by customer name, title, or content...">
+                    <select>
+                        <option>All Ratings</option>
+                        <option>5 Stars</option>
+                        <option>4 Stars</option>
+                        <option>3 Stars</option>
+                        <option>2 Stars</option>
+                        <option>1 Star</option>
+                    </select>
                 </div>
 
-                <!-- Payment Settings -->
-                <div class="settings-card">
-                    <h3>💳 Payment Settings</h3>
-                    <label>Currency
-                        <select>
-                            <option>INR (Indian Rupee)</option>
-                            <option>USD (US Dollar)</option>
-                            <option>EUR (Euro)</option>
-                        </select>
-                    </label>
-                    <label>Tax Rate (%) <input type="number" value="18"></label>
-                    <label>Service Fee (%) <input type="number" value="5"></label>
-                    <label>Cancellation Fee (%) <input type="number" value="10"></label>
-                </div>
+                <!-- Reviews Table -->
+                <div class="table-box">
+                    <h3>All Reviews</h3>
+                    <table>
+                        <tr>
+                            <th>Review ID</th>
+                            <th>Customer</th>
+                            <th>Room</th>
+                            <th>Rating</th>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Helpful</th>
+                            <th>Actions</th>
+                        </tr>
 
-                <!-- Security Settings -->
-                <div class="settings-card">
-                    <h3>🔒 Security Settings</h3>
-                    <label><input type="checkbox" checked> Two-Factor Authentication</label>
-                    <label>Session Timeout (minutes) <input type="number" value="30"></label>
-                    <label>Password Expiry (days) <input type="number" value="90"></label>
-                </div>
+                        <tr>
+                            <td>REV001</td>
+                            <td>Rajesh Kumar <span class="verified">✔ Verified</span></td>
+                            <td>Deluxe Suite</td>
+                            <td>⭐⭐⭐⭐⭐ 5</td>
+                            <td>Exceptional Service and Comfort</td>
+                            <td>2024-08-18</td>
+                            <td><span class="status published">✔ Published</span></td>
+                            <td>👍 12</td>
+                            <td>...</td>
+                        </tr>
 
-                <!-- Display Settings -->
-                <div class="settings-card">
-                    <h3>🖥 Display Settings</h3>
-                    <label>Rooms Per Page <input type="number" value="12"></label>
-                    <label>Reviews Per Page <input type="number" value="10"></label>
-                    <label>Default Language
-                        <select>
-                            <option>English</option>
-                            <option>Hindi</option>
-                            <option>French</option>
-                        </select>
-                    </label>
+                        <tr>
+                            <td>REV002</td>
+                            <td>Priya Sharma <span class="verified">✔ Verified</span></td>
+                            <td>Standard Room</td>
+                            <td>⭐⭐⭐⭐ 4</td>
+                            <td>Good Value for Money</td>
+                            <td>2024-08-17</td>
+                            <td><span class="status published">✔ Published</span></td>
+                            <td>👍 8</td>
+                            <td>...</td>
+                        </tr>
+
+                        <tr>
+                            <td>REV003</td>
+                            <td>Arjun Patel <span class="verified">✔ Verified</span></td>
+                            <td>Premium Suite</td>
+                            <td>⭐⭐⭐ 3</td>
+                            <td>Average Experience</td>
+                            <td>2024-08-20</td>
+                            <td><span class="status pending">⏳ Pending</span></td>
+                            <td>👍 3</td>
+                            <td>...</td>
+                        </tr>
+
+                        <tr>
+                            <td>REV004</td>
+                            <td>Sneha Reddy <span class="verified">✔ Verified</span></td>
+                            <td>Deluxe Room</td>
+                            <td>⭐⭐⭐⭐⭐ 5</td>
+                            <td>Perfect for Business Trip</td>
+                            <td>2024-08-16</td>
+                            <td><span class="status published">✔ Published</span></td>
+                            <td>👍 15</td>
+                            <td>...</td>
+                        </tr>
+
+                        <tr>
+                            <td>REV005</td>
+                            <td>Vikram Singh <span class="verified">✔ Verified</span></td>
+                            <td>Standard Room</td>
+                            <td>⭐⭐ 2</td>
+                            <td>Disappointing Stay</td>
+                            <td>2024-08-21</td>
+                            <td><span class="status flagged">❌ Flagged</span></td>
+                            <td>👍 2</td>
+                            <td>...</td>
+                        </tr>
+
+                        <tr>
+                            <td>REV006</td>
+                            <td>Anita Desai <span class="verified">✔ Verified</span></td>
+                            <td>Premium Room</td>
+                            <td>⭐⭐⭐⭐ 4</td>
+                            <td>Great Amenities</td>
+                            <td>2024-08-19</td>
+                            <td><span class="status published">✔ Published</span></td>
+                            <td>👍 6</td>
+                            <td>...</td>
+                        </tr>
+                    </table>
                 </div>
-            </div>
-        </section>
+            </section>
+
+
+            <!-- setting section -->
+
+            <section id="settings" class="section">
+                <h1>Settings</h1>
+                <p class="subtitle">Configure your hotel management system</p>
+
+                <button class="save-btn">💾 Save Changes</button>
+
+                <div class="settings-grid">
+                    <!-- Hotel Information -->
+                    <div class="settings-card">
+                        <h3>🏨 Hotel Information</h3>
+                        <label>Hotel Name <input type="text" value="Shakti Bhuvan"></label>
+                        <label>Email <input type="email" value="info@shaktibhuvan.com"></label>
+                        <label>Phone <input type="text" value="+91 98765 43210"></label>
+                        <label>Address <input type="text"
+                                value="123 Heritage Street, Mumbai, Maharashtra 400001"></label>
+                        <label>Website <input type="text" value="www.shaktibhuvan.com"></label>
+                        <label>Description
+                            <textarea>A premium boutique hotel offering luxury accommodation with traditional Indian hospitality.</textarea></label>
+                    </div>
+
+                    <!-- Booking Settings -->
+                    <div class="settings-card">
+                        <h3>📅 Booking Settings</h3>
+                        <label>Max Advance Booking (days) <input type="number" value="365"></label>
+                        <label>Min Advance Booking (days) <input type="number" value="1"></label>
+                        <label>Check-in Time <input type="time" value="14:00"></label>
+                        <label>Check-out Time <input type="time" value="11:00"></label>
+                        <label>Cancellation Deadline (hours) <input type="number" value="24"></label>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="settings-card">
+                        <h3>🔔 Notification Settings</h3>
+                        <label><input type="checkbox" checked> Email Notifications</label>
+                        <label><input type="checkbox" checked> SMS Notifications</label>
+                        <label><input type="checkbox" checked> Booking Alerts</label>
+                        <label><input type="checkbox" checked> Payment Alerts</label>
+                        <label><input type="checkbox" checked> Review Alerts</label>
+                    </div>
+
+                    <!-- Payment Settings -->
+                    <div class="settings-card">
+                        <h3>💳 Payment Settings</h3>
+                        <label>Currency
+                            <select>
+                                <option>INR (Indian Rupee)</option>
+                                <option>USD (US Dollar)</option>
+                                <option>EUR (Euro)</option>
+                            </select>
+                        </label>
+                        <label>Tax Rate (%) <input type="number" value="18"></label>
+                        <label>Service Fee (%) <input type="number" value="5"></label>
+                        <label>Cancellation Fee (%) <input type="number" value="10"></label>
+                    </div>
+
+                    <!-- Security Settings -->
+                    <div class="settings-card">
+                        <h3>🔒 Security Settings</h3>
+                        <label><input type="checkbox" checked> Two-Factor Authentication</label>
+                        <label>Session Timeout (minutes) <input type="number" value="30"></label>
+                        <label>Password Expiry (days) <input type="number" value="90"></label>
+                    </div>
+
+                    <!-- Display Settings -->
+                    <div class="settings-card">
+                        <h3>🖥 Display Settings</h3>
+                        <label>Rooms Per Page <input type="number" value="12"></label>
+                        <label>Reviews Per Page <input type="number" value="10"></label>
+                        <label>Default Language
+                            <select>
+                                <option>English</option>
+                                <option>Hindi</option>
+                                <option>French</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </section>
 
 
 

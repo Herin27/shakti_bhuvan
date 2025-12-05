@@ -173,7 +173,9 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
 
 </div>
 
-<footer class="footer">
+<?php include 'footer.php'; ?>
+
+<!-- <footer class="footer">
   <div class="footer-container">
     <div class="footer-col">
       <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
@@ -213,7 +215,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
       <a href="#">Terms of Service</a>
     </div>
   </div>
-</footer>
+</footer> -->
 
 <script>
 document.querySelectorAll('.room-slider').forEach(function(slider){

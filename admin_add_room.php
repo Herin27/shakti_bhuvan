@@ -1,6 +1,6 @@
 <?php
 include 'db.php';
-include 'header.php';
+// include 'header.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
@@ -156,12 +156,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <input type="text" name="size">
         </div>
         <div class="form-group">
-          <label>Price</label>
-          <input type="number" name="price" required>
+          <label>Total Price</label>
+          <input type="number" name="price">
         </div>
         <div class="form-group">
-          <label>Discount Price</label>
-          <input type="number" name="discount_price">
+          <label>Discount Price </label>
+          <input type="number" name="discount_price" required>
         </div>
         <div class="form-group">
           <label>Bed Type</label>

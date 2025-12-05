@@ -606,6 +606,17 @@ span {
   font-size: 0.9rem;
   color: #777;
 }
+.logo-icon {
+    background-color: #eacb74;
+    font-weight: bold;
+    font-size: 20px;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
 /* Footer */
 

@@ -210,63 +210,7 @@
 
 
   
-    <footer class="footer">
-  <div class="footer-container">
-
-    <!-- About -->
-    <div class="footer-col">
-      <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
-      <p>
-        Experience luxury and comfort in our premium rooms with exceptional hospitality and modern amenities.
-      </p>
-      <div class="social-icons">
-        admin.php
-      </div>
-    </div>
-
-    <!-- Quick Links -->
-    <div class="footer-col">
-      <h4>Quick Links</h4>
-      <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="rooms.php">Our Rooms</a></li>
-                    <li><a href="contact.php">Contact Us</a></li>
-                </ul>
-    </div>
-
-    <!-- Contact Info -->
-    <div class="footer-col">
-      <h4>Contact Info</h4>
-      <ul>
-        <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
-        <li>📞 +91 98765 43210</li>
-        <li>✉️ info@shaktibhuvan.com</li>
-      </ul>
-    </div>
-
-    <!-- Services -->
-    <div class="footer-col">
-      <h4>Services</h4>
-      <ul>
-        <li>24/7 Room Service</li>
-        <li>Free Wi-Fi</li>
-        <li>Airport Pickup</li>
-        <li>Laundry Service</li>
-        <li>Concierge</li>
-      </ul>
-    </div>
-
-  </div>
-
-  <!-- Bottom -->
-  <div class="footer-bottom">
-    <p>© 2025 Shakti Bhuvan. All rights reserved.</p>
-    <div>
-      <a href="#">Privacy Policy</a> | 
-      <a href="#">Terms of Service</a>
-    </div>
-  </div>
-</footer>
+    <?php include 'footer.php'; ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 

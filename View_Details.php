@@ -88,8 +88,8 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
     <div class="meta"><?php echo $room['size']; ?> • <?php echo $room['bed_type']; ?> • Up to <?php echo $room['guests']; ?> guests</div>
 
     <div class="price-box">
-      ₹<?php echo number_format($roomPrice,2); ?> 
-      <del>₹<?php echo number_format($discountPrice,2); ?></del>
+      ₹<?php echo number_format($discountPrice,2); ?> 
+      <del>₹<?php echo number_format($roomPrice,2); ?></del>
     </div>
     <p class="desc"><?php echo $room['description']; ?></p>
 
@@ -122,13 +122,13 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
       </div>
 
       <div class="price-details">
-        <div class="row">
-          <span>Room rate (per night)</span>
-          <strong id="roomRate">₹<?php echo number_format($roomPrice,2); ?></strong>
-        </div>
         <div class="row discount">
+          <span>Room rate (per night)</span>
+          <strong id="roomDiscount">₹<?php echo number_format($roomPrice,2); ?></strong>
+        </div>
+        <div class="row">
           <span>Discount</span>
-          <strong id="roomDiscount">-₹<?php echo number_format($discountPrice,2); ?></strong>
+          <strong id="roomRate">-₹<?php echo number_format($discountPrice,2); ?></strong>
         </div>
         <div class="row">
           <span>Nights</span>
@@ -151,30 +151,7 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
   </form>
 </div>
 
-<footer class="footer">
-  <div class="footer-container">
-    <div class="footer-col">
-      <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
-      <p>Experience luxury and comfort in our premium rooms with exceptional hospitality and modern amenities.</p>
-    </div>
-    <div class="footer-col">
-      <h4>Quick Links</h4>
-      <ul>
-        <li><a href="index.php">Home</a></li>
-        <li><a href="rooms.php">Our Rooms</a></li>
-        <li><a href="contact.php">Contact Us</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Contact Info</h4>
-      <ul>
-        <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
-        <li>📞 +91 98765 43210</li>
-        <li>✉️ info@shaktibhuvan.com</li>
-      </ul>
-    </div>
-  </div>
-</footer>
+<?php include 'footer.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>

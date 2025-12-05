@@ -91,60 +91,73 @@ $result = mysqli_query($conn, $query);
 }
 
 .hero-section {
-  position: relative;
-  height: 80vh;
-  color: #fff;
-  overflow: hidden;
+    position: relative;
+    height: 80vh;
+    color: #fff;
+    overflow: hidden;
 }
+
 .hero-slider {
-  position: absolute;
-  top:0; left:0; width:100%; height:100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
+
 .hero-slider .slide {
-  position: absolute;
-  top:0; left:0;
-  width:100%; height:100%;
-  background-size: cover;
-  background-position: center;
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
 }
+
 .hero-slider .slide.active {
-  opacity: 1;
+    opacity: 1;
 }
+
 .hero-content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  top: 50%;
-  transform: translateY(-50%);
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    top: 50%;
+    transform: translateY(-50%);
 }
+
 .hero-section::after {
-  content:"";
-  position:absolute;
-  top:0; left:0; width:100%; height:100%;
-  background: rgba(0,0,0,0.4);
-  z-index:1;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
 }
-.hero-buttons{
+
+.hero-buttons {
     margin-top: 20px;
     display: flex;
     justify-content: center;
     gap: 15px;
 }
-
 </style>
 
 <body>
     <header class="navbar">
         <div class="logo">
-        <div class="logo-icon">
-            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
-        </div>
-        <div class="logo-text">
-            <h1>Shakti Bhuvan</h1>
-            <span>Premium Stays</span>
-        </div>
+            <div class="logo-icon">
+                <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+            </div>
+            <div class="logo-text">
+                <h1>Shakti Bhuvan</h1>
+                <span>Premium Stays</span>
+            </div>
         </div>
 
 
@@ -152,8 +165,8 @@ $result = mysqli_query($conn, $query);
             <a href="index.php" class="active">Home</a>
             <a href="rooms.php">Rooms</a>
             <a href="gallery.php">Gallery</a>
-            <a href="contact.php">Contact</a>
-            <a href="admin.php">admin</a>
+            <a href="contact.php">Contact Us</a>
+            <a href="admin.php">Admin</a>
         </nav>
 
         <div class="contact-info">
@@ -164,148 +177,138 @@ $result = mysqli_query($conn, $query);
     </header>
 
     <div class="hero-section" id="hero-section">
-    <!-- Slider Images -->
-    <div class="hero-slider">
-        <?php if (!empty($images)): ?>
+        <!-- Slider Images -->
+        <div class="hero-slider">
+            <?php if (!empty($images)): ?>
             <?php foreach ($images as $index => $image): ?>
-                <div class="slide <?php echo $index === 0 ? 'active' : ''; ?>"
-                     style="background-image: url('<?php echo $image; ?>');"></div>
+            <div class="slide <?php echo $index === 0 ? 'active' : ''; ?>"
+                style="background-image: url('<?php echo $image; ?>');"></div>
             <?php endforeach; ?>
-        <?php else: ?>
+            <?php else: ?>
             <div class="slide active" style="background-image: url('assets/images/default-hero.jpg');"></div>
-        <?php endif; ?>
-    </div>
-
-    <!-- Hero Content -->
-    <div class="hero-content">
-        <h1>Welcome to <br><span style="color: #f1c45f;">Shakti Bhuvan</span></h1>
-        <p>Experience luxury and comfort in our premium rooms with exceptional hospitality and modern amenities</p>
-
-        <div class="hero-buttons">
-            <button class="explore-btn">
-                <a href="rooms.php" style="color: #fff; text-decoration: none;">Explore Rooms</a>
-            </button>
-            <button class="contact-btn">
-                <a href="contact.php" style="color: #fff; text-decoration: none;">Contact Us</a>
-            </button>
+            <?php endif; ?>
         </div>
 
-        <!-- Search form -->
-        <form action="search.php" method="POST">
-    <div class="search-box">
-        <input 
-            type="date" 
-            name="checkin" 
-            id="checkin" 
-            required
-        >
+        <!-- Hero Content -->
+        <div class="hero-content">
+            <h1>Welcome to <br><span style="color: #f1c45f;">Shakti Bhuvan</span></h1>
+            <p>Experience luxury and comfort in our premium rooms with exceptional hospitality and modern amenities</p>
 
-        <input 
-            type="date" 
-            name="checkout" 
-            id="checkout" 
-            required
-        >
+            <div class="hero-buttons">
+                <button class="explore-btn">
+                    <a href="rooms.php" style="color: #fff; text-decoration: none;">Explore Rooms</a>
+                </button>
+                <button class="contact-btn">
+                    <a href="contact.php" style="color: #fff; text-decoration: none;">Contact Us</a>
+                </button>
+            </div>
 
-        <select name="guests" required>
-            <option value="1">1 Guest</option>
-            <option value="2">2 Guests</option>
-            <option value="3">3 Guests</option>
-            <option value="4">4 Guests</option>
-        </select>
+            <!-- Search form -->
+            <form action="search.php" method="POST">
+                <div class="search-box">
+                    <input type="date" name="checkin" id="checkin" required>
 
-        <button type="submit">Search Rooms</button>
+                    <input type="date" name="checkout" id="checkout" required>
+
+                    <select name="guests" required>
+                        <option value="1">1 Guest</option>
+                        <option value="2">2 Guests</option>
+                        <option value="3">3 Guests</option>
+                        <option value="4">4 Guests</option>
+                    </select>
+
+                    <button type="submit">Search Rooms</button>
+                </div>
+            </form>
+
+            <script>
+            // ✅ Set default check-in to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('checkin').value = today;
+            document.getElementById('checkin').setAttribute('min', today);
+
+            // ✅ Set checkout default to tomorrow
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            document.getElementById('checkout').value = tomorrowStr;
+            document.getElementById('checkout').setAttribute('min', tomorrowStr);
+            </script>
+
+        </div>
     </div>
-</form>
+    <!-- Slider Script -->
+    <script>
+    let slides = document.querySelectorAll(".hero-slider .slide");
+    let slideIndex = 0;
 
-<script>
-    // ✅ Set default check-in to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('checkin').value = today;
-    document.getElementById('checkin').setAttribute('min', today);
-
-    // ✅ Set checkout default to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    document.getElementById('checkout').value = tomorrowStr;
-    document.getElementById('checkout').setAttribute('min', tomorrowStr);
-</script>
-
-    </div>
-</div>
-<!-- Slider Script -->
-<script>
-let slides = document.querySelectorAll(".hero-slider .slide");
-let slideIndex = 0;
-function showNextSlide() {
-    slides[slideIndex].classList.remove("active");
-    slideIndex = (slideIndex + 1) % slides.length;
-    slides[slideIndex].classList.add("active");
-}
-if(slides.length > 1) {
-    setInterval(showNextSlide, 4000); // Change every 4 sec
-}
-</script>
+    function showNextSlide() {
+        slides[slideIndex].classList.remove("active");
+        slideIndex = (slideIndex + 1) % slides.length;
+        slides[slideIndex].classList.add("active");
+    }
+    if (slides.length > 1) {
+        setInterval(showNextSlide, 4000); // Change every 4 sec
+    }
+    </script>
 
     <section class="featured-rooms">
-    <h2 class="section-title">Our Featured Rooms</h2>
-    <p class="section-subtitle">
-        Discover our carefully curated rooms designed for comfort, luxury, and unforgettable experiences
-    </p>
+        <h2 class="section-title">Our Featured Rooms</h2>
+        <p class="section-subtitle">
+            Discover our carefully curated rooms designed for comfort, luxury, and unforgettable experiences
+        </p>
 
-    <div class="rooms-container">
-        <?php if ($result && mysqli_num_rows($result) > 0): ?>
+        <div class="rooms-container">
+            <?php if ($result && mysqli_num_rows($result) > 0): ?>
             <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                <?php 
+            <?php 
                     // ✅ Handle multiple images
                     $images = !empty($row['image']) ? explode(',', $row['image']) : [];
                     $firstImage = !empty($images[0]) ? trim($images[0]) : 'default.jpg';
                 ?>
-                <div class="room-card">
-                    <!-- Room Image -->
-                    <img src="uploads/<?php echo htmlspecialchars($firstImage); ?>" 
-                        alt="<?php echo htmlspecialchars($row['name']); ?>" 
-                        class="room-img">
+            <div class="room-card">
+                <!-- Room Image -->
+                <img src="uploads/<?php echo htmlspecialchars($firstImage); ?>"
+                    alt="<?php echo htmlspecialchars($row['name']); ?>" class="room-img">
 
-                    <div class="room-content">
-                        <!-- Title + Rating -->
-                        <div class="room-header">
-                            <h3><?php echo htmlspecialchars($row['name']); ?></h3>
-                            <span class="rating">⭐ <?php echo htmlspecialchars($row['rating'] ?? '4.5'); ?></span>
-                        </div>
+                <div class="room-content">
+                    <!-- Title + Rating -->
+                    <div class="room-header">
+                        <h3><?php echo htmlspecialchars($row['name']); ?></h3>
+                        <span class="rating">⭐ <?php echo htmlspecialchars($row['rating'] ?? '4.5'); ?></span>
+                    </div>
 
-                        <!-- Description -->
-                        <p class="room-desc">
-                            <?php echo htmlspecialchars(substr($row['description'], 0, 70)); ?>...
-                        </p>
+                    <!-- Description -->
+                    <p class="room-desc">
+                        <?php echo htmlspecialchars(substr($row['description'], 0, 70)); ?>...
+                    </p>
 
-                        <!-- Amenities -->
-                        <div class="features">
-                            <?php 
+                    <!-- Amenities -->
+                    <div class="features">
+                        <?php 
                             $amenities = !empty($row['amenities']) ? explode(',', $row['amenities']) : [];
                             foreach($amenities as $amenity): ?>
-                                <span class="tag"><?php echo htmlspecialchars(trim($amenity)); ?></span>
-                            <?php endforeach; ?>
-                        </div>
+                        <span class="tag"><?php echo htmlspecialchars(trim($amenity)); ?></span>
+                        <?php endforeach; ?>
+                    </div>
 
-                        <!-- Price + Button -->
-                        <div class="room-footer">
-                            <span class="price">₹<?php echo htmlspecialchars($row['price']); ?><small>/night</small></span>
-                            <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="btn">View Details</a>
-                        </div>
+                    <!-- Price + Button -->
+                    <div class="room-footer">
+                        <span class="price">₹<?php echo htmlspecialchars($row['price']); ?><small>/night</small></span>
+                        <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="btn">View Details</a>
                     </div>
                 </div>
+            </div>
             <?php endwhile; ?>
-        <?php else: ?>
+            <?php else: ?>
             <p class="no-rooms">No rooms found at the moment. Please check back later!</p>
-        <?php endif; ?>
-    </div>
+            <?php endif; ?>
+        </div>
 
-    <div class="view-all">
-        <a href="rooms.php" class="btn">View All Rooms</a>
-    </div>
-</section>
+        <div class="view-all">
+            <a href="rooms.php" class="btn">View All Rooms</a>
+        </div>
+    </section>
 
     <section class="amenities">
         <h2 class="section-title">Premium Amenities</h2>
@@ -428,7 +431,15 @@ if(slides.length > 1) {
 
             <!-- About -->
             <div class="footer-col">
-                <h3 class="logo"><span class="logo-icon">S</span> Shakti Bhuvan</h3>
+                <div class="logo">
+                    <div class="logo-icon">
+                        <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+                    </div>
+                    <div class="logo-text">
+                        <h1 style="color: #fff;">Shakti Bhuvan</h1>
+                        <span>Premium Stays</span>
+                    </div>
+                </div>
                 <p>
                     Experience luxury and comfort in our premium rooms with exceptional hospitality and modern
                     amenities.
@@ -478,7 +489,7 @@ if(slides.length > 1) {
 
         <!-- Bottom -->
         <div class="footer-bottom">
-            <p>© 2025 Shakti Bhuvan. All rights reserved.</p>
+            <p>© 2025 Shakti Bhuvan Powerd By Velox Group. All rights reserved.</p>
             <div>
                 <a href="#">Privacy Policy</a> |
                 <a href="#">Terms of Service</a>
