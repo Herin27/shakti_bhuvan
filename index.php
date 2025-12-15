@@ -28,7 +28,7 @@ $result = mysqli_query($conn, $query);
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
+    <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
 
 </head>
 
@@ -149,10 +149,10 @@ $result = mysqli_query($conn, $query);
 </style>
 
 <body>
-    <header class="navbar">
+    <!-- <header class="navbar">
         <div class="logo">
             <div class="logo-icon">
-                <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+                <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
             </div>
             <div class="logo-text">
                 <h1>Shakti Bhuvan</h1>
@@ -174,7 +174,8 @@ $result = mysqli_query($conn, $query);
             <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
             <a href="rooms.php" class="book-btn">Book Now</a>
         </div>
-    </header>
+    </header> -->
+    <?php include 'header.php'; ?>
 
     <div class="hero-section" id="hero-section">
         <!-- Slider Images -->
@@ -294,8 +295,8 @@ $result = mysqli_query($conn, $query);
 
                     <!-- Price + Button -->
                     <div class="room-footer">
-                        <span class="price">₹<?php echo htmlspecialchars($row['price']); ?><small>/night</small></span>
-                        <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="btn">View Details</a>
+                        <span class="price">₹<?php echo htmlspecialchars($row['discount_price']); ?><small>/night</small></span>
+                        <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="view_btn">View Details</a>
                     </div>
                 </div>
             </div>
@@ -306,7 +307,7 @@ $result = mysqli_query($conn, $query);
         </div>
 
         <div class="view-all">
-            <a href="rooms.php" class="btn">View All Rooms</a>
+            <a href="rooms.php" class="view_btn">View All Rooms</a>
         </div>
     </section>
 
@@ -433,7 +434,7 @@ $result = mysqli_query($conn, $query);
             <div class="footer-col">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+                        <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
                     </div>
                     <div class="logo-text">
                         <h1 style="color: #fff;">Shakti Bhuvan</h1>
@@ -489,7 +490,7 @@ $result = mysqli_query($conn, $query);
 
         <!-- Bottom -->
         <div class="footer-bottom">
-            <p>© 2025 Shakti Bhuvan Powerd By Velox Group. All rights reserved.</p>
+            <p>© 2025 Shakti Bhuvan Powerd By <span><a style="text-decoration: none;" href="https://www.veloxgroup.co.in/">Velox Group</a></span>. All rights reserved.</p>
             <div>
                 <a href="#">Privacy Policy</a> |
                 <a href="#">Terms of Service</a>

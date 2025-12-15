@@ -183,7 +183,26 @@ h2 {
   font-size: 13px;
   color: #777;
 }
-
+.view_btn{
+  padding: 8px 16px;
+  background: #f9f5ef;
+  border: 1px solid #e6d8c2;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  color: #444;
+  transition: all 0.3s ease;
+}
+a .view_btn{
+padding: 8px 16px;
+  background: #f9f5ef;
+  border: 1px solid #e6d8c2;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  color: #444;
+  transition: all 0.3s ease;
+}
 .btn {
   padding: 8px 16px;
   background: #f9f5ef;
@@ -198,22 +217,7 @@ h2 {
 .btn:hover {
   background: #e6d8c2;
 }
-
-
-.btn {
-  display: inline-block;
-  padding: 8px 15px;
-  background: #f5e6cc;
-  border-radius: 10px;
-  text-decoration: none;
-  font-weight: bold;
-  color: #444;
-  transition: background 0.3s;
-}
-
-.btn:hover {
-  background: #e0d0b0;
-}
+/* ===== Footer Styles ===== */
 .footer {
   background: #8a6642;
   color: white;

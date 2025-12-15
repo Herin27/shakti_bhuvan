@@ -20,7 +20,7 @@ p,a, .hero-section p {
     align-items: center;
     padding: 15px 50px;
     background-color: #fdfbf6;
-    max-width: 1200px;
+    /* max-width: 1200px; */
     margin: 0 auto;
 }
 

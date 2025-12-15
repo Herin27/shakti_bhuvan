@@ -1,4 +1,7 @@
 /* Footer */
+.p{
+  margin-top: 10px;
+}
 .footer {
   background: #8a6642;
   color: white;
@@ -24,6 +27,7 @@
 .footer-col p {
   color: #e0e0e0;
   margin-bottom: 15px;
+
 }
 
 .footer-col ul {

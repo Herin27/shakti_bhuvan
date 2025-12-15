@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 09, 2025 at 05:14 AM
+-- Generation Time: Sep 25, 2025 at 01:23 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -99,11 +99,10 @@ CREATE TABLE `gallery` (
 --
 
 INSERT INTO `gallery` (`id`, `image_url`, `image_type`, `created_at`) VALUES
+(1, 'uploads/1758427814_DSC06358.JPG', 'Hotel View', '2025-09-21 04:10:14'),
 (2, 'uploads/1758427814_WhatsApp Image 2025-09-20 at 18.57.58_b7a89080.jpg', 'Hotel View', '2025-09-21 04:10:14'),
 (3, 'uploads/1758427814_WhatsApp Image 2025-09-20 at 18.57.59_23e0ed2d.jpg', 'Hotel View', '2025-09-21 04:10:14'),
-(4, 'uploads/1758427814_DSC06359.JPG', 'Hotel View', '2025-09-21 04:10:14'),
-(5, 'uploads/1759234491_DSC06391.JPG', 'Luxury Suite', '2025-09-30 12:14:51'),
-(6, 'uploads/1759234491_DSC06390.JPG', 'Luxury Suite', '2025-09-30 12:14:51');
+(4, 'uploads/1758427814_DSC06359.JPG', 'Hotel View', '2025-09-21 04:10:14');
 
 -- --------------------------------------------------------
 
@@ -121,8 +120,7 @@ CREATE TABLE `hero_section` (
 --
 
 INSERT INTO `hero_section` (`id`, `background_image`) VALUES
-(3, 'uploads/DSC06359.JPG'),
-(4, 'uploads/WhatsApp Image 2025-09-20 at 18.57.59_23e0ed2d.jpg');
+(1, 'uploads/christopher-jolly-GqbU78bdJFM-unsplash.jpg');
 
 -- --------------------------------------------------------
 
@@ -176,8 +174,9 @@ CREATE TABLE `rooms` (
 --
 
 INSERT INTO `rooms` (`id`, `name`, `description`, `price`, `discount_price`, `size`, `bed_type`, `guests`, `rating`, `reviews`, `image`, `amenities`, `features`, `policies`, `created_at`, `status`) VALUES
-(3, 'Luxury Suite', 'Premium suite with separate living area, private balcony, and luxurious amenities for the ultimate comfort experience.', 6500.00, 5500.00, '600 sq ft', 'King Size Bed', '4', 4.9, 124, 'premium_photo-1661877303180-19a028c21048.avif', 'Free Wi-Fi,AC,Room Service,TV,Parking,Swimming Pool', 'Sea View,Balcony,Jacuzzi,Smart TV,Work Desk', 'No Smoking,Pet Friendly,Free Cancellation,Check-in after 12 PM,Check-out before 11 AM', '2025-08-23 08:58:34', 'Available'),
-(4, 'Luxury Suite', 'best', 5000.00, 500.00, '350 sq ft', 'King Size Bed', '2', 4.8, 124, '1759143589_DSC06391.JPG,1759143589_DSC06390.JPG', 'Free Wi-Fi,AC,Room Service,TV,parking', 'Balcony,Smart TV', 'No Smoking', '2025-09-29 10:59:49', 'Available');
+(1, 'Deluxe Room', 'Spacious and elegantly designed for comfort', 4000.00, 3500.00, '2', 'King Size Bed', '2', 4.8, 124, 'download (3).jpeg', 'Free Wi-Fi,AC,TV,Swimming Pool,Gym', 'Sea View', 'No Smoking,Pet Friendly,Check-in after 12 PM', '2025-08-23 08:45:23', 'Available'),
+(2, 'Standard Room', 'Comfortable accommodation with essential amenities', 3000.00, 2500.00, '350 sq ft', 'King Size Bed', '2', 4.8, 124, 'christopher-jolly-GqbU78bdJFM-unsplash.jpg', 'Free Wi-Fi,AC', 'Sea View,Smart TV', 'No Smoking', '2025-08-23 08:56:24', 'Occupied'),
+(3, 'Luxury Suite', 'Premium suite with separate living area, private balcony, and luxurious amenities for the ultimate comfort experience.', 6500.00, 5500.00, '600 sq ft', 'King Size Bed', '4', 4.9, 124, 'premium_photo-1661877303180-19a028c21048.avif', 'Free Wi-Fi,AC,Room Service,TV,Mini Bar,Parking,Swimming Pool,Gym', 'Sea View,Balcony,Jacuzzi,Smart TV,Work Desk', 'No Smoking,Pet Friendly,Free Cancellation,Check-in after 12 PM,Check-out before 11 AM', '2025-08-23 08:58:34', 'Occupied');
 
 -- --------------------------------------------------------
 
@@ -275,13 +274,13 @@ ALTER TABLE `contact_messages`
 -- AUTO_INCREMENT for table `gallery`
 --
 ALTER TABLE `gallery`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `hero_section`
 --
 ALTER TABLE `hero_section`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -293,7 +292,7 @@ ALTER TABLE `payments`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables

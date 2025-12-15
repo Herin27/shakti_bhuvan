@@ -13,7 +13,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./assets/css/rooms.css">
   <link rel="stylesheet" href="./assets/css/navbar.css">
-  <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
+  <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
   <style>
     .room-slider {
       position: relative;
@@ -50,10 +50,10 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
   </style>
 </head>
 <body>
-<header class="navbar">
+<!-- <header class="navbar">
   <div class="logo">
     <div class="logo-icon">
-        <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+        <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
     </div>
     <div class="logo-text">
         <h1>Shakti Bhuvan</h1>
@@ -74,7 +74,8 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
       <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
       <a href="rooms.php" class="book-btn">Book Now</a>
   </div>
-</header>
+</header> -->
+<?php include 'header.php'; ?>
 
 <!-- ===== Search Bar Section ===== -->
 <section class="search-section">
@@ -164,8 +165,8 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
       </div>
 
       <div class="room-footer">
-        <span class="price">₹<?php echo $row['price']; ?><small>/night</small></span>
-        <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="btn">View Details</a>
+        <span class="price">₹<?php echo $row['discount_price']; ?><small>/night</small></span>
+        <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="view_btn">View Details</a>
       </div>
     </div>
   </div>

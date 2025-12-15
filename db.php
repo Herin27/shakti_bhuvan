@@ -10,6 +10,8 @@ $conn = mysqli_connect($host, $user, $pass, $dbname);
 if (!$conn) {
     die("Database connection failed: " . mysqli_connect_error());
 }
+
+
 ?>
 <!-- Common CSS & Fonts -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

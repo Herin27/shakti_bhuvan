@@ -21,7 +21,10 @@ $sql = "INSERT INTO contact_messages (fullname, email, phone, subject, checkin, 
 
 if ($conn->query($sql) === TRUE) {
     echo "Message saved successfully!";
+    header("Location: contact.php?status=success");
+
 } else {
+
     echo "Error: " . $sql . "<br>" . $conn->error;
 }
 

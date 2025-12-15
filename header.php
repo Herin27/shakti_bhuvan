@@ -11,7 +11,7 @@
   <header class="navbar">
         <div class="logo">
         <div class="logo-icon">
-            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+            <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
         </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>
@@ -25,7 +25,7 @@
             <a href="rooms.php">Rooms</a>
             <a href="gallery.php">Gallery</a>
             <a href="contact.php">Contact</a>
-            <a href="admin.php">admin</a>
+            <a href="admin.php">Admin</a>
         </nav>
 
         <div class="contact-info">

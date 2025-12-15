@@ -7,8 +7,8 @@ if (!isset($_SESSION['booking'])) {
 $booking = $_SESSION['booking'];
 
 // Razorpay config
-$keyId = "rzp_test_RCCShYsW1Qsowp";   // replace with your Test Key ID
-$keySecret = "OzAJu511WKdQoEZWl5jXu1bA"; // replace with your Test Secret
+$keyId = "rzp_test_RqeUyvsrea1Qdx";   // replace with your Test Key ID
+$keySecret = "DypnwCtjMOpiwBcJmZKkeYbd"; // replace with your Test Secret
 
 require('razorpay-php-master/Razorpay.php'); // ✅ install SDK via composer require razorpay/razorpay
 use Razorpay\Api\Api;
@@ -55,7 +55,7 @@ $orderId = $razorpayOrder['id']; // ✅ real Razorpay order_id
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
+  <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
 </head>
 <style>
     .logo-icon img {
@@ -70,7 +70,7 @@ $orderId = $razorpayOrder['id']; // ✅ real Razorpay order_id
 <header class="navbar">
     <div class="logo">
         <div class="logo-icon">
-            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+            <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
         </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>
@@ -83,7 +83,7 @@ $orderId = $razorpayOrder['id']; // ✅ real Razorpay order_id
         <a href="rooms.php">Rooms</a>
         <a href="gallery.php">Gallery</a>
             <a href="contact.php">Contact</a>
-            <a href="admin.php">admin</a>
+            <a href="admin.php">Admin</a>
     </nav>
 
     <div class="contact-info">
@@ -144,9 +144,40 @@ document.getElementById('payBtn').onclick = function(e){
         "currency": "INR",
         "name": "Shakti Bhuvan",
         "description": "Room Booking Payment",
-        "order_id": "<?php echo $orderId; ?>", // ✅ real order_id
+        "order_id": "<?php echo $orderId; ?>", 
         "handler": function (response){
-            window.location.href = "thank_you.php?payment_id=" + response.razorpay_payment_id + "&order_id=<?php echo $orderId; ?>";
+            
+            // Data to send to server for verification
+            var paymentData = {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+            };
+
+            // Send data to server for verification and DB insertion
+            fetch('verify_payment.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams(paymentData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    // Redirect to thank you page on successful verification
+                    window.location.href = "thankyou.php?status=success&booking_id=" + data.booking_id;
+                } else {
+                    // Redirect to thank you page on verification failure
+                    console.error("Verification failed:", data.error);
+                    window.location.href = "thankyou.php?status=failed";
+                }
+            })
+            .catch(error => {
+                console.error('Error during AJAX verification:', error);
+                alert('An unexpected error occurred. Please contact support.');
+                window.location.href = "thankyou.php?status=failed";
+            });
         },
         "prefill": {
             "name": "<?php echo $_SESSION['booking']['customer_name'] ?? 'Guest'; ?>",

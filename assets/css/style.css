@@ -16,7 +16,7 @@ p{
 }
 a, .hero-section p {
     font-family: 'Inter', sans-serif;
-    font-weight: 400;
+    /* font-weight: 400; */
     line-height: 1.6;
     text-align: left;
 }
@@ -139,11 +139,11 @@ a, .hero-section p {
 .search-box button:hover {
     background: #d4a93d;
 }
-span {
+/* span {
     font-weight: 600;
     color: #8b6c4a;
     margin-right: 10px;
-}
+} */
 
 /* Section */
 .featured-rooms {
@@ -179,7 +179,7 @@ span {
   border-radius: 16px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   overflow: hidden;
-  max-width: 360px;
+  max-width: 350px;
   margin: 20px;
   font-family: 'Segoe UI', Arial, sans-serif;
 }
@@ -253,6 +253,26 @@ span {
   color: #777;
 }
 
+.view_btn{
+  padding: 8px 16px;
+  background: #f9f5ef;
+  border: 1px solid #e6d8c2;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  color: #444;
+  transition: all 0.3s ease;
+}
+a .view_btn{
+padding: 8px 16px;
+  background: #f9f5ef;
+  border: 1px solid #e6d8c2;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  color: #444;
+  transition: all 0.3s ease;
+}
 .btn {
   padding: 8px 16px;
   background: #f9f5ef;
@@ -524,6 +544,10 @@ span {
 }
 
 /* Footer */
+/* Footer */
+.p{
+  margin-top: 10px;
+}
 .footer {
   background: #8a6642;
   color: white;
@@ -549,6 +573,7 @@ span {
 .footer-col p {
   color: #e0e0e0;
   margin-bottom: 15px;
+margin-top: 10px;
 }
 
 .footer-col ul {
@@ -616,6 +641,40 @@ span {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo-icon {
+    background-color: #eacb74;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.logo-icon img {
+    width: 60px;   /* adjust size */
+    height: auto;
+    border-radius: 50%; /* make circular if needed */
+    margin-right: 10px;
+}
+.logo-text h1 {
+    font-size: 20px;
+    margin: 0;
+    color: #8b6c4a;
+}
+
+.logo-text span {
+    font-size: 12px;
+    color: #b29b85;
 }
 
 /* Footer */

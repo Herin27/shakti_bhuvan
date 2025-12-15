@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <title>Contact Us Section</title>
-  <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
+  <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
   <style>
     body {
       margin: 0;
@@ -51,7 +51,7 @@
 <header class="navbar">
         <div class="logo">
         <div class="logo-icon">
-            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+            <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
         </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>
@@ -65,7 +65,7 @@
             <a href="rooms.php">Rooms</a>
             <a href="gallery.php">Gallery</a>
             <a href="contact.php" class="active">Contact</a>
-            <a href="admin.php">admin</a>
+            <a href="admin.php">Admin</a>
         </nav>
 
         <div class="contact-info">

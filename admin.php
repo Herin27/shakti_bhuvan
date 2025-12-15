@@ -8,9 +8,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // Check credentials
-    if ($email === "herin7151@gmail.com" && $password === "1") {
+    if ($email === "admin123@gmail.com" && $password === "1") {
         $_SESSION['admin'] = $email;
-        header("Location: admin_deshboard.php");
+        header("Location: admin_dashboard.php");
         exit();
     } else {
         $error = "Invalid email or password!";

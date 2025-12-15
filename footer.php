@@ -15,14 +15,14 @@
             <div class="footer-col">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+                        <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
                     </div>
                     <div class="logo-text">
                         <h1 style="color: #fff;">Shakti Bhuvan</h1>
                         <span>Premium Stays</span>
                     </div>
                 </div>
-                <p>
+                <p class="p">
                     Experience luxury and comfort in our premium rooms with exceptional hospitality and modern
                     amenities.
                 </p>
@@ -71,7 +71,7 @@
 
         <!-- Bottom -->
         <div class="footer-bottom">
-            <p>© 2025 Shakti Bhuvan Powerd By Velox Group. All rights reserved.</p>
+            <p>© 2025 Shakti Bhuvan Powerd By <span><a style="text-decoration: none;" href="https://www.veloxgroup.co.in/">Velox Group</a></span>. All rights reserved.</p>
             <div>
                 <a href="#">Privacy Policy</a> |
                 <a href="#">Terms of Service</a>

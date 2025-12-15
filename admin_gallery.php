@@ -57,7 +57,7 @@ $images = $result->fetch_all(MYSQLI_ASSOC);
   <meta charset="UTF-8">
   <title>Admin - Add Gallery Images</title>
   <link rel="stylesheet" href="./assets/css/navbar.css">
-  <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
+  <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
   <style>
     html, body { height: 100%; margin: 0; }
     body { font-family: Arial, sans-serif; background: #f4f4f9; }
@@ -93,7 +93,7 @@ $images = $result->fetch_all(MYSQLI_ASSOC);
 <header class="navbar">
         <div class="logo">
         <div class="logo-icon">
-            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+            <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
         </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>

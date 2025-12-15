@@ -95,7 +95,7 @@ $result = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
 <!-- <header class="navbar">
         <div class="logo">
         <div class="logo-icon">
-            <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+            <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
         </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>

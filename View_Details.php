@@ -15,8 +15,28 @@ if(!$room){
 
 // ensure numeric values
 $roomPrice = (float)$room['price'];
-$discountPrice = (float)$room['discount_price'];
-$images = array_filter(array_map('trim', explode(',', $room['image'])));
+$discountPrice = (float)$room['discount_price']; // FINAL PRICE
+
+// ----------------------------------------------------------------------
+// FIX 1: Correctly process image paths from the database.
+// The database saves the path (e.g., 'uploads/image.jpg'). We split the string,
+// clean it up, and remove any preceding 'uploads/' if it exists to ensure
+// the final HTML path is correct.
+// ----------------------------------------------------------------------
+$raw_images = array_filter(array_map('trim', explode(',', $room['image'])));
+$images = [];
+
+foreach ($raw_images as $path) {
+    // Check if the path starts with 'uploads/' and remove it for the second time prepended later
+    if (strpos($path, 'uploads/') === 0) {
+        $images[] = $path; // Keep the full path as saved in DB
+    } else {
+        // If the path somehow only saved the filename, prepend 'uploads/'
+        $images[] = 'uploads/' . $path;
+    }
+}
+// Note: We use the full path saved in the DB in the HTML below.
+// ----------------------------------------------------------------------
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -28,7 +48,7 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/view_details.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="icon" href="assets/images/logo.jpg" type="image/x-icon">
+  <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
 
   <style>
     .logo-icon img { width: 60px; height: auto; border-radius: 50%; margin-right: 10px; }
@@ -47,7 +67,7 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
 <header class="navbar">
   <div class="logo">
     <div class="logo-icon">
-      <img src="assets/images/logo.jpg" alt="Shakti Bhuvan Logo">
+      <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
     </div>
     <div class="logo-text">
       <h1>Shakti Bhuvan</h1>
@@ -66,19 +86,27 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
   <div class="contact-info">
     <span><i class="fas fa-phone"></i> +91 98765 43210</span>
     <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
-    <a href="rooms.php" class="book-btn">Book Now</a>
+    <!-- <a href="rooms.php" class="book-btn">Book Now</a> -->
   </div>
 </header>
 
 <div class="container">
-  <!-- Left: Room Info -->
   <div>
-    <!-- Room Image Slider -->
     <div class="room-slider">
       <div class="slider-wrapper">
-        <?php foreach($images as $img): ?>
-          <img src="uploads/<?php echo htmlspecialchars($img); ?>" alt="<?php echo htmlspecialchars($room['name']); ?>">
-        <?php endforeach; ?>
+        <?php 
+        // FIX 2: Use the full path from the $images array without prepending 'uploads/'
+        if (!empty($images)): 
+            foreach($images as $img_path): 
+        ?>
+            <img src="<?php echo htmlspecialchars($img_path); ?>" alt="<?php echo htmlspecialchars($room['name']); ?>">
+        <?php 
+            endforeach;
+        else:
+        // Fallback image if no images are found
+        ?>
+            <img src="assets/images/placeholder_room.jpg" alt="No Room Image Available">
+        <?php endif; ?>
       </div>
       <button class="slider-btn prev">&#10094;</button>
       <button class="slider-btn next">&#10095;</button>
@@ -103,7 +131,6 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
     </div>
   </div>
 
-  <!-- Right: Booking Box -->
   <form method="post" action="booking_form.php" id="bookNowForm">
     <input type="hidden" name="room_id" value="<?php echo $room['id']; ?>">
     <input type="hidden" name="room_name" value="<?php echo htmlspecialchars($room['name']); ?>">
@@ -124,21 +151,25 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
       <div class="price-details">
         <div class="row discount">
           <span>Room rate (per night)</span>
-          <strong id="roomDiscount">₹<?php echo number_format($roomPrice,2); ?></strong>
+          <strong id="roomDiscount">₹<?php echo number_format($discountPrice,2); ?></strong>
         </div>
+
         <div class="row">
-          <span>Discount</span>
-          <strong id="roomRate">-₹<?php echo number_format($discountPrice,2); ?></strong>
+          <span>You save</span>
+          <strong id="roomRate">₹<?php echo number_format($roomPrice - $discountPrice,2); ?></strong>
         </div>
+
         <div class="row">
           <span>Nights</span>
           <strong id="showNights">—</strong>
         </div>
+
         <div class="row">
           <span id="taxLabel">Taxes & fees (—)</span>
           <strong id="roomTax">₹0.00</strong>
         </div>
         <hr>
+
         <div class="row total">
           <span>Total</span>
           <strong id="totalPrice">₹0.00</strong>
@@ -157,8 +188,8 @@ $images = array_filter(array_map('trim', explode(',', $room['image'])));
 <script>
 const fmtINR = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
 
-const roomPrice = parseFloat(document.getElementById('room_price').value) || 0;
-const roomDiscount = parseFloat(document.getElementById('room_discount').value) || 0;
+const roomPrice = parseFloat(document.getElementById('room_price').value);
+const roomDiscount = parseFloat(document.getElementById('room_discount').value); // FINAL PRICE
 
 const checkinEl = document.getElementById('checkin');
 const checkoutEl = document.getElementById('checkout');
@@ -170,55 +201,58 @@ const roomTaxEl = document.getElementById('roomTax');
 const bookBtn = document.getElementById('bookNowBtn');
 const taxLabel = document.getElementById('taxLabel');
 
-// ✅ Function to get GST rate according to price
+// GST slabs as per govt
 function getGstRate(price) {
   if (price < 1000) return 0;
-  else if (price >= 1000 && price <= 7500) return 5;
+  else if (price <= 7500) return 5; 
   else return 18;
 }
 
-// ✅ Function to update totals dynamically
 function updateTotals(checkinDate, checkoutDate) {
   if (!checkinDate || !checkoutDate) {
     showNightsEl.innerText = '—';
-    const gstRate = getGstRate(roomPrice);
-    const gstAmount = ((roomPrice - roomDiscount) * gstRate) / 100;
+
+    const gstRate = getGstRate(roomDiscount);
+    const gstAmount = (roomDiscount * gstRate) / 100;
+
     taxLabel.innerText = `Taxes & fees (${gstRate}%)`;
     roomTaxEl.innerText = fmtINR(gstAmount);
-    const total = (roomPrice - roomDiscount) + gstAmount;
+
+    const total = roomDiscount + gstAmount;
     totalPriceEl.innerText = fmtINR(total);
+
     hiddenTotalEl.value = total.toFixed(2);
-    nightsEl.value = 1;
     bookBtn.disabled = true;
     return;
   }
 
   const diffMs = checkoutDate - checkinDate;
   const nights = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (isNaN(nights) || nights <= 0) {
+
+  if (nights <= 0) {
     showNightsEl.innerText = 'Invalid';
     totalPriceEl.innerText = fmtINR(0);
-    hiddenTotalEl.value = '0';
-    nightsEl.value = 0;
     bookBtn.disabled = true;
     return;
   }
 
-  const perNight = (roomPrice - roomDiscount);
-  const gstRate = getGstRate(roomPrice);
-  const gstAmount = ((perNight * nights) * gstRate) / 100; // GST on total stay
-  const total = (perNight * nights) + gstAmount;
+  const perNight = roomDiscount;
+  const subtotal = perNight * nights;
+
+  const gstRate = getGstRate(roomDiscount);
+  const gstAmount = (subtotal * gstRate) / 100;
+  const total = subtotal + gstAmount;
 
   showNightsEl.innerText = nights;
   taxLabel.innerText = `Taxes & fees (${gstRate}%)`;
   roomTaxEl.innerText = fmtINR(gstAmount);
   totalPriceEl.innerText = fmtINR(total);
-  hiddenTotalEl.value = total.toFixed(2);
+
   nightsEl.value = nights;
+  hiddenTotalEl.value = total.toFixed(2);
   bookBtn.disabled = false;
 }
 
-// ✅ Flatpickr date selector
 flatpickr("#dateRange", {
   mode: "range",
   inline: false,
@@ -232,14 +266,12 @@ flatpickr("#dateRange", {
       checkoutEl.value = co.toISOString().split('T')[0];
       updateTotals(ci, co);
     } else {
-      checkinEl.value = '';
-      checkoutEl.value = '';
       updateTotals(null, null);
     }
   }
 });
 
-// ✅ Image slider logic
+// Slider
 const slider = document.querySelector('.room-slider');
 const wrapper = slider.querySelector('.slider-wrapper');
 const slides = wrapper.querySelectorAll('img');
@@ -254,7 +286,6 @@ slider.querySelector('.prev').addEventListener('click', () => {
   wrapper.style.transform = `translateX(-${index * 100}%)`;
 });
 
-// Initialize totals
 updateTotals(null, null);
 </script>
 
