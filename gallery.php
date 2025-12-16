@@ -146,7 +146,7 @@ $categories = ['Hotel View', 'Luxury Suite', 'Deluxe Room', 'Standard Room'];
         </nav>
 
         <div class="contact-info">
-            <span><i class="fas fa-phone"></i> +91 98765 43210</span>
+            <span><i class="fas fa-phone"></i> +91 92659 00219</span>
             <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
             <a href="rooms.php" class="book-btn">Book Now</a>
         </div>

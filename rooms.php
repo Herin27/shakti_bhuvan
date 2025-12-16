@@ -70,7 +70,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
   </nav>
 
   <div class="contact-info">
-      <span><i class="fas fa-phone"></i> +91 98765 43210</span>
+      <span><i class="fas fa-phone"></i> +91 92659 00219</span>
       <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
       <a href="rooms.php" class="book-btn">Book Now</a>
   </div>
@@ -194,7 +194,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
       <h4>Contact Info</h4>
       <ul>
         <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
-        <li>📞 +91 98765 43210</li>
+        <li>📞 +91 92659 00219</li>
         <li>✉️ info@shaktibhuvan.com</li>
       </ul>
     </div>
