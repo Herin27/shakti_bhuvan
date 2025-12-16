@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 25, 2025 at 01:23 PM
+-- Generation Time: Dec 16, 2025 at 11:45 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -31,15 +31,30 @@ CREATE TABLE `bookings` (
   `id` int(11) NOT NULL,
   `customer_name` varchar(100) DEFAULT NULL,
   `phone` varchar(15) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
   `guests` int(11) DEFAULT 1,
   `room_id` int(11) DEFAULT NULL,
+  `room_number` varchar(10) DEFAULT NULL,
   `checkin` date DEFAULT NULL,
   `checkout` date DEFAULT NULL,
   `total_price` decimal(10,2) DEFAULT NULL,
+  `extra_bed_included` tinyint(1) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `status` enum('Confirmed','Pending','Checked-in','Checked-out','Cancelled') DEFAULT 'Pending',
-  `payment_status` enum('Paid','Partial','Pending') DEFAULT 'Pending'
+  `payment_status` enum('Paid','Partial','Pending') DEFAULT 'Pending',
+  `razorpay_id` varchar(50) DEFAULT NULL,
+  `notes` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `bookings`
+--
+
+INSERT INTO `bookings` (`id`, `customer_name`, `phone`, `email`, `guests`, `room_id`, `room_number`, `checkin`, `checkout`, `total_price`, `extra_bed_included`, `created_at`, `status`, `payment_status`, `razorpay_id`, `notes`) VALUES
+(2, 'Herin Alkeshkumar Patel', '09023897448', 'herin7151@gmail.com', 2, 21, '2', '2025-12-16', '2025-12-17', 4935.00, 1, '2025-12-16 09:23:36', 'Pending', 'Pending', NULL, ''),
+(3, 'Herin Patel', '452467', '', 1, 21, '3', '2025-12-19', '2025-12-20', 4725.00, 0, '2025-12-19 09:43:20', 'Pending', 'Pending', NULL, ''),
+(4, 'Herin Alkeshkumar Patel', '09023897448', '', 1, 21, '4', '2025-12-17', '2025-12-18', 4935.00, 1, '2025-12-17 09:49:59', 'Pending', 'Pending', NULL, ''),
+(5, 'Herin Alkeshkumar Patel', '09023897448', 'herin7151@gmail.com', 1, 21, '5', '2025-12-16', '2025-12-17', 4935.00, 1, '2025-12-16 10:11:14', 'Pending', 'Pending', NULL, '');
 
 -- --------------------------------------------------------
 
@@ -99,10 +114,11 @@ CREATE TABLE `gallery` (
 --
 
 INSERT INTO `gallery` (`id`, `image_url`, `image_type`, `created_at`) VALUES
-(1, 'uploads/1758427814_DSC06358.JPG', 'Hotel View', '2025-09-21 04:10:14'),
 (2, 'uploads/1758427814_WhatsApp Image 2025-09-20 at 18.57.58_b7a89080.jpg', 'Hotel View', '2025-09-21 04:10:14'),
 (3, 'uploads/1758427814_WhatsApp Image 2025-09-20 at 18.57.59_23e0ed2d.jpg', 'Hotel View', '2025-09-21 04:10:14'),
-(4, 'uploads/1758427814_DSC06359.JPG', 'Hotel View', '2025-09-21 04:10:14');
+(4, 'uploads/1758427814_DSC06359.JPG', 'Hotel View', '2025-09-21 04:10:14'),
+(7, 'uploads/1765083424_69350920a8b73.JPG', 'Luxury Suite', '2025-12-07 04:57:04'),
+(9, 'uploads/1765083424_69350920ad626.JPG', 'Luxury Suite', '2025-12-07 04:57:04');
 
 -- --------------------------------------------------------
 
@@ -120,7 +136,9 @@ CREATE TABLE `hero_section` (
 --
 
 INSERT INTO `hero_section` (`id`, `background_image`) VALUES
-(1, 'uploads/christopher-jolly-GqbU78bdJFM-unsplash.jpg');
+(4, 'uploads/WhatsApp Image 2025-09-20 at 18.57.59_23e0ed2d.jpg'),
+(5, 'uploads/DSC06366.JPG'),
+(6, 'uploads/1765082060_693503cc9dc32.JPG');
 
 -- --------------------------------------------------------
 
@@ -156,12 +174,15 @@ CREATE TABLE `rooms` (
   `description` text DEFAULT NULL,
   `price` decimal(10,2) DEFAULT NULL,
   `discount_price` decimal(10,2) DEFAULT NULL,
+  `extra_bed_price` decimal(10,2) DEFAULT 0.00,
   `size` varchar(50) DEFAULT NULL,
   `bed_type` varchar(100) DEFAULT NULL,
   `guests` varchar(50) DEFAULT NULL,
+  `floor` varchar(50) DEFAULT NULL,
   `rating` decimal(2,1) DEFAULT NULL,
   `reviews` int(11) DEFAULT NULL,
   `image` varchar(255) DEFAULT NULL,
+  `ac_status` enum('AC','Non-AC') DEFAULT 'AC',
   `amenities` text DEFAULT NULL,
   `features` text DEFAULT NULL,
   `policies` text DEFAULT NULL,
@@ -173,10 +194,56 @@ CREATE TABLE `rooms` (
 -- Dumping data for table `rooms`
 --
 
-INSERT INTO `rooms` (`id`, `name`, `description`, `price`, `discount_price`, `size`, `bed_type`, `guests`, `rating`, `reviews`, `image`, `amenities`, `features`, `policies`, `created_at`, `status`) VALUES
-(1, 'Deluxe Room', 'Spacious and elegantly designed for comfort', 4000.00, 3500.00, '2', 'King Size Bed', '2', 4.8, 124, 'download (3).jpeg', 'Free Wi-Fi,AC,TV,Swimming Pool,Gym', 'Sea View', 'No Smoking,Pet Friendly,Check-in after 12 PM', '2025-08-23 08:45:23', 'Available'),
-(2, 'Standard Room', 'Comfortable accommodation with essential amenities', 3000.00, 2500.00, '350 sq ft', 'King Size Bed', '2', 4.8, 124, 'christopher-jolly-GqbU78bdJFM-unsplash.jpg', 'Free Wi-Fi,AC', 'Sea View,Smart TV', 'No Smoking', '2025-08-23 08:56:24', 'Occupied'),
-(3, 'Luxury Suite', 'Premium suite with separate living area, private balcony, and luxurious amenities for the ultimate comfort experience.', 6500.00, 5500.00, '600 sq ft', 'King Size Bed', '4', 4.9, 124, 'premium_photo-1661877303180-19a028c21048.avif', 'Free Wi-Fi,AC,Room Service,TV,Mini Bar,Parking,Swimming Pool,Gym', 'Sea View,Balcony,Jacuzzi,Smart TV,Work Desk', 'No Smoking,Pet Friendly,Free Cancellation,Check-in after 12 PM,Check-out before 11 AM', '2025-08-23 08:58:34', 'Occupied');
+INSERT INTO `rooms` (`id`, `name`, `description`, `price`, `discount_price`, `extra_bed_price`, `size`, `bed_type`, `guests`, `floor`, `rating`, `reviews`, `image`, `ac_status`, `amenities`, `features`, `policies`, `created_at`, `status`) VALUES
+(19, 'Luxury Suite', 'A well-organized room ideal for two guests, featuring ample space, clean beds, cupboards, and a peaceful atmosphere for a comfortable long stay.', 7000.00, 6000.00, 0.00, '350sq', '2', '2', 'Ground Floor', 4.9, 299, '1765083695_DSC06391.JPG,1765083695_DSC06390.JPG', 'AC', 'Free Wi-Fi,AC,Room Service,TV', 'Smart TV,Work Desk', 'No Smoking,Pet Friendly,Free Cancellation', '2025-12-07 05:01:35', 'Available'),
+(21, 'Luxury Suite', 'best room', 5000.00, 4500.00, 200.00, '350 sq ft', '2', '2', 'Ground Floor', 4.9, 124, '1765876899_0_DSC06391.JPG,1765876899_1_DSC06390.JPG', 'AC', 'Free Wi-Fi,AC,Room Service,TV', 'Balcony', 'No Smoking,Pet Friendly,Free Cancellation', '2025-12-16 09:21:39', 'Available');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `room_numbers`
+--
+
+CREATE TABLE `room_numbers` (
+  `id` int(11) NOT NULL,
+  `room_type_id` int(11) NOT NULL,
+  `floor` varchar(50) NOT NULL,
+  `room_number` varchar(10) NOT NULL,
+  `status` enum('Available','Occupied','Maintenance') DEFAULT 'Available'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `room_numbers`
+--
+
+INSERT INTO `room_numbers` (`id`, `room_type_id`, `floor`, `room_number`, `status`) VALUES
+(2, 21, 'Ground Floor', '2', 'Occupied'),
+(3, 21, 'Ground Floor', '3', 'Occupied'),
+(4, 21, 'Ground Floor', '4', 'Occupied'),
+(5, 21, 'Ground Floor', '5', 'Occupied'),
+(6, 21, 'Ground Floor', '6', 'Available'),
+(7, 21, 'Ground Floor', '7', 'Available'),
+(8, 21, 'Ground Floor', '8', 'Available');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `site_settings`
+--
+
+CREATE TABLE `site_settings` (
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `site_settings`
+--
+
+INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
+('email_address', 'info@shaktibhuvan.com'),
+('phone_number', '+91 98765 43210'),
+('physical_address', 'Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110');
 
 -- --------------------------------------------------------
 
@@ -203,8 +270,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`customer_id`, `name`, `email`, `phone`, `location`, `member_since`, `bookings`, `total_spent`, `rating`, `status`, `created_at`) VALUES
-('CUST1953', 'herin', 'patelherin15@gmail.com', '9023897448', 'Gandhinagar ', '2025-09-01', 22, 68550.00, NULL, 'VIP', '2025-09-01 05:30:30'),
-('CUST9430', 'Herin Patel', 'herin7151@gmail.com', '452467', 'Kherava , Mehsana ', '2025-09-01', 23, 79050.00, NULL, 'VIP', '2025-09-01 03:35:43');
+('CUST1322', 'Herin Patel', '', '452467', NULL, '2025-12-19', 1, 4725.00, NULL, 'ACTIVE', '2025-12-19 09:43:20'),
+('CUST8151', 'Herin Alkeshkumar Patel', 'herin7151@gmail.com', '09023897448', NULL, '2025-12-16', 3, 14805.00, NULL, 'ACTIVE', '2025-12-16 09:23:36');
 
 --
 -- Indexes for dumped tables
@@ -248,11 +315,27 @@ ALTER TABLE `rooms`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `room_numbers`
+--
+ALTER TABLE `room_numbers`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_room_number` (`room_number`),
+  ADD KEY `fk_room_type` (`room_type_id`);
+
+--
+-- Indexes for table `site_settings`
+--
+ALTER TABLE `site_settings`
+  ADD PRIMARY KEY (`setting_key`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`customer_id`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `phone` (`phone`),
+  ADD UNIQUE KEY `idx_phone` (`phone`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -262,7 +345,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `contact_messages`
@@ -274,13 +357,13 @@ ALTER TABLE `contact_messages`
 -- AUTO_INCREMENT for table `gallery`
 --
 ALTER TABLE `gallery`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `hero_section`
 --
 ALTER TABLE `hero_section`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `payments`
@@ -292,7 +375,13 @@ ALTER TABLE `payments`
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+
+--
+-- AUTO_INCREMENT for table `room_numbers`
+--
+ALTER TABLE `room_numbers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
@@ -303,6 +392,12 @@ ALTER TABLE `rooms`
 --
 ALTER TABLE `bookings`
   ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`);
+
+--
+-- Constraints for table `room_numbers`
+--
+ALTER TABLE `room_numbers`
+  ADD CONSTRAINT `fk_room_type` FOREIGN KEY (`room_type_id`) REFERENCES `rooms` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
