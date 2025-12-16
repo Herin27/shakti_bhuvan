@@ -13,6 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $guests = $_POST['guests'];
     $rating = $_POST['rating'];
     $reviews = $_POST['reviews'];
+    
+    // --- NEW FIELDS ---
+    $floor = $_POST['floor'];
+    $extra_bed_price = $_POST['extra_bed_price'];
+    $ac_status = $_POST['ac_status'];
+    $room_numbers_list = $_POST['room_numbers_list']; // New: Comma-separated room numbers
+    // --------------------
 
     // Convert array inputs to comma-separated strings
     $amenities = isset($_POST['amenities']) ? implode(',', $_POST['amenities']) : '';
@@ -44,36 +51,62 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     $images_str = implode(',', $uploaded_images);
     
-    // --- SQL Insertion ---
-    // NOTE: For security, you MUST use prepared statements to prevent SQL Injection.
-    // I am keeping the original structure for direct replacement, but strongly recommend
-    // using mysqli_prepare and bind_param for any real application.
+    // --- SQL Insertion for Room Type ---
     
-    // Simple sanitization for string inputs (still NOT a replacement for prepared statements)
+    // Sanitize string inputs
     $name = mysqli_real_escape_string($conn, $name);
     $description = mysqli_real_escape_string($conn, $description);
     $size = mysqli_real_escape_string($conn, $size);
     $bed_type = mysqli_real_escape_string($conn, $bed_type);
     $guests = mysqli_real_escape_string($conn, $guests);
+    $floor = mysqli_real_escape_string($conn, $floor);
+    $ac_status = mysqli_real_escape_string($conn, $ac_status);
     
-    // Numeric inputs can be cast/validated for safety
+    // Numeric inputs
     $price = (float)$price;
     $discount_price = (float)$discount_price;
+    $extra_bed_price = (float)$extra_bed_price;
     $rating = (float)$rating;
     $reviews = (int)$reviews;
 
-    $sql = "INSERT INTO rooms 
-        (name, description, price, discount_price, size, bed_type, guests, rating, reviews, image, amenities, features, policies) 
+    // INSERT main room type data
+    $sql_room = "INSERT INTO rooms 
+        (name, description, price, discount_price, size, bed_type, guests, rating, reviews, image, amenities, features, policies, floor, extra_bed_price, ac_status) 
         VALUES 
-        ('$name','$description','$price','$discount_price','$size','$bed_type','$guests','$rating','$reviews','$images_str','$amenities','$features','$policies')";
+        ('$name', '$description', '$price', '$discount_price', '$size', '$bed_type', '$guests', '$rating', '$reviews', '$images_str', '$amenities', '$features', '$policies', '$floor', '$extra_bed_price', '$ac_status')";
     
-    if (mysqli_query($conn, $sql)) {
-        echo "<script>alert('Room Added Successfully!');</script>";
-        // Optional: Redirect after success to prevent form resubmission
+    if (mysqli_query($conn, $sql_room)) {
+        $room_id = mysqli_insert_id($conn); // Get the ID of the newly inserted room type
+        $success = true;
+
+        // --- SQL Insertion for Room Numbers ---
+        $room_numbers_array = array_map('trim', explode(',', $room_numbers_list));
+        $room_numbers_array = array_filter($room_numbers_array); // Remove empty values
+
+        $room_insert_count = 0;
+        foreach ($room_numbers_array as $room_num) {
+            $safe_room_num = mysqli_real_escape_string($conn, $room_num);
+            
+            // Check if room number already exists globally (optional but good for UNIQUE constraint)
+            // Skip check for brevity, rely on UNIQUE key constraint in DB
+            
+            $sql_num = "INSERT INTO room_numbers 
+                (room_type_id, floor, room_number, status) 
+                VALUES 
+                ('$room_id', '$floor', '$safe_room_num', 'Available')";
+                
+            if (mysqli_query($conn, $sql_num)) {
+                $room_insert_count++;
+            }
+        }
+        
+        echo "<script>alert('Room Type Added Successfully! " . $room_insert_count . " physical rooms added.');</script>";
+        // Optional: Redirect
         // header("Location: admin_dashboard.php");
         // exit;
+
     } else {
-        echo "<script>alert('Error adding room: " . mysqli_error($conn) . "');</script>";
+        echo "<script>alert('Error adding room type: " . mysqli_error($conn) . "');</script>";
     }
 }
 ?>
@@ -94,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         margin-bottom: 20px;
     }
     .header-section .room-title {
-        margin-bottom: 0; /* Remove margin from h1 inside the new div */
+        margin-bottom: 0; 
     }
     .back-btn {
         display: inline-flex;
@@ -123,9 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     /* Existing styles from your provided code */
     .logo-icon img {
-        width: 60px;   /* adjust size */
+        width: 60px;   
         height: auto;
-        border-radius: 50%; /* make circular if needed */
+        border-radius: 50%; 
         margin-right: 10px;
     }
     /* extra tweaks for form only */
@@ -133,9 +166,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         max-width: 1200px;
         margin: 30px auto;
         padding: 0 15px;
-        /* Removed grid layout for single column form */
-        /* grid-template-columns: 2fr 1fr; 
-        gap: 20px; */
         display: flow;
     }
     .form-card {
@@ -175,23 +205,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         border-color: #0a7d5f;
         box-shadow: 0 0 0 2px rgba(10,125,95,0.15);
     }
-    .checkbox-group {
+    .checkbox-group, .radio-group { 
         display: grid;
         grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
         gap: 8px;
         margin: 10px 0 20px;
     }
-    .checkbox-group label {
+    .checkbox-group label, .radio-group label { 
         background: #f7f7f7;
         padding: 8px 12px;
         border-radius: 8px;
         border: 1px solid #e0e0e0;
         cursor: pointer;
         font-size: 14px;
-        display: flex; /* ensure input and text align */
+        display: flex; 
         align-items: center;
     }
-    .checkbox-group input {
+    .checkbox-group input, .radio-group input { 
         margin-right: 6px;
     }
     .submit-btn {
@@ -221,22 +251,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12.707 17.293l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L9.414 12l4.707 4.707a1 1 0 01-1.414 1.414z"/></svg>
             Back
         </a>
-        <h1 class="room-title">Add New Room</h1>
+        <h1 class="room-title">Add New Room Type</h1>
         
       </div>
-  <p class="desc">Fill in the details below to add a new room to Shakti Bhuvan.</p><br>
+  <p class="desc">Fill in the details below to add a new room type to Shakti Bhuvan.</p><br>
 
   <div class="form-card">
     <form method="post" enctype="multipart/form-data">
       <div class="form-grid">
         <div class="form-group">
-          <label>Room Name</label>
+          <label>Room Name (Type)</label>
           <input type="text" name="name" required>
         </div>
+        
         <div class="form-group">
-          <label>Room Size</label>
-          <input type="text" name="size">
+          <label>Default Floor for this Type</label>
+          <select name="floor" required>
+            <option value="">Select Floor</option>
+            <option value="Ground Floor">Ground Floor</option>
+            <option value="First Floor">First Floor</option>
+            <option value="Second Floor">Second Floor</option>
+            <option value="Third Floor">Third Floor</option>
+            <option value="Fourth Floor">Fourth Floor</option>
+          </select>
         </div>
+        
         <div class="form-group">
           <label>Total Price</label>
           <input type="number" name="price" step="0.01">
@@ -244,6 +283,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="form-group">
           <label>Discount Price </label>
           <input type="number" name="discount_price" step="0.01" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Extra Bed Price</label>
+          <input type="number" name="extra_bed_price" step="0.01" value="0.00">
+        </div>
+        
+        <div class="form-group">
+          <label>Room Size</label>
+          <input type="text" name="size">
         </div>
         <div class="form-group">
           <label>Bed Type</label>
@@ -262,11 +311,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <input type="number" name="reviews" min="0">
         </div>
       </div>
+      
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <label>Physical Room Numbers (Comma-Separated)</label>
+        <textarea name="room_numbers_list" rows="2" placeholder="Example: 101, 102, 205, 301"></textarea>
+        <small>Enter the individual physical room numbers that correspond to this room type. Each number should be separated by a comma.</small>
+      </div>
 
       <div class="form-group">
         <label>Description</label>
         <textarea name="description" rows="3"></textarea>
       </div>
+      
+      <h3>AC Status</h3>
+      <div class="radio-group">
+        <label><input type="radio" name="ac_status" value="AC" required> AC Room</label>
+        <label><input type="radio" name="ac_status" value="Non-AC" required> Non-AC Room</label>
+      </div>
+
 
       <div class="form-group">
         <label>Upload Room Images</label>
@@ -305,7 +367,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <label><input type="checkbox" name="policies[]" value="Check-out before 11 AM"> Check-out before 11 AM</label>
       </div>
 
-      <button type="submit" class="submit-btn">➕ Add Room</button>
+      <button type="submit" class="submit-btn">➕ Add Room Type & Physical Rooms</button>
     </form>
   </div>
 </div>

@@ -1,292 +1,364 @@
 <?php
 include 'db.php';
+include 'header.php'; // Include header for navigation/styling
 
-// get room id from URL
 $room_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-$sql = "SELECT * FROM rooms WHERE id = $room_id";
-$result = mysqli_query($conn, $sql);
-$room = mysqli_fetch_assoc($result);
+// --- 1. Fetch Main Room Details (including new fields) ---
+$sql_room = "SELECT * FROM rooms WHERE id = $room_id";
+$result_room = mysqli_query($conn, $sql_room);
 
-if(!$room){
-    echo "Room not found!";
+if (!$result_room || mysqli_num_rows($result_room) == 0) {
+    echo "<div class='container' style='padding: 50px; text-align: center;'>";
+    echo "<h1>Room Not Found</h1>";
+    echo "<p>The requested room details could not be loaded.</p>";
+    echo "<a href='rooms.php' class='btn'>Back to All Rooms</a>";
+    echo "</div>";
+    include 'footer.php';
     exit;
 }
 
-// ensure numeric values
-$roomPrice = (float)$room['price'];
-$discountPrice = (float)$room['discount_price']; // FINAL PRICE
+$room = mysqli_fetch_assoc($result_room);
 
-// ----------------------------------------------------------------------
-// FIX 1: Correctly process image paths from the database.
-// The database saves the path (e.g., 'uploads/image.jpg'). We split the string,
-// clean it up, and remove any preceding 'uploads/' if it exists to ensure
-// the final HTML path is correct.
-// ----------------------------------------------------------------------
-$raw_images = array_filter(array_map('trim', explode(',', $room['image'])));
-$images = [];
-
-foreach ($raw_images as $path) {
-    // Check if the path starts with 'uploads/' and remove it for the second time prepended later
-    if (strpos($path, 'uploads/') === 0) {
-        $images[] = $path; // Keep the full path as saved in DB
-    } else {
-        // If the path somehow only saved the filename, prepend 'uploads/'
-        $images[] = 'uploads/' . $path;
+// --- 2. Fetch Associated Physical Room Numbers ---
+$sql_room_numbers = "SELECT room_number, status FROM room_numbers WHERE room_type_id = $room_id ORDER BY room_number ASC";
+$result_room_numbers = mysqli_query($conn, $sql_room_numbers);
+$physical_rooms = [];
+if ($result_room_numbers) {
+    while ($row = mysqli_fetch_assoc($result_room_numbers)) {
+        $physical_rooms[] = $row;
     }
 }
-// Note: We use the full path saved in the DB in the HTML below.
-// ----------------------------------------------------------------------
+
+
+// Image Handling
+$images = !empty($room['image']) ? explode(',', $room['image']) : [];
+$first_image = !empty($images[0]) ? trim($images[0]) : 'default.jpg';
+$remaining_images = array_slice($images, 1);
+
+// Amenities/Features/Policies Handling
+$amenities = !empty($room['amenities']) ? explode(',', $room['amenities']) : [];
+$features = !empty($room['features']) ? explode(',', $room['features']) : [];
+$policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?php echo htmlspecialchars($room['name']); ?> - Details</title>
+    <meta charset="UTF-8">
+    <title><?php echo htmlspecialchars($room['name']); ?> Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css"> 
+    <link rel="stylesheet" href="./assets/css/navbar.css"> 
+    <link rel="stylesheet" href="./assets/css/rooms.css"> <style>
+        /* Specific Styles for View_Details Page */
+        .details-container {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 0 15px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+        .main-content h1 {
+            color: #5a4636;
+            margin-bottom: 10px;
+        }
+        .main-content .rating {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        .image-gallery {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .main-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        .thumbnail-images {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        .thumbnail-images img {
+            width: 100px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .thumbnail-images img:hover, .thumbnail-images img.active {
+            border-color: #f1c45f;
+        }
+        .detail-box {
+            background: #fff;
+            border: 1px solid #f5e6cc;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .detail-box h3 {
+            color: #b58900;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #f5e6cc;
+            padding-bottom: 8px;
+        }
+        .detail-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .detail-list li {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #444;
+            display: flex;
+            align-items: center;
+        }
+        .detail-list li strong {
+            color: #5a4636;
+            min-width: 150px;
+            font-weight: 600;
+        }
+        .price-section {
+            background: #fdfaf6;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #f1c45f;
+        }
+        .price-section .current-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #b58900;
+            margin: 0;
+        }
+        .price-section .original-price {
+            font-size: 1.2rem;
+            color: #888;
+            text-decoration: line-through;
+            margin-bottom: 15px;
+        }
+        .book-button {
+            display: block;
+            width: 100%;
+            background: #f1c45f;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .book-button:hover {
+            background: #d4a93d;
+        }
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        .tag-list .tag {
+            background: #f5e6cc;
+            color: #5a4636;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/view_details.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
-
-  <style>
-    .logo-icon img { width: 60px; height: auto; border-radius: 50%; margin-right: 10px; }
-
-    /* Slider styles */
-    .room-slider { position: relative; max-width: 900px; height: 370px; margin-bottom: 20px; overflow: hidden; border-radius: 8px; }
-    .slider-wrapper { display: flex; transition: transform 0.4s ease-in-out; }
-    .slider-wrapper img { width: 100%; flex-shrink: 0; object-fit: cover; border-radius: 8px; height: 350px; }
-    .slider-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; padding: 10px 14px; cursor: pointer; border-radius: 50%; font-size: 20px; }
-    .slider-btn.prev { left: 10px; }
-    .slider-btn.next { right: 10px; }
-  </style>
+        /* Physical Rooms Display */
+        .physical-rooms h4 {
+            margin-top: 0;
+            color: #444;
+        }
+        .physical-rooms-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .room-number-tag {
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+        .room-number-tag.Available {
+            background-color: #e6ffe6; /* Light Green */
+            color: #0a662e; /* Dark Green */
+            border-color: #a3e6a3;
+        }
+        .room-number-tag.Occupied {
+            background-color: #ffe6e6; /* Light Red */
+            color: #cc0000; /* Dark Red */
+            border-color: #ff9999;
+        }
+        
+        @media (max-width: 992px) {
+            .details-container {
+                grid-template-columns: 1fr;
+            }
+            .main-image {
+                height: 300px;
+            }
+            .sidebar {
+                order: -1; /* Move price/booking to top on mobile */
+            }
+        }
+    </style>
 </head>
 <body>
 
-<header class="navbar">
-  <div class="logo">
-    <div class="logo-icon">
-      <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
-    </div>
-    <div class="logo-text">
-      <h1>Shakti Bhuvan</h1>
-      <span>Premium Stays</span>
-    </div>
-  </div>
-
-  <nav class="nav-links">
-    <a href="index.php">Home</a>
-    <a href="rooms.php" class="active">Rooms</a>
-    <a href="gallery.php">Gallery</a>
-    <a href="contact.php">Contact</a>
-    <a href="admin.php">Admin</a>
-  </nav>
-
-  <div class="contact-info">
-    <span><i class="fas fa-phone"></i> +91 92659 00219</span>
-    <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
-    <!-- <a href="rooms.php" class="book-btn">Book Now</a> -->
-  </div>
-</header>
-
-<div class="container">
-  <div>
-    <div class="room-slider">
-      <div class="slider-wrapper">
-        <?php 
-        // FIX 2: Use the full path from the $images array without prepending 'uploads/'
-        if (!empty($images)): 
-            foreach($images as $img_path): 
-        ?>
-            <img src="<?php echo htmlspecialchars($img_path); ?>" alt="<?php echo htmlspecialchars($room['name']); ?>">
-        <?php 
-            endforeach;
-        else:
-        // Fallback image if no images are found
-        ?>
-            <img src="assets/images/placeholder_room.jpg" alt="No Room Image Available">
-        <?php endif; ?>
-      </div>
-      <button class="slider-btn prev">&#10094;</button>
-      <button class="slider-btn next">&#10095;</button>
-    </div>
-
-    <h1 class="room-title"><?php echo htmlspecialchars($room['name']); ?></h1>
-    <div class="meta"><?php echo $room['size']; ?> • <?php echo $room['bed_type']; ?> • Up to <?php echo $room['guests']; ?> guests</div>
-
-    <div class="price-box">
-      ₹<?php echo number_format($discountPrice,2); ?> 
-      <del>₹<?php echo number_format($roomPrice,2); ?></del>
-    </div>
-    <p class="desc"><?php echo $room['description']; ?></p>
-
-    <div class="card">
-      <h3>Room Amenities</h3>
-      <ul>
-        <?php foreach(array_map('trim', explode(',', $room['amenities'])) as $a): ?>
-          <li><?php echo htmlspecialchars($a); ?></li>
-        <?php endforeach; ?>
-      </ul>
-    </div>
-  </div>
-
-  <form method="post" action="booking_form.php" id="bookNowForm">
-    <input type="hidden" name="room_id" value="<?php echo $room['id']; ?>">
-    <input type="hidden" name="room_name" value="<?php echo htmlspecialchars($room['name']); ?>">
-    <input type="hidden" name="room_price" id="room_price" value="<?php echo $roomPrice; ?>">
-    <input type="hidden" name="room_discount" id="room_discount" value="<?php echo $discountPrice; ?>">
-    <input type="hidden" name="checkin" id="checkin">
-    <input type="hidden" name="checkout" id="checkout">
-    <input type="hidden" name="nights" id="nights">
-    <input type="hidden" name="total_price" id="hiddenTotalPrice">
-
-    <div class="booking-box">
-      <h3><i class="fa fa-calendar"></i> Book Your Stay</h3>
-      <div class="calendar-box">
-        <label>Select Dates</label>
-        <input type="text" id="dateRange" name="dateRange" placeholder="Select Dates">
-      </div>
-
-      <div class="price-details">
-        <div class="row discount">
-          <span>Room rate (per night)</span>
-          <strong id="roomDiscount">₹<?php echo number_format($discountPrice,2); ?></strong>
+<div class="details-container">
+    <div class="main-content">
+        <h1 class="room-title"><?php echo htmlspecialchars($room['name']); ?></h1>
+        <div class="rating">
+            ⭐ <?php echo htmlspecialchars($room['rating'] ?? 'N/A'); ?> (<?php echo htmlspecialchars($room['reviews'] ?? '0'); ?> Reviews)
         </div>
 
-        <div class="row">
-          <span>You save</span>
-          <strong id="roomRate">₹<?php echo number_format($roomPrice - $discountPrice,2); ?></strong>
+        <div class="image-gallery">
+            <img id="main-room-image" src="uploads/<?php echo htmlspecialchars($first_image); ?>" alt="<?php echo htmlspecialchars($room['name']); ?>" class="main-image">
+            
+            <?php if (!empty($remaining_images)): ?>
+            <div class="thumbnail-images">
+                <img src="uploads/<?php echo htmlspecialchars($first_image); ?>" data-src="uploads/<?php echo htmlspecialchars($first_image); ?>" class="active" alt="Thumbnail">
+                <?php foreach ($remaining_images as $img): 
+                    $safe_img = htmlspecialchars(trim($img));
+                    if (!empty($safe_img)):
+                ?>
+                    <img src="uploads/<?php echo $safe_img; ?>" data-src="uploads/<?php echo $safe_img; ?>" alt="Thumbnail">
+                <?php endif; endforeach; ?>
+            </div>
+            <?php endif; ?>
         </div>
 
-        <div class="row">
-          <span>Nights</span>
-          <strong id="showNights">—</strong>
+        <div class="detail-box">
+            <h3>Description</h3>
+            <p><?php echo htmlspecialchars($room['description']); ?></p>
+        </div>
+        
+        <div class="detail-box">
+            <h3>Key Details</h3>
+            <ul class="detail-list">
+                <li><strong>Size:</strong> <?php echo htmlspecialchars($room['size'] ?? 'N/A'); ?></li>
+                <li><strong>Bed Type:</strong> <?php echo htmlspecialchars($room['bed_type'] ?? 'N/A'); ?></li>
+                <li><strong>Max Guests:</strong> <?php echo htmlspecialchars($room['guests'] ?? 'N/A'); ?></li>
+                <li><strong>Floor:</strong> <?php echo htmlspecialchars($room['floor'] ?? 'N/A'); ?></li>
+                <li><strong>AC Status:</strong> <span style="font-weight: 600; color: <?php echo $room['ac_status'] == 'AC' ? '#0a7d5f' : '#8a6642'; ?>;"><?php echo htmlspecialchars($room['ac_status'] ?? 'N/A'); ?></span></li>
+            </ul>
         </div>
 
-        <div class="row">
-          <span id="taxLabel">Taxes & fees (—)</span>
-          <strong id="roomTax">₹0.00</strong>
+        <div class="detail-box">
+            <h3>Amenities</h3>
+            <?php if (!empty($amenities[0])): ?>
+            <div class="tag-list">
+                <?php foreach($amenities as $amenity): ?>
+                    <span class="tag">📶 <?php echo htmlspecialchars(trim($amenity)); ?></span>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+                <p>No amenities listed.</p>
+            <?php endif; ?>
         </div>
-        <hr>
 
-        <div class="row total">
-          <span>Total</span>
-          <strong id="totalPrice">₹0.00</strong>
+        <div class="detail-box">
+            <h3>Room Features</h3>
+            <?php if (!empty($features[0])): ?>
+            <div class="tag-list">
+                <?php foreach($features as $feature): ?>
+                    <span class="tag">✨ <?php echo htmlspecialchars(trim($feature)); ?></span>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+                <p>No special features listed.</p>
+            <?php endif; ?>
         </div>
-      </div>
-
-      <button type="submit" id="bookNowBtn" class="book-btn" disabled>Book Now</button>
-      <p class="note">Free cancellation up to 24 hours before check-in</p>
+        
+        <div class="detail-box">
+            <h3>Hotel & Room Policies</h3>
+            <?php if (!empty($policies[0])): ?>
+            <ul class="detail-list">
+                <?php foreach($policies as $policy): ?>
+                    <li>✔️ <?php echo htmlspecialchars(trim($policy)); ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <?php else: ?>
+                <p>No policies listed.</p>
+            <?php endif; ?>
+        </div>
     </div>
-  </form>
+
+    <div class="sidebar">
+        <div class="detail-box price-section">
+            <p class="original-price">Total Price: ₹<?php echo htmlspecialchars(number_format($room['price'], 2)); ?></p>
+            <p>From only</p>
+            <p class="current-price">₹<?php echo htmlspecialchars(number_format($room['discount_price'], 2)); ?></p>
+            <small>/ per night</small>
+            
+            <hr style="margin: 15px 0;">
+            <p style="font-size: 1rem; color: #5a4636;">
+                Extra Bed Charge: <?php echo htmlspecialchars(number_format($room['extra_bed_price'], 2)); ?>
+            </p>
+            <hr style="margin: 15px 0 25px;">
+            
+            <a href="booking.php?room_id=<?php echo $room['id']; ?>" class="book-button">Book Now</a>
+        </div>
+        
+        <div class="detail-box physical-rooms">
+            <h3>Available Room Numbers (Type: <?php echo htmlspecialchars($room['name']); ?>)</h3>
+            <?php if (!empty($physical_rooms)): ?>
+            <div class="physical-rooms-grid">
+                <?php foreach ($physical_rooms as $physical_room): ?>
+                    <span class="room-number-tag <?php echo $physical_room['status']; ?>" title="Status: <?php echo htmlspecialchars($physical_room['status']); ?>">
+                        Room<?php echo htmlspecialchars($physical_room['room_number']); ?>
+                    </span>
+                <?php endforeach; ?>
+            </div>
+            <?php else: ?>
+                <p>No individual physical room numbers have been assigned to this room type yet.</p>
+            <?php endif; ?>
+        </div>
+
+    </div>
 </div>
 
 <?php include 'footer.php'; ?>
 
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-const fmtINR = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(value);
+document.addEventListener('DOMContentLoaded', function() {
+    const mainImage = document.getElementById('main-room-image');
+    const thumbnails = document.querySelectorAll('.thumbnail-images img');
 
-const roomPrice = parseFloat(document.getElementById('room_price').value);
-const roomDiscount = parseFloat(document.getElementById('room_discount').value); // FINAL PRICE
-
-const checkinEl = document.getElementById('checkin');
-const checkoutEl = document.getElementById('checkout');
-const nightsEl = document.getElementById('nights');
-const hiddenTotalEl = document.getElementById('hiddenTotalPrice');
-const showNightsEl = document.getElementById('showNights');
-const totalPriceEl = document.getElementById('totalPrice');
-const roomTaxEl = document.getElementById('roomTax');
-const bookBtn = document.getElementById('bookNowBtn');
-const taxLabel = document.getElementById('taxLabel');
-
-// GST slabs as per govt
-function getGstRate(price) {
-  if (price < 1000) return 0;
-  else if (price <= 7500) return 5; 
-  else return 18;
-}
-
-function updateTotals(checkinDate, checkoutDate) {
-  if (!checkinDate || !checkoutDate) {
-    showNightsEl.innerText = '—';
-
-    const gstRate = getGstRate(roomDiscount);
-    const gstAmount = (roomDiscount * gstRate) / 100;
-
-    taxLabel.innerText = `Taxes & fees (${gstRate}%)`;
-    roomTaxEl.innerText = fmtINR(gstAmount);
-
-    const total = roomDiscount + gstAmount;
-    totalPriceEl.innerText = fmtINR(total);
-
-    hiddenTotalEl.value = total.toFixed(2);
-    bookBtn.disabled = true;
-    return;
-  }
-
-  const diffMs = checkoutDate - checkinDate;
-  const nights = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (nights <= 0) {
-    showNightsEl.innerText = 'Invalid';
-    totalPriceEl.innerText = fmtINR(0);
-    bookBtn.disabled = true;
-    return;
-  }
-
-  const perNight = roomDiscount;
-  const subtotal = perNight * nights;
-
-  const gstRate = getGstRate(roomDiscount);
-  const gstAmount = (subtotal * gstRate) / 100;
-  const total = subtotal + gstAmount;
-
-  showNightsEl.innerText = nights;
-  taxLabel.innerText = `Taxes & fees (${gstRate}%)`;
-  roomTaxEl.innerText = fmtINR(gstAmount);
-  totalPriceEl.innerText = fmtINR(total);
-
-  nightsEl.value = nights;
-  hiddenTotalEl.value = total.toFixed(2);
-  bookBtn.disabled = false;
-}
-
-flatpickr("#dateRange", {
-  mode: "range",
-  inline: false,
-  dateFormat: "Y-m-d",
-  minDate: "today",
-  onChange: function(selectedDates) {
-    if (selectedDates.length === 2) {
-      const ci = selectedDates[0];
-      const co = selectedDates[1];
-      checkinEl.value = ci.toISOString().split('T')[0];
-      checkoutEl.value = co.toISOString().split('T')[0];
-      updateTotals(ci, co);
-    } else {
-      updateTotals(null, null);
-    }
-  }
+    thumbnails.forEach(thumbnail => {
+        thumbnail.addEventListener('click', function() {
+            // Remove active class from all thumbnails
+            thumbnails.forEach(t => t.classList.remove('active'));
+            
+            // Set clicked thumbnail as active
+            this.classList.add('active');
+            
+            // Change the main image source
+            mainImage.src = this.getAttribute('data-src');
+        });
+    });
 });
-
-// Slider
-const slider = document.querySelector('.room-slider');
-const wrapper = slider.querySelector('.slider-wrapper');
-const slides = wrapper.querySelectorAll('img');
-let index = 0;
-
-slider.querySelector('.next').addEventListener('click', () => {
-  index = (index + 1) % slides.length;
-  wrapper.style.transform = `translateX(-${index * 100}%)`;
-});
-slider.querySelector('.prev').addEventListener('click', () => {
-  index = (index - 1 + slides.length) % slides.length;
-  wrapper.style.transform = `translateX(-${index * 100}%)`;
-});
-
-updateTotals(null, null);
 </script>
 
 </body>
