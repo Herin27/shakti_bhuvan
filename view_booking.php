@@ -59,7 +59,7 @@ $booking = mysqli_fetch_assoc($result);
             <td><?= htmlspecialchars($booking['status']) ?></td>
         </tr>
     </table>
-    <a href="admin_deshboard.php" class="btn btn-primary mt-3">Back to Bookings</a>
+    <a href="admin_dashboard.php" class="btn btn-primary mt-3">Back to Bookings</a>
 </div>
 </body>
 </html>

@@ -1,6 +1,15 @@
 <?php
-// Include the database connection file
+// delete_booking.php
+
 include 'db.php'; 
+
+// Check for a valid database connection immediately
+if (!isset($conn) || $conn->connect_error) {
+    $message = "Database connection failed.";
+    $redirect_url = 'admin_dashboard.php?section=bookings-section';
+    header("Location: $redirect_url&alert_type=error&msg=" . urlencode($message));
+    exit();
+}
 
 // Function to safely sanitize input
 function sanitize_input($conn, $data) {
@@ -8,46 +17,78 @@ function sanitize_input($conn, $data) {
 }
 
 $booking_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$record_type = isset($_GET['type']) ? sanitize_input($conn, $_GET['type']) : '';
 
-// 1. Basic Validation
-if ($booking_id <= 0 || $record_type !== 'Booking') {
-    $message = "Invalid request or insufficient parameters for deletion.";
+// 1. Simplified Validation: Only check if the ID is valid.
+if ($booking_id <= 0) {
+    $message = "Invalid booking ID or insufficient parameters for deletion.";
     $redirect_url = 'admin_dashboard.php?section=bookings-section';
-    header("Location: $redirect_url&status=error&msg=" . urlencode($message));
+    header("Location: $redirect_url&alert_type=danger&msg=" . urlencode($message));
     exit();
 }
 
 $redirect_url = 'admin_dashboard.php?section=bookings-section';
-$message = '';
+$transaction_successful = false;
+$alert_type = 'error'; 
 
-// --- Start Deletion Process ---
+// --- Start Deletion Transaction ---
+mysqli_begin_transaction($conn);
 
-// 2. Delete the booking record from the 'bookings' table ONLY.
-// This is safe because the bookings table does not have child tables, and we are not affecting the 'rooms' table.
-$sql_delete_booking = "DELETE FROM bookings WHERE id = $booking_id";
+try {
+    // 2. Fetch required details (Room Number) BEFORE deletion
+    $sql_fetch_details = "SELECT room_number FROM bookings WHERE id = $booking_id";
+    $result_details = mysqli_query($conn, $sql_fetch_details);
+    $booking_details = mysqli_fetch_assoc($result_details);
+    $physical_room_number = $booking_details['room_number'] ?? null;
+    $booking_id_display = 'BK' . str_pad($booking_id, 4, '0', STR_PAD_LEFT);
+    
+    // --- DEPENDENCY DELETION ORDER ---
 
-if (mysqli_query($conn, $sql_delete_booking)) {
-    // Check if any rows were actually affected
-    if (mysqli_affected_rows($conn) > 0) {
-        $message = "Booking ID BK" . str_pad($booking_id, 4, '0', STR_PAD_LEFT) . " deleted successfully.";
-        
-        // --- NOTE: If you need to update the room status (e.g., from Occupied to Available)
-        // when a booking is deleted, you would add that logic here.
-        
-        // Redirect back to the admin panel Bookings section with a success message
-        header("Location: $redirect_url&status=success&msg=" . urlencode($message));
-        exit();
-    } else {
-        $message = "Booking ID $booking_id not found in the database.";
-        header("Location: $redirect_url&status=warning&msg=" . urlencode($message));
-        exit();
+    // A. Delete dependent records from the 'payments' table (Must be first)
+    // FIX: Delete based on BOTH possible formats: numerical ID AND formatted string ID ('BKxxxx')
+    $sql_delete_payments = "
+        DELETE FROM payments 
+        WHERE booking_id = '$booking_id' OR booking_id = '$booking_id_display'
+    ";
+    if (!mysqli_query($conn, $sql_delete_payments)) {
+        throw new Exception("Error deleting dependent payment records: " . mysqli_error($conn));
     }
-} else {
-    $message = "ERROR: Could not delete booking: " . mysqli_error($conn);
-    header("Location: $redirect_url&status=error&msg=" . urlencode($message));
-    exit();
+    $payments_deleted = mysqli_affected_rows($conn);
+
+
+    // B. Delete the booking record from the 'bookings' table
+    $sql_delete_booking = "DELETE FROM bookings WHERE id = $booking_id";
+    if (!mysqli_query($conn, $sql_delete_booking)) {
+        throw new Exception("Error deleting booking record: " . mysqli_error($conn));
+    }
+    $bookings_deleted = mysqli_affected_rows($conn);
+    
+    if ($bookings_deleted === 0) {
+         throw new Exception("Booking ID $booking_id_display not found in the database. Deletion failed.");
+    }
+    
+    // C. Reset the physical room status back to 'Available'
+    if ($physical_room_number) {
+        // Only reset if it was occupied by this booking (status check ensures maintenance stays maintenance)
+        $sql_reset_room = "UPDATE room_numbers SET status = 'Available' WHERE room_number = '$physical_room_number' AND status != 'Maintenance'";
+        mysqli_query($conn, $sql_reset_room);
+    }
+    
+    // Commit the transaction.
+    mysqli_commit($conn);
+    $transaction_successful = true;
+    $alert_type = 'success';
+    $message = "Booking $booking_id_display deleted successfully. Removed $payments_deleted payment record(s) and reset Room #$physical_room_number status.";
+    
+} catch (Exception $e) {
+    // Rollback the transaction on failure
+    mysqli_rollback($conn);
+    $message = "Deletion failed (Rollback): " . $e->getMessage();
+    $alert_type = 'danger';
 }
 
 mysqli_close($conn);
+
+// 4. Redirect with the result message
+header("Location: $redirect_url&alert_type=$alert_type&msg=" . urlencode($message));
+exit();
 ?>

@@ -25,15 +25,15 @@ function fetchSingleValue($conn, $sql) {
 $sql_total_bookings = "SELECT COUNT(*) FROM bookings";
 $total_bookings = fetchSingleValue($conn, $sql_total_bookings);
 
-// Available Rooms
-$sql_available_rooms = "SELECT COUNT(*) FROM rooms WHERE status = 'Available'";
+// Available Rooms (Physical Room Numbers)
+$sql_available_rooms = "SELECT COUNT(*) FROM room_numbers WHERE status = 'Available'";
 $available_rooms = fetchSingleValue($conn, $sql_available_rooms);
 
-// Total Rooms (for Occupancy Rate calculation)
-$sql_total_rooms = "SELECT COUNT(*) FROM rooms";
-$total_rooms = fetchSingleValue($conn, $sql_total_rooms);
-$occupied_rooms_stats = $total_rooms - $available_rooms; // Approximation
-$occupancy_rate = ($total_rooms > 0) ? round(($occupied_rooms_stats / $total_rooms) * 100, 2) : 0;
+// Total Physical Rooms (for Occupancy Rate calculation)
+$sql_total_rooms_physical = "SELECT COUNT(*) FROM room_numbers";
+$total_rooms_physical = fetchSingleValue($conn, $sql_total_rooms_physical);
+$occupied_rooms_stats = $total_rooms_physical - $available_rooms; // Approximation
+$occupancy_rate = ($total_rooms_physical > 0) ? round(($occupied_rooms_stats / $total_rooms_physical) * 100, 2) : 0;
 
 // Revenue This Month
 $current_month = date('m');
@@ -116,12 +116,14 @@ $daily_data_json = json_encode($daily_data);
 $day_labels_json = json_encode($day_labels);
 
 // =========================================================
-//             MANAGE ROOMS DATA FETCHING
+//          MANAGE ROOMS DATA FETCHING
 // =========================================================
-$sql_occupied_rooms = "SELECT COUNT(*) FROM rooms WHERE status = 'Occupied'";
+$sql_occupied_rooms = "SELECT COUNT(*) FROM room_numbers WHERE status = 'Occupied'";
 $occupied_rooms = fetchSingleValue($conn, $sql_occupied_rooms);
 
-$maintenance_rooms = 2; 
+$maintenance_rooms = 0; // Fetched from room_numbers if possible
+$maintenance_rooms = fetchSingleValue($conn, "SELECT COUNT(*) FROM room_numbers WHERE status = 'Maintenance'");
+
 
 $room_inventory = [];
 $sql_room_inventory = "
@@ -141,12 +143,37 @@ if ($result_rooms) {
 }
 
 // =========================================================
-//             BOOKINGS DATA FETCHING
+//          MANAGE ROOM NUMBERS DATA FETCHING
+// =========================================================
+$room_numbers_inventory = [];
+$sql_room_numbers_inventory = "
+    SELECT 
+        rn.id, rn.room_number, rn.floor, rn.status,
+        r.name AS room_type_name
+    FROM 
+        room_numbers rn
+    JOIN 
+        rooms r ON rn.room_type_id = r.id
+    ORDER BY 
+        rn.room_number ASC
+";
+
+$result_room_numbers_inventory = mysqli_query($conn, $sql_room_numbers_inventory);
+if ($result_room_numbers_inventory) {
+    while ($row = mysqli_fetch_assoc($result_room_numbers_inventory)) {
+        $room_numbers_inventory[] = $row;
+    }
+}
+
+
+// =========================================================
+//          BOOKINGS DATA FETCHING (UPDATED)
 // =========================================================
 $all_bookings = [];
 $sql_all_bookings = "
     SELECT 
-        b.id, b.customer_name, b.phone, b.guests AS booking_guests, b.checkin, b.checkout, b.total_price, b.status, b.payment_status,
+        b.id, b.customer_name, b.phone, b.email, b.guests AS booking_guests, b.room_number,
+        b.checkin, b.checkout, b.total_price, b.status, b.payment_status, b.extra_bed_included,
         r.name AS room_name, r.id AS room_id
     FROM 
         bookings b
@@ -164,7 +191,7 @@ if ($result_all_bookings) {
 }
 
 // =========================================================
-//             CUSTOMERS DATA FETCHING 
+//          CUSTOMERS DATA FETCHING (ACTIVE)
 // =========================================================
 $all_customers = [];
 $sql_all_customers = "
@@ -184,7 +211,7 @@ if ($result_all_customers) {
 }
 
 // =========================================================
-//             PAYMENTS DATA FETCHING
+//          PAYMENTS DATA FETCHING
 // =========================================================
 $all_payments = [];
 $sql_all_payments = "
@@ -207,7 +234,7 @@ if ($result_all_payments) {
 }
 
 // =========================================================
-//             SETTINGS DATA FETCHING
+//          SETTINGS DATA FETCHING
 // =========================================================
 $hero_images = [];
 $sql_hero_images = "SELECT id, background_image FROM hero_section";
@@ -218,6 +245,7 @@ if ($result_hero_images) {
     }
 }
 
+// Placeholder for site settings, assuming site_settings table exists
 $site_settings = [
     'phone_number' => '+91 92659 00219',
     'email_address' => 'info@shaktibhuvan.com',
@@ -225,7 +253,7 @@ $site_settings = [
 ];
 
 $sql_fetch_settings = "SELECT setting_key, setting_value FROM site_settings";
-$result_settings = mysqli_query($conn, $sql_fetch_settings);
+$result_settings = @mysqli_query($conn, $sql_fetch_settings); 
 if ($result_settings) {
     while ($row = mysqli_fetch_assoc($result_settings)) {
         $site_settings[$row['setting_key']] = $row['setting_value'];
@@ -233,7 +261,7 @@ if ($result_settings) {
 }
 
 // =========================================================
-//             GALLERY DATA FETCHING (NEW)
+//          GALLERY DATA FETCHING
 // =========================================================
 $gallery_images = [];
 $sql_gallery_images = "SELECT * FROM gallery ORDER BY id DESC";
@@ -354,12 +382,11 @@ function countAmenities($amenities_string) {
             padding: 15px 0;
             border-bottom: 1px solid #f5f5f5;
         }
-        .status-confirmed, .status-available { background-color: #e6ffe6; color: #008000; }
+        .status-confirmed, .status-paid, .status-available { background-color: #e6ffe6; color: #008000; }
         .status-pending, .status-maintenance { background-color: #fffbe6; color: #ccaa00; }
         .status-checkedin { background-color: #e6f7ff; color: #007bff; }
         .status-checkedout { background-color: #ffcccc; color: #cc0000; }
         .status-cancelled { background-color: #f8d7da; color: #842029; }
-        .status-paid { background-color: #e6ffe6; color: #008000; }
         .status-partial { background-color: #cff4fc; color: #084298; }
         .badge {
             padding: 8px 12px;
@@ -408,16 +435,17 @@ function countAmenities($amenities_string) {
         <h3 class="ms-3 mb-5" style="font-family: 'Playfair Display', serif;">Shakti Bhuvan</h3>
         <nav class="nav flex-column">
             <a class="nav-link active" data-target="dashboard-section"><i class="fas fa-home me-2"></i>Dashboard</a>
-            <a class="nav-link" data-target="manage-rooms-section"><i class="fas fa-key me-2"></i>Manage Rooms</a>
+            <!-- <a class="nav-link" data-target="manage-rooms-section"><i class="fas fa-key me-2"></i>Manage Room Types</a> -->
+            <a class="nav-link" data-target="manage-room-numbers-section"><i class="fas fa-list-ol me-2"></i>Manage Room Numbers</a>
+            
             <a class="nav-link" data-target="bookings-section"><i class="fas fa-calendar-alt me-2"></i>Bookings</a>
-            <!-- <a class="nav-link" data-target="customers-section"><i class="fas fa-users me-2"></i>Customers</a> -->
-            <!-- <a class="nav-link" data-target="payments-section"><i class="fas fa-credit-card me-2"></i>Payments</a> -->
+            <a class="nav-link" data-target="customers-section"><i class="fas fa-users me-2"></i>Customers</a>
+
             <a class="nav-link" data-target="gallery-section"><i class="fas fa-images me-2"></i>Gallery</a>
             <a class="nav-link" data-target="settings-section"><i class="fas fa-cog me-2"></i>Settings</a>
         </nav>
         <div class="mt-auto p-3">
-            <!-- <a class="nav-link text-danger" href="admin.php"><i class="fas fa-sign-out-alt me-2"></i>Logout</a>      -->
-        </div>
+            </div>
         <a href="admin.php" class="text-danger logout"><i class="fas fa-sign-out-alt me-2"></i>logout</a>
     </div>
 
@@ -426,10 +454,6 @@ function countAmenities($amenities_string) {
         <div id="dashboard-section" class="content-section">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Dashboard</h2>
-                <!-- <div>
-                    <i class="fas fa-bell me-3 text-muted"></i>
-                    <i class="fas fa-user-circle text-muted fs-4"></i>
-                </div> -->
             </div>
             <p class="text-muted">Welcome back to Shakti Bhuvan admin panel</p>
             
@@ -457,7 +481,7 @@ function countAmenities($amenities_string) {
                             </div>
                             <i class="fas fa-bed fs-3 text-muted"></i>
                         </div>
-                        <small class="text-muted">Out of <?php echo $total_rooms; ?> total rooms</small>
+                        <small class="text-muted">Out of <?php echo $total_rooms_physical; ?> total rooms</small>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -559,10 +583,10 @@ function countAmenities($amenities_string) {
         <div id="manage-rooms-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 class="mb-0">Manage Rooms</h2>
-                    <p class="text-muted">Add, edit, and manage your room inventory</p>
+                    <h2 class="mb-0">Manage Room Types</h2>
+                    <p class="text-muted">Add, edit, and manage your room type inventory</p>
                 </div>
-                <a href="admin_add_room.php" class="btn btn-primary" style="background-color: var(--primary-color); border-color: var(--primary-color);"><i class="fas fa-plus me-2"></i>Add New Room</a>
+                <a href="admin_add_room.php" class="btn btn-primary" style="background-color: var(--primary-color); border-color: var(--primary-color);"><i class="fas fa-plus me-2"></i>Add New Room Type</a>
             </div>
             
             <hr class="mt-0">
@@ -570,32 +594,32 @@ function countAmenities($amenities_string) {
             <div class="row g-4 mb-5">
                 <div class="col-md-3">
                     <div class="stats-card">
-                        <p class="stats-value"><?php echo number_format($total_rooms); ?></p>
-                        <p class="stats-label">Total Rooms</p>
+                        <p class="stats-value"><?php echo number_format($total_rooms_physical); ?></p>
+                        <p class="stats-label">Total Physical Rooms</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-card">
                         <p class="stats-value"><?php echo number_format($available_rooms); ?></p>
-                        <p class="stats-label">Available</p>
+                        <p class="stats-label">Rooms Available Now</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-card">
                         <p class="stats-value"><?php echo number_format($occupied_rooms); ?></p>
-                        <p class="stats-label">Occupied</p>
+                        <p class="stats-label">Rooms Occupied</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-card">
                         <p class="stats-value text-danger"><?php echo number_format($maintenance_rooms); ?></p>
-                        <p class="stats-label">Maintenance</p>
+                        <p class="stats-label">Under Maintenance</p>
                     </div>
                 </div>
             </div>
 
             <div class="room-inventory-card">
-                <h5 class="card-title mb-4">Room Inventory</h5>
+                <h5 class="card-title mb-4">Room Type Inventory</h5>
                 <div class="table-responsive">
                     <table class="table align-middle">
                         <thead>
@@ -605,7 +629,6 @@ function countAmenities($amenities_string) {
                                 <th>Type</th>
                                 <th>Price/Night</th>
                                 <th>Capacity</th>
-                                <th>Occupancy</th>
                                 <th>Amenities</th>
                                 <th>Status</th>
                                 <th>Actions</th>
@@ -617,7 +640,6 @@ function countAmenities($amenities_string) {
                                     $room_id_display = 'RM' . str_pad($room['id'], 3, '0', STR_PAD_LEFT);
                                     $room_type = getRoomTypeAndCount($room['name']);
                                     $amenity_count = countAmenities($room['amenities']);
-                                    $occupancy_display = "0/{$room['guests']}"; // Placeholder
                                     $status_class = strtolower(str_replace([' '], '', $room['status']));
                                     $status_badge_class = ($status_class == 'available') ? 'status-available' : 'status-maintenance';
                                     $status_display = ($status_class == 'available') ? 'Available' : 'Maintenance';
@@ -627,12 +649,11 @@ function countAmenities($amenities_string) {
                                     <td><span class="fw-bold"><?php echo $room_id_display; ?></span></td>
                                     <td><?php echo htmlspecialchars($room['name']); ?></td>
                                     <td><?php echo htmlspecialchars($room_type); ?></td>
-                                    <td>₹<?php echo number_format($room['price'], 2); ?></td>
+                                    <td>₹<?php echo number_format($room['discount_price'], 2); ?></td>
                                     <td><?php echo htmlspecialchars($room['guests']); ?> guests</td>
-                                    <td><?php echo $occupancy_display; ?></td>
                                     <td>
                                         <i class="fas fa-wifi text-muted me-1"></i>
-                                        <i class="fas fa-shower text-muted me-1"></i>
+                                        <i class="fas fa-tv text-muted me-1"></i>
                                         <?php if ($amenity_count > 2): ?>
                                             <span class="text-muted">+<?php echo $amenity_count - 2; ?></span>
                                         <?php endif; ?>
@@ -655,13 +676,78 @@ function countAmenities($amenities_string) {
                                 </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="9" class="text-center text-muted">No rooms found in the inventory.</td></tr>
+                                <tr><td colspan="8" class="text-center text-muted">No room types found in the inventory.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+        
+        <div id="manage-room-numbers-section" class="content-section" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-0">Manage Room Numbers</h2>
+                    <p class="text-muted">Physical room inventory management (Total: <?php echo count($room_numbers_inventory); ?> rooms)</p>
+                </div>
+                <a href="admin_add_room.php" class="btn btn-warning" style="background-color: #f1c45f; border-color: #f1c45f;"><i class="fas fa-plus me-2"></i>Add New Room Numbers (via Room Type)</a>
+            </div>
+            
+            <hr class="mt-0">
+            
+            <div class="dashboard-card">
+                <h5 class="card-title mb-4">Physical Room List</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Room Number</th>
+                                <th>Room Type</th>
+                                <th>Floor</th>
+                                <th>Current Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($room_numbers_inventory) > 0): ?>
+                                <?php foreach ($room_numbers_inventory as $rn_room): 
+                                    $rn_id_display = 'RN' . str_pad($rn_room['id'], 4, '0', STR_PAD_LEFT);
+                                    $status_class = strtolower(str_replace([' ', '-'], '', $rn_room['status']));
+                                    $status_badge_class = "status-{$status_class}";
+                                    $numerical_id = $rn_room['id'];
+                                ?>
+                                <tr>
+                                    <td><span class="fw-bold"><?php echo $rn_id_display; ?></span></td>
+                                    <td><span class="badge bg-dark"><?php echo htmlspecialchars($rn_room['room_number']); ?></span></td>
+                                    <td><?php echo htmlspecialchars($rn_room['room_type_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($rn_room['floor']); ?></td>
+                                    <td>
+                                        <span class="badge rounded-pill <?php echo $status_badge_class; ?>">
+                                            <?php echo htmlspecialchars($rn_room['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm text-muted action-button"
+                                           data-bs-toggle="modal" 
+                                           data-bs-target="#actionModal"
+                                           data-record-id="<?php echo $rn_id_display; ?>"
+                                           data-numerical-id="<?php echo $numerical_id; ?>"
+                                           data-record-type="RoomNumber">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr><td colspan="6" class="text-center text-muted">No physical room numbers found. Please add room numbers via the "Add New Room Type" page.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
 
         <div id="bookings-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -679,10 +765,12 @@ function countAmenities($amenities_string) {
                             <tr>
                                 <th>ID</th>
                                 <th>Customer</th>
-                                <th>Room</th>
-                                <th>Guests</th>
+                                <th>Email</th>
+                                <th>Room Type</th>
+                                <th>Room No.</th>
                                 <th>Check-in</th>
                                 <th>Check-out</th>
+                                <th>Guests</th>
                                 <th>Price</th>
                                 <th>Status</th>
                                 <th>Payment</th>
@@ -698,14 +786,18 @@ function countAmenities($amenities_string) {
                                     $payment_class = strtolower($booking['payment_status']);
                                     
                                     $numerical_id = $booking['id'];
+                                    
+                                    $extra_bed_icon = ($booking['extra_bed_included'] == 1) ? '<i class="fas fa-plus text-success ms-1" title="Extra Bed"></i>' : '';
                                 ?>
                                 <tr>
                                     <td><span class="fw-bold"><?php echo $booking_id_display; ?></span></td>
                                     <td><?php echo htmlspecialchars($booking['customer_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($booking['email'] ?? 'N/A'); ?></td>
                                     <td><?php echo htmlspecialchars($booking['room_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($booking['booking_guests']); ?></td>
+                                    <td><span class="badge bg-secondary"><?php echo htmlspecialchars($booking['room_number'] ?? 'N/A'); ?></span></td>
                                     <td><?php echo date('Y-m-d', strtotime($booking['checkin'])); ?></td>
                                     <td><?php echo date('Y-m-d', strtotime($booking['checkout'])); ?></td>
+                                    <td><?php echo htmlspecialchars($booking['booking_guests']) . $extra_bed_icon; ?></td>
                                     <td>₹<?php echo number_format($booking['total_price'], 2); ?></td>
                                     <td>
                                         <span class="badge rounded-pill status-<?php echo $status_class; ?>">
@@ -730,7 +822,7 @@ function countAmenities($amenities_string) {
                                 </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="10" class="text-center text-muted">No bookings found.</td></tr>
+                                <tr><td colspan="12" class="text-center text-muted">No bookings found.</td></tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -902,10 +994,10 @@ function countAmenities($amenities_string) {
                         <div class="gallery">
                             <?php 
                             foreach ($gallery_images as $img): 
-                                // Ensure $img['image_url'] is correctly pointing to the file path (e.g., uploads/filename.jpg)
+                                $image_path = htmlspecialchars($img['image_url']);
                             ?>
                                 <div class="gallery-item">
-                                    <img src="<?php echo htmlspecialchars($img['image_url']); ?>" alt="Gallery Image" class="img-fluid">
+                                    <img src="<?php echo $image_path; ?>" alt="Gallery Image" class="img-fluid">
                                     <p class="small text-muted"><?php echo htmlspecialchars($img['image_type']); ?></p>
                                     
                                     <form method="post" onsubmit="return confirm('Are you sure you want to delete this image?');" action="gallery_admin.php">
@@ -1042,7 +1134,10 @@ function countAmenities($amenities_string) {
                 sidebarLinks.forEach(link => {
                     link.classList.remove('active');
                 });
-                document.querySelector(`.sidebar .nav-link[data-target="${targetId}"]`).classList.add('active');
+                const activeLink = document.querySelector(`.sidebar .nav-link[data-target="${targetId}"]`);
+                if(activeLink) {
+                    activeLink.classList.add('active');
+                }
             }
 
             // Check URL parameters on load for deep linking
@@ -1072,39 +1167,44 @@ function countAmenities($amenities_string) {
                     const numericalId = button.getAttribute('data-numerical-id'); 
                     const recordType = button.getAttribute('data-record-type');
                     
-                    // --- Truncated ID logic for View/Edit ---
-                    const numericalIdLastTwo = recordId.slice(-2);
-
                     document.getElementById('modal-record-id').textContent = recordId;
                     document.getElementById('modal-record-type-text').textContent = `Record Type: ${recordType}`;
 
                     // --- Determine the ID and Script based on recordType ---
-                    let editScript = 'edit.php';
-                    let deleteScript = 'delete_room.php';
-                    let editViewId = numericalIdLastTwo; // Default to truncated ID
+                    let viewScript = 'view_details.php';
+                    let editScript = 'edit_record.php';
+                    let deleteScript = 'delete_record.php';
+                    let viewEditId = numericalId; // Default to numerical ID
 
                     if (recordType === 'Customer') {
+                        viewScript = 'view_customer.php';
                         editScript = 'edit_customer.php';
                         deleteScript = 'delete_customer.php';
-                        editViewId = numericalId; // Use full string customer_id
+                        viewEditId = recordId; // Use full string customer_id
                     } else if (recordType === 'Booking') {
+                        viewScript = 'view_booking.php'; 
+                        editScript = 'edit_booking.php';
                         deleteScript = 'delete_booking.php';
-                    } else if (recordType === 'Payment') {
-                        editScript = 'edit_payment.php';
-                        deleteScript = 'delete_payment.php';
-                        editViewId = numericalId; // Use full numerical ID
+                    } else if (recordType === 'Room') {
+                        viewScript = 'view_room.php';
+                        editScript = 'edit_room.php';
+                        deleteScript = 'delete_room.php';
+                    } else if (recordType === 'RoomNumber') {
+                        viewScript = 'view_room_number.php';
+                        editScript = 'edit_room_number.php';
+                        deleteScript = 'delete_room_number.php';
                     }
                     
                     // View and Edit Links
-                    document.getElementById('action-view-link').href = `View_Details.php?type=${recordType}&id=${editViewId}`; 
-                    document.getElementById('action-edit-link').href = `${editScript}?type=${recordType}&id=${editViewId}`;
+                    document.getElementById('action-view-link').href = `${viewScript}?id=${viewEditId}`; 
+                    document.getElementById('action-edit-link').href = `${editScript}?id=${viewEditId}`;
                     
-                    // Delete uses the FULL numericalId
-                    const deleteId = numericalId;
-
+                    // Delete Link uses the numerical ID
                     document.getElementById('action-delete-link').onclick = function() {
                         if (confirm(`Are you sure you want to permanently delete ${recordType} ${recordId}? This action cannot be undone.`)) {
-                            window.location.href = `${deleteScript}?id=${deleteId}&type=${recordType}`;
+                            // Note: For Customer, the numerical ID passed here is the VARCHAR customer_id
+                            // For Booking/Room/RoomNumber, it is the INT ID
+                            window.location.href = `${deleteScript}?id=${numericalId}`;
                         }
                         return false; 
                     };
