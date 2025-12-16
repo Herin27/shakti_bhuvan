@@ -13,7 +13,7 @@ while ($row = $result->fetch_assoc()) {
 // Fetch top 3 rooms
 // ✅ Fetch featured rooms from database
 $query = "SELECT * FROM rooms WHERE status='Available' ORDER BY id DESC LIMIT 3";
-$result = mysqli_query($conn, $query);
+$result = mysqli_query($conn, $query); 
 ?>
 
 <!DOCTYPE html>
