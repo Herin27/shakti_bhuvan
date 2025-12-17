@@ -46,6 +46,14 @@ $result = mysqli_query($conn, $query);
     background-position: center;
     transition: background 1s ease-in-out;
 }
+.footer-col a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.footer-col a:hover {
+    text-decoration: none;
+}
 
 .hero-buttons button {
     margin: 10px;
@@ -466,12 +474,18 @@ $result = mysqli_query($conn, $query);
 
             <!-- Contact Info -->
             <div class="footer-col">
-                <h4>Contact Info</h4>
-                <ul>
-                    <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
-                    <li>📞 +91 92659 00219</li>
-                    <li>✉️ info@shaktibhuvan.com</li>
-                </ul>
+            <h4>Contact Info</h4>
+            <ul>
+                <li>
+                    📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110
+                </li>
+                <li>
+                    📞 <a href="tel:+919265900219">+91 92659 00219</a>
+                </li>
+                <li>
+                    ✉️ <a href="mailto:info@shaktibhuvan.com">info@shaktibhuvan.com</a>
+                </li>
+            </ul>
             </div>
 
             <!-- Services -->

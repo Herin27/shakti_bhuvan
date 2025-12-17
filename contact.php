@@ -16,6 +16,14 @@
       font-family: "Inter", sans-serif;
       background-color: #faf7f1; /* Beige background */
     }
+    a {
+        color: black;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: none;
+    }
 
     .contact-section {
       text-align: center;
@@ -134,31 +142,32 @@
   <!-- Right: Contact Info -->
   <div class="contact-info-box">
     <h3>📞 Get in Touch</h3>
-    <p>
-      Whether you’re planning a stay, have questions about our services, or need
-      assistance with an existing reservation, our dedicated team is here to help.
-      We pride ourselves on providing exceptional service and personalized
-      attention to every guest.
-    </p>
+    
 
     <!-- Info Cards -->
     <div class="info-card">
-      <div class="icon">📱</div>
-      <div>
-        <h4>Phone</h4>
-        <p>+91 92659 00219 <br> +91 98765 43211</p>
-        <span>Available 24/7 for reservations</span>
-      </div>
-    </div>
+  <div class="icon">📱</div>
+  <div>
+    <h4>Phone</h4>
+    <p>
+      <a href="tel:+919265900219">+91 92659 00219</a><br>
+      <a href="tel:+919876543211">+91 98765 43211</a>
+    </p>
+    <span>Available 24/7 for reservations</span>
+  </div>
+</div>
 
-    <div class="info-card">
-      <div class="icon">✉️</div>
-      <div>
-        <h4>Email</h4>
-        <p>info@shaktibhuvan.com <br> reservations@shaktibhuvan.com</p>
-        <span>We’ll respond within 2 hours</span>
-      </div>
-    </div>
+<div class="info-card">
+  <div class="icon">✉️</div>
+  <div>
+    <h4>Email</h4>
+    <p>
+      <a href="mailto:shaktibhuvanambaji.com">shaktibhuvanambaji.com</a><br>
+      
+    </p>
+    <span>We’ll respond within some time</span>
+  </div>
+</div>
 
     <div class="info-card">
       <div class="icon">📍</div>
