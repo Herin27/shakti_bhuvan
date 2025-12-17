@@ -83,86 +83,9 @@
 </section>
 
 <section class="contact-wrapper">
-  <div class="contact-form">
-    <h3>📩 Send us a Message</h3>
-    <form action="save_message.php" method="POST" onsubmit="return validateForm()">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Full Name *</label>
-          <input type="text" name="fullname" id="fullname" placeholder="Enter your full name" required>
-        </div>
-        <div class="form-group">
-          <label>Email Address *</label>
-          <input type="email" name="email" id="email" placeholder="Enter your email" required>
-        </div>
-      </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Phone Number *</label>
-          <input type="tel" name="phone" id="phone" placeholder="10-digit phone number" pattern="[0-9]{10}" title="Please enter a 10-digit phone number" required>
-        </div>
-        <div class="form-group">
-          <label>Subject</label>
-          <input type="text" name="subject" placeholder="What is this regarding?">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label>Check-in Date (Optional)</label>
-          <input type="date" name="checkin">
-        </div>
-        <div class="form-group">
-          <label>Check-out Date (Optional)</label>
-          <input type="date" name="checkout">
-        </div>
-      </div>
-
-      <div class="form-group full">
-        <label>Message *</label>
-        <textarea name="message" rows="4" placeholder="Tell us how we can help you..." required></textarea>
-      </div>
-
-      <button type="submit" class="btn-send">✉️ Send Message</button>
-    </form>
-  </div>
-
-  <div class="contact-info-box">
-    <h3>📞 Get in Touch</h3>
-    
-    <div class="info-card">
-      <div class="icon">📱</div>
-      <div>
-        <h4>Phone</h4>
-        <p>
-          <a href="tel:+919265900219">+91 92659 00219</a><br>
-          <a href="tel:+919876543211">+91 98765 43211</a>
-        </p>
-        <span>Available 24/7 for reservations</span>
-      </div>
-    </div>
-
-    <div class="info-card">
-      <div class="icon">✉️</div>
-      <div>
-        <h4>Email</h4>
-        <p>
-          <a href="mailto:info@shaktibhuvanambaji.com">info@shaktibhuvanambaji.com</a><br>
-        </p>
-        <span>We’ll respond within some time</span>
-      </div>
-    </div>
-
-    <div class="info-card">
-      <div class="icon">📍</div>
-      <div>
-        <h4>Address</h4>
-        <p>Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</p>
-        <span>Prime location in the city center</span>
-      </div>
-    </div>
-
+  <div class="left-col">
+    <!-- Reception Hours -->
     <div class="info-card">
       <div class="icon">🕒</div>
       <div>
@@ -171,14 +94,107 @@
         <span>Always here to assist you</span>
       </div>
     </div>
-
+    <!-- Map -->
     <div class="map-box" style="width: 100%; max-width: 800px; margin: auto;">
-      <iframe 
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3644.475484838637!2d72.8465!3d24.3333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDE5JzYwLjAiTiA3MsKwNTAnNDcuNCJF!5e0!3m2!1sen!2sin!4v1625000000000" 
-        width="100%" height="400" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy">
-      </iframe>
+  <iframe 
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3667.7317323561217!2d72.845482!3d24.3265648!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395d23fbbb6196cf%3A0xfc61656acb2d27fe!2sShakti%20bhawan!5e0!3m2!1sen!2sin!4v1694422945369!5m2!1sen!2sin" 
+    width="100%" 
+    height="400" 
+    style="border:0; border-radius: 12px;" 
+    allowfullscreen="" 
+    loading="lazy" 
+    referrerpolicy="no-referrer-when-downgrade">
+  </iframe>
+</div>
+  </div>
+
+  <div class="right-col">
+    <!-- Get in Touch -->
+    <div class="contact-info-box">
+    <h3>📞 Get in Touch</h3>
+    <!-- Phone -->
+    <div class="info-card">
+  <div class="icon">📱</div>
+  <div>
+    <h4>Phone</h4>
+    <p>
+      <a href="tel:+919265900219">+91 92659 00219</a><br>
+      <a href="tel:+919876543211">+91 98765 43211</a>
+    </p>
+    <span>Available 24/7 for reservations</span>
+  </div>
+</div>
+    <!-- Email -->
+    <div class="info-card">
+  <div class="icon">✉️</div>
+  <div>
+    <h4>Email</h4>
+    <p>
+      <a href="mailto:shaktibhuvanambaji.com">shaktibhuvanambaji.com</a><br>
+      
+    </p>
+    <span>We’ll respond within some time</span>
+  </div>
+</div>
+    <!-- Address -->
+    <div class="info-card">
+      <div class="icon">📍</div>
+      <div>
+        <h4>Address</h4>
+        <p>Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</p>
+        <span>Prime location in the city center</span>
+      </div>
     </div>
   </div>
+
+</section>
+
+<section class="bottom-form">
+  <!-- Send us a Message form -->
+  <div class="contact-form">
+  <h3>📩 Send us a Message</h3>
+  <form action="save_message.php" method="POST">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" name="fullname" placeholder="Enter your full name" required>
+      </div>
+      <div class="form-group">
+        <label>Email Address *</label>
+        <input type="email" name="email" placeholder="Enter your email" required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" name="phone" placeholder="Enter your phone number">
+      </div>
+      <div class="form-group">
+        <label>Subject</label>
+        <input type="text" name="subject" placeholder="What is this regarding?">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Check-in Date (Optional)</label>
+        <input type="date" name="checkin">
+      </div>
+      <div class="form-group">
+        <label>Check-out Date (Optional)</label>
+        <input type="date" name="checkout">
+      </div>
+    </div>
+
+    <div class="form-group full">
+      <label>Message *</label>
+      <textarea name="message" rows="4" placeholder="Tell us how we can help you..." required></textarea>
+    </div>
+
+    <button type="submit" class="btn-send">✉️ Send Message</button>
+  </form>
+</div>
 </section>
 
 <?php include 'footer.php'; ?>
