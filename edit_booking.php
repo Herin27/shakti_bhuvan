@@ -41,7 +41,7 @@ if (isset($_GET['id'])) {
         $stmt->bind_param("ssssdi", $name, $phone, $checkin, $checkout, $price, $id);
 
         if ($stmt->execute()) {
-            header("Location: admin_deshboard.php?success=Booking updated successfully");
+            header("Location: admin_dashboard.php?success=Booking updated successfully");
             exit;
         } else {
             echo "Error updating record: " . $conn->error;
@@ -58,23 +58,7 @@ if (isset($_GET['id'])) {
 </head>
 <body>
 
-<header class="navbar">
-    <div class="logo">
-        <div class="logo-icon">
-            <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
-        </div>
-        <div class="logo-text">
-            <h1>Shakti Bhuvan</h1>
-            <span>Premium Stays</span>
-        </div>
-    </div>
-    <nav class="nav-links">
-        <a href="index.php">Home</a>
-        <a href="rooms.php">Rooms</a>
-        <a href="contact.php">Contact</a>
-        <a href="admin_deshboard.php" class="active">Dashboard</a>
-    </nav>
-</header>
+<?php include 'header.php'; ?>
 
 <div class="container">
   <div class="booking-box" style="width:100%; max-width:600px; margin:auto;">
@@ -118,6 +102,7 @@ if (isset($_GET['id'])) {
       </form>
   </div>
 </div>
+<?php include 'footer.php'; ?>
 
 <script>
     const checkinInput = document.getElementById('checkin');

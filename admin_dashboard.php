@@ -427,6 +427,8 @@ function countAmenities($amenities_string) {
             left: 35px;
             text-decoration: none;
         }
+        /* Add this to your existing CSS styles in admin.php */
+
     </style>
 </head>
 <body>
@@ -809,17 +811,37 @@ function countAmenities($amenities_string) {
                                             <?php echo htmlspecialchars($booking['payment_status']); ?>
                                         </span>
                                     </td>
-                                    <td>
-                                        <a href="#" class="btn btn-sm text-muted action-button"
-                                           data-bs-toggle="modal" 
-                                           data-bs-target="#actionModal"
-                                           data-record-id="<?php echo $booking_id_display; ?>"
-                                           data-numerical-id="<?php echo $numerical_id; ?>"
-                                           data-record-type="Booking">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </a>
-                                    </td>
-                                </tr>
+                                    </td>
+                                    <td>
+                                                                                <?php if ($booking['status'] === 'Confirmed' || $booking['status'] === 'Checked-in'): ?>
+                                            <form action="process_booking_status.php" method="POST" class="d-inline-block" onsubmit="return confirm('Confirm CHECK OUT for Booking #<?php echo $booking_id_display; ?>? Room will be marked for CLEANING.');">
+                                                <input type="hidden" name="booking_id" value="<?php echo $numerical_id; ?>">
+                                                <input type="hidden" name="action" value="checkout">
+                                                <button type="submit" class="btn btn-sm btn-warning mb-1"><i class="fas fa-sign-out-alt"></i> Check Out</button>
+                                            </form>
+                                            <br>
+                                        <?php endif; ?>
+                                        
+                                                                                <?php if ($booking['status'] !== 'Confirmed' && $booking['status'] !== 'Checked-in'): ?>
+                                            <form action="process_booking_status.php" method="POST" class="d-inline-block" onsubmit="return confirm('Confirm Room Release for Room No: <?php echo $booking['room_number']; ?>? Room status will be set to Available.');">
+                                                <input type="hidden" name="booking_id" value="<?php echo $numerical_id; ?>">
+                                                <input type="hidden" name="action" value="make_available">
+                                                <button type="submit" class="btn btn-sm btn-success mb-1"><i class="fas fa-check-circle"></i> Make Available</button>
+                                            </form>
+                                            <br>
+                                        <?php endif; ?>
+                                        
+                                                                                <a href="#" class="btn btn-sm text-muted action-button"
+                                           data-bs-toggle="modal" 
+                                           data-bs-target="#actionModal"
+                                           data-record-id="<?php echo $booking_id_display; ?>"
+                                           data-numerical-id="<?php echo $numerical_id; ?>"
+                                           data-record-type="Booking">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                               
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr><td colspan="12" class="text-center text-muted">No bookings found.</td></tr>
