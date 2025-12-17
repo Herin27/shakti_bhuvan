@@ -120,6 +120,7 @@ if (mysqli_num_rows($result_check_user) > 0) {
 
 // --- 4. Insert Booking Record ---
 
+// UPDATED: status changed from 'Pending' to 'Confirmed'
 $sql_insert_booking = "INSERT INTO bookings 
     (customer_name, phone, email, guests, room_id, room_number, checkin, checkout, total_price, extra_bed_included, status, payment_status, notes)
     VALUES 
@@ -129,12 +130,12 @@ if (mysqli_query($conn, $sql_insert_booking)) {
     $new_booking_id = mysqli_insert_id($conn);
     
     // --- 5. IMMEDIATE Status Update for Double-Booking Prevention ---
+    // This marks the physical room as 'Occupied' so no one else can book it for these dates
     $sql_update_room_status = "UPDATE room_numbers SET status = 'Occupied' WHERE room_number = '$physical_room_number'";
     mysqli_query($conn, $sql_update_room_status);
 
     // --- 6. Set SESSION and Redirect to Payment Page ---
     
-    // Store essential booking data in session for payment processing
     $_SESSION['booking'] = [
         'booking_id' => $new_booking_id,
         'customer_id' => $customer_id,
@@ -158,5 +159,4 @@ if (mysqli_query($conn, $sql_insert_booking)) {
 } else {
     die("<script>alert('Error: Booking insertion failed: " . mysqli_error($conn) . "'); window.history.back();</script>");
 }
-
 ?>

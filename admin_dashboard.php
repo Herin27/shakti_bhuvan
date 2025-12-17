@@ -294,6 +294,7 @@ function countAmenities($amenities_string) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -302,135 +303,206 @@ function countAmenities($amenities_string) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
     <style>
-        :root {
-            --sidebar-color: #f7f3ed;
-            --primary-color: #a0522d;
-            --text-color: #333;
-        }
-        /* ... (CSS styles from previous sections remain) ... */
-        body {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #fffaf0;
-            color: var(--text-color);
-        }
-        .sidebar {
-            height: 100vh;
-            width: 250px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: var(--sidebar-color);
-            padding-top: 20px;
-            border-right: 1px solid #ddd;
-        }
-        .main-content {
-            margin-left: 250px;
-            padding: 30px;
-        }
-        .sidebar a.nav-link {
-            color: var(--text-color);
-            padding: 10px 20px;
-            margin-bottom: 5px;
-            transition: background-color 0.2s;
-            cursor: pointer;
-        }
-        .sidebar a.nav-link.active {
-            background-color: #e0d9cf;
-            font-weight: bold;
-        }
-        .dashboard-card, .room-inventory-card, .stats-card {
-            background-color: white;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-        .card-value {
-            font-size: 2.2rem;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-        .card-title-text {
-            color: #888;
-            font-size: 0.9rem;
-        }
-        .stats-card {
-            height: 100px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .stats-value {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: var(--text-color);
-            line-height: 1;
-        }
-        .stats-label {
-            color: #888;
-            font-size: 0.9rem;
-        }
-        .room-inventory-card .table thead th {
-            font-weight: normal;
-            color: #999;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            border-bottom: 1px solid #eee;
-        }
-        .room-inventory-card .table tbody td {
-            vertical-align: middle;
-            padding: 15px 0;
-            border-bottom: 1px solid #f5f5f5;
-        }
-        .status-confirmed, .status-paid, .status-available { background-color: #e6ffe6; color: #008000; }
-        .status-pending, .status-maintenance { background-color: #fffbe6; color: #ccaa00; }
-        .status-checkedin { background-color: #e6f7ff; color: #007bff; }
-        .status-checkedout { background-color: #ffcccc; color: #cc0000; }
-        .status-cancelled { background-color: #f8d7da; color: #842029; }
-        .status-partial { background-color: #cff4fc; color: #084298; }
-        .badge {
-            padding: 8px 12px;
-            font-size: 0.85rem;
-        }
-        .modal-body .btn {
-            width: 100%;
-            margin-bottom: 10px;
-            text-align: left;
-        }
-        .modal-content {
-            border-radius: 10px;
-        }
-        /* Settings Specific Styles */
-        .settings-image-preview {
-            width: 150px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 5px;
-        }
-        .settings-image-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-        }
-        /* Gallery Styles */
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
-        .gallery-item { background: #fcfcfc; padding: 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
-        .gallery-item img { max-width: 100%; border-radius: 6px; height: 120px; object-fit: cover; }
-        .delete-btn { background: #e74c3c; color: white; margin-top: 5px; }
-        .logout {
-            position: absolute;
-            bottom: 20px;
-            left: 35px;
-            text-decoration: none;
-        }
-        /* Add this to your existing CSS styles in admin.php */
+    :root {
+        --sidebar-color: #f7f3ed;
+        --primary-color: #a0522d;
+        --text-color: #333;
+    }
 
+    /* ... (CSS styles from previous sections remain) ... */
+    body {
+        font-family: 'Open Sans', sans-serif;
+        background-color: #fffaf0;
+        color: var(--text-color);
+    }
+
+    .sidebar {
+        height: 100vh;
+        width: 250px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: var(--sidebar-color);
+        padding-top: 20px;
+        border-right: 1px solid #ddd;
+    }
+
+    .main-content {
+        margin-left: 250px;
+        padding: 30px;
+    }
+
+    .sidebar a.nav-link {
+        color: var(--text-color);
+        padding: 10px 20px;
+        margin-bottom: 5px;
+        transition: background-color 0.2s;
+        cursor: pointer;
+    }
+
+    .sidebar a.nav-link.active {
+        background-color: #e0d9cf;
+        font-weight: bold;
+    }
+
+    .dashboard-card,
+    .room-inventory-card,
+    .stats-card {
+        background-color: white;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-value {
+        font-size: 2.2rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+
+    .card-title-text {
+        color: #888;
+        font-size: 0.9rem;
+    }
+
+    .stats-card {
+        height: 100px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .stats-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: var(--text-color);
+        line-height: 1;
+    }
+
+    .stats-label {
+        color: #888;
+        font-size: 0.9rem;
+    }
+
+    .room-inventory-card .table thead th {
+        font-weight: normal;
+        color: #999;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .room-inventory-card .table tbody td {
+        vertical-align: middle;
+        padding: 15px 0;
+        border-bottom: 1px solid #f5f5f5;
+    }
+
+    .status-confirmed,
+    .status-paid,
+    .status-available {
+        background-color: #e6ffe6;
+        color: #008000;
+    }
+
+    .status-pending,
+    .status-maintenance {
+        background-color: #fffbe6;
+        color: #ccaa00;
+    }
+
+    .status-checkedin {
+        background-color: #e6f7ff;
+        color: #007bff;
+    }
+
+    .status-checkedout {
+        background-color: #ffcccc;
+        color: #cc0000;
+    }
+
+    .status-cancelled {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    .status-partial {
+        background-color: #cff4fc;
+        color: #084298;
+    }
+
+    .badge {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .modal-body .btn {
+        width: 100%;
+        margin-bottom: 10px;
+        text-align: left;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    /* Settings Specific Styles */
+    .settings-image-preview {
+        width: 150px;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+
+    .settings-image-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+    }
+
+    /* Gallery Styles */
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .gallery-item {
+        background: #fcfcfc;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        text-align: center;
+    }
+
+    .gallery-item img {
+        max-width: 100%;
+        border-radius: 6px;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .delete-btn {
+        background: #e74c3c;
+        color: white;
+        margin-top: 5px;
+    }
+
+    .logout {
+        position: absolute;
+        bottom: 20px;
+        left: 35px;
+        text-decoration: none;
+    }
     </style>
 </head>
+
 <body>
 
     <div class="sidebar d-flex flex-column">
@@ -438,8 +510,9 @@ function countAmenities($amenities_string) {
         <nav class="nav flex-column">
             <a class="nav-link active" data-target="dashboard-section"><i class="fas fa-home me-2"></i>Dashboard</a>
             <!-- <a class="nav-link" data-target="manage-rooms-section"><i class="fas fa-key me-2"></i>Manage Room Types</a> -->
-            <a class="nav-link" data-target="manage-room-numbers-section"><i class="fas fa-list-ol me-2"></i>Manage Room Numbers</a>
-            
+            <a class="nav-link" data-target="manage-room-numbers-section"><i class="fas fa-list-ol me-2"></i>Manage Room
+                Numbers</a>
+
             <a class="nav-link" data-target="bookings-section"><i class="fas fa-calendar-alt me-2"></i>Bookings</a>
             <a class="nav-link" data-target="customers-section"><i class="fas fa-users me-2"></i>Customers</a>
 
@@ -447,18 +520,18 @@ function countAmenities($amenities_string) {
             <a class="nav-link" data-target="settings-section"><i class="fas fa-cog me-2"></i>Settings</a>
         </nav>
         <div class="mt-auto p-3">
-            </div>
+        </div>
         <a href="admin.php" class="text-danger logout"><i class="fas fa-sign-out-alt me-2"></i>logout</a>
     </div>
 
     <div class="main-content">
-        
+
         <div id="dashboard-section" class="content-section">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Dashboard</h2>
             </div>
             <p class="text-muted">Welcome back to Shakti Bhuvan admin panel</p>
-            
+
             <hr class="mt-0">
 
             <div class="row g-4 mb-5">
@@ -471,7 +544,8 @@ function countAmenities($amenities_string) {
                             </div>
                             <i class="fas fa-calendar-check fs-3 text-muted"></i>
                         </div>
-                        <small class="text-success"><i class="fas fa-arrow-up me-1"></i> 4.2% more than last month</small>
+                        <small class="text-success"><i class="fas fa-arrow-up me-1"></i> 4.2% more than last
+                            month</small>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -507,7 +581,8 @@ function countAmenities($amenities_string) {
                             </div>
                             <i class="fas fa-chart-line fs-3 text-muted"></i>
                         </div>
-                        <small class="text-danger"><i class="fas fa-arrow-down me-1"></i> 2% less than last month</small>
+                        <small class="text-danger"><i class="fas fa-arrow-down me-1"></i> 2% less than last
+                            month</small>
                     </div>
                 </div>
             </div>
@@ -544,55 +619,57 @@ function countAmenities($amenities_string) {
                         </thead>
                         <tbody>
                             <?php if (count($recent_bookings) > 0): ?>
-                                <?php foreach ($recent_bookings as $booking): 
+                            <?php foreach ($recent_bookings as $booking): 
                                     $booking_id_display = 'BK' . str_pad($booking['id'], 4, '0', STR_PAD_LEFT);
                                     $status_class = strtolower(str_replace([' ', '-'], '', $booking['status']));
                                     $status_badge_class = "status-{$status_class}";
                                     $numerical_id = $booking['id'];
                                 ?>
-                                <tr>
-                                    <td><span class="fw-bold"><?php echo $booking_id_display; ?></span></td>
-                                    <td><?php echo htmlspecialchars($booking['customer_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($booking['room_name']); ?></td>
-                                    <td><?php echo date('Y-m-d', strtotime($booking['checkin'])); ?></td>
-                                    <td><?php echo date('Y-m-d', strtotime($booking['checkout'])); ?></td>
-                                    <td>
-                                        <span class="badge rounded-pill <?php echo $status_badge_class; ?>">
-                                            <?php echo htmlspecialchars($booking['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="#" class="btn btn-sm text-muted action-button" 
-                                           data-bs-toggle="modal" 
-                                           data-bs-target="#actionModal"
-                                           data-record-id="<?php echo $booking_id_display; ?>"
-                                           data-numerical-id="<?php echo $numerical_id; ?>"
-                                           data-record-type="Booking">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
+                            <tr>
+                                <td><span class="fw-bold"><?php echo $booking_id_display; ?></span></td>
+                                <td><?php echo htmlspecialchars($booking['customer_name']); ?></td>
+                                <td><?php echo htmlspecialchars($booking['room_name']); ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($booking['checkin'])); ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($booking['checkout'])); ?></td>
+                                <td>
+                                    <span class="badge rounded-pill <?php echo $status_badge_class; ?>">
+                                        <?php echo htmlspecialchars($booking['status']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-sm text-muted action-button" data-bs-toggle="modal"
+                                        data-bs-target="#actionModal"
+                                        data-record-id="<?php echo $booking_id_display; ?>"
+                                        data-numerical-id="<?php echo $numerical_id; ?>" data-record-type="Booking">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="7" class="text-center text-muted">No recent bookings found.</td></tr>
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">No recent bookings found.</td>
+                            </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-        
+
         <div id="manage-rooms-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 class="mb-0">Manage Room Types</h2>
                     <p class="text-muted">Add, edit, and manage your room type inventory</p>
                 </div>
-                <a href="admin_add_room.php" class="btn btn-primary" style="background-color: var(--primary-color); border-color: var(--primary-color);"><i class="fas fa-plus me-2"></i>Add New Room Type</a>
+                <a href="admin_add_room.php" class="btn btn-primary"
+                    style="background-color: var(--primary-color); border-color: var(--primary-color);"><i
+                        class="fas fa-plus me-2"></i>Add New Room Type</a>
             </div>
-            
+
             <hr class="mt-0">
-            
+
             <div class="row g-4 mb-5">
                 <div class="col-md-3">
                     <div class="stats-card">
@@ -638,7 +715,7 @@ function countAmenities($amenities_string) {
                         </thead>
                         <tbody>
                             <?php if (count($room_inventory) > 0): ?>
-                                <?php foreach ($room_inventory as $room): 
+                            <?php foreach ($room_inventory as $room): 
                                     $room_id_display = 'RM' . str_pad($room['id'], 3, '0', STR_PAD_LEFT);
                                     $room_type = getRoomTypeAndCount($room['name']);
                                     $amenity_count = countAmenities($room['amenities']);
@@ -647,56 +724,59 @@ function countAmenities($amenities_string) {
                                     $status_display = ($status_class == 'available') ? 'Available' : 'Maintenance';
                                     $numerical_id = $room['id'];
                                 ?>
-                                <tr>
-                                    <td><span class="fw-bold"><?php echo $room_id_display; ?></span></td>
-                                    <td><?php echo htmlspecialchars($room['name']); ?></td>
-                                    <td><?php echo htmlspecialchars($room_type); ?></td>
-                                    <td>₹<?php echo number_format($room['discount_price'], 2); ?></td>
-                                    <td><?php echo htmlspecialchars($room['guests']); ?> guests</td>
-                                    <td>
-                                        <i class="fas fa-wifi text-muted me-1"></i>
-                                        <i class="fas fa-tv text-muted me-1"></i>
-                                        <?php if ($amenity_count > 2): ?>
-                                            <span class="text-muted">+<?php echo $amenity_count - 2; ?></span>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <span class="badge rounded-pill <?php echo $status_badge_class; ?>">
-                                            <?php echo $status_display; ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="#" class="btn btn-sm text-muted action-button"
-                                           data-bs-toggle="modal" 
-                                           data-bs-target="#actionModal"
-                                           data-record-id="<?php echo $room_id_display; ?>"
-                                           data-numerical-id="<?php echo $numerical_id; ?>"
-                                           data-record-type="Room">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
+                            <tr>
+                                <td><span class="fw-bold"><?php echo $room_id_display; ?></span></td>
+                                <td><?php echo htmlspecialchars($room['name']); ?></td>
+                                <td><?php echo htmlspecialchars($room_type); ?></td>
+                                <td>₹<?php echo number_format($room['discount_price'], 2); ?></td>
+                                <td><?php echo htmlspecialchars($room['guests']); ?> guests</td>
+                                <td>
+                                    <i class="fas fa-wifi text-muted me-1"></i>
+                                    <i class="fas fa-tv text-muted me-1"></i>
+                                    <?php if ($amenity_count > 2): ?>
+                                    <span class="text-muted">+<?php echo $amenity_count - 2; ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill <?php echo $status_badge_class; ?>">
+                                        <?php echo $status_display; ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-sm text-muted action-button" data-bs-toggle="modal"
+                                        data-bs-target="#actionModal" data-record-id="<?php echo $room_id_display; ?>"
+                                        data-numerical-id="<?php echo $numerical_id; ?>" data-record-type="Room">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="8" class="text-center text-muted">No room types found in the inventory.</td></tr>
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">No room types found in the inventory.
+                                </td>
+                            </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-        
+
         <div id="manage-room-numbers-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 class="mb-0">Manage Room Numbers</h2>
-                    <p class="text-muted">Physical room inventory management (Total: <?php echo count($room_numbers_inventory); ?> rooms)</p>
+                    <p class="text-muted">Physical room inventory management (Total:
+                        <?php echo count($room_numbers_inventory); ?> rooms)</p>
                 </div>
-                <a href="admin_add_room.php" class="btn btn-warning" style="background-color: #f1c45f; border-color: #f1c45f;"><i class="fas fa-plus me-2"></i>Add New Room Numbers (via Room Type)</a>
+                <a href="admin_add_room.php" class="btn btn-warning"
+                    style="background-color: #f1c45f; border-color: #f1c45f;"><i class="fas fa-plus me-2"></i>Add New
+                    Room Numbers (via Room Type)</a>
             </div>
-            
+
             <hr class="mt-0">
-            
+
             <div class="dashboard-card">
                 <h5 class="card-title mb-4">Physical Room List</h5>
                 <div class="table-responsive">
@@ -713,36 +793,38 @@ function countAmenities($amenities_string) {
                         </thead>
                         <tbody>
                             <?php if (count($room_numbers_inventory) > 0): ?>
-                                <?php foreach ($room_numbers_inventory as $rn_room): 
+                            <?php foreach ($room_numbers_inventory as $rn_room): 
                                     $rn_id_display = 'RN' . str_pad($rn_room['id'], 4, '0', STR_PAD_LEFT);
                                     $status_class = strtolower(str_replace([' ', '-'], '', $rn_room['status']));
                                     $status_badge_class = "status-{$status_class}";
                                     $numerical_id = $rn_room['id'];
                                 ?>
-                                <tr>
-                                    <td><span class="fw-bold"><?php echo $rn_id_display; ?></span></td>
-                                    <td><span class="badge bg-dark"><?php echo htmlspecialchars($rn_room['room_number']); ?></span></td>
-                                    <td><?php echo htmlspecialchars($rn_room['room_type_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($rn_room['floor']); ?></td>
-                                    <td>
-                                        <span class="badge rounded-pill <?php echo $status_badge_class; ?>">
-                                            <?php echo htmlspecialchars($rn_room['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="#" class="btn btn-sm text-muted action-button"
-                                           data-bs-toggle="modal" 
-                                           data-bs-target="#actionModal"
-                                           data-record-id="<?php echo $rn_id_display; ?>"
-                                           data-numerical-id="<?php echo $numerical_id; ?>"
-                                           data-record-type="RoomNumber">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
+                            <tr>
+                                <td><span class="fw-bold"><?php echo $rn_id_display; ?></span></td>
+                                <td><span
+                                        class="badge bg-dark"><?php echo htmlspecialchars($rn_room['room_number']); ?></span>
+                                </td>
+                                <td><?php echo htmlspecialchars($rn_room['room_type_name']); ?></td>
+                                <td><?php echo htmlspecialchars($rn_room['floor']); ?></td>
+                                <td>
+                                    <span class="badge rounded-pill <?php echo $status_badge_class; ?>">
+                                        <?php echo htmlspecialchars($rn_room['status']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-sm text-muted action-button" data-bs-toggle="modal"
+                                        data-bs-target="#actionModal" data-record-id="<?php echo $rn_id_display; ?>"
+                                        data-numerical-id="<?php echo $numerical_id; ?>" data-record-type="RoomNumber">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="6" class="text-center text-muted">No physical room numbers found. Please add room numbers via the "Add New Room Type" page.</td></tr>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No physical room numbers found. Please
+                                    add room numbers via the "Add New Room Type" page.</td>
+                            </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -756,7 +838,7 @@ function countAmenities($amenities_string) {
                 <h2>All Bookings</h2>
                 <a href="rooms.php" class="btn btn-success"><i class="fas fa-calendar-plus me-2"></i>New Booking</a>
             </div>
-            
+
             <hr class="mt-0">
 
             <div class="dashboard-card">
@@ -781,7 +863,7 @@ function countAmenities($amenities_string) {
                         </thead>
                         <tbody>
                             <?php if (count($all_bookings) > 0): ?>
-                                <?php foreach ($all_bookings as $booking): 
+                            <?php foreach ($all_bookings as $booking): 
                                     $booking_id_display = 'BK' . str_pad($booking['id'], 4, '0', STR_PAD_LEFT);
                                     
                                     $status_class = strtolower(str_replace([' ', '-'], '', $booking['status']));
@@ -791,73 +873,72 @@ function countAmenities($amenities_string) {
                                     
                                     $extra_bed_icon = ($booking['extra_bed_included'] == 1) ? '<i class="fas fa-plus text-success ms-1" title="Extra Bed"></i>' : '';
                                 ?>
-                                <tr>
-                                    <td><span class="fw-bold"><?php echo $booking_id_display; ?></span></td>
-                                    <td><?php echo htmlspecialchars($booking['customer_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($booking['email'] ?? 'N/A'); ?></td>
-                                    <td><?php echo htmlspecialchars($booking['room_name']); ?></td>
-                                    <td><span class="badge bg-secondary"><?php echo htmlspecialchars($booking['room_number'] ?? 'N/A'); ?></span></td>
-                                    <td><?php echo date('Y-m-d', strtotime($booking['checkin'])); ?></td>
-                                    <td><?php echo date('Y-m-d', strtotime($booking['checkout'])); ?></td>
-                                    <td><?php echo htmlspecialchars($booking['booking_guests']) . $extra_bed_icon; ?></td>
-                                    <td>₹<?php echo number_format($booking['total_price'], 2); ?></td>
-                                    <td>
-                                        <span class="badge rounded-pill status-<?php echo $status_class; ?>">
-                                            <?php echo htmlspecialchars($booking['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge rounded-pill status-<?php echo $payment_class; ?>">
-                                            <?php echo htmlspecialchars($booking['payment_status']); ?>
-                                        </span>
-                                    </td>
-                                    </td>
-                                    <td>
-                                                                                <?php if ($booking['status'] === 'Confirmed' || $booking['status'] === 'Checked-in'): ?>
-                                            <form action="process_booking_status.php" method="POST" class="d-inline-block" onsubmit="return confirm('Confirm CHECK OUT for Booking #<?php echo $booking_id_display; ?>? Room will be marked for CLEANING.');">
-                                                <input type="hidden" name="booking_id" value="<?php echo $numerical_id; ?>">
-                                                <input type="hidden" name="action" value="checkout">
-                                                <button type="submit" class="btn btn-sm btn-warning mb-1"><i class="fas fa-sign-out-alt"></i> Check Out</button>
-                                            </form>
-                                            <br>
-                                        <?php endif; ?>
-                                        
-                                                                                <?php if ($booking['status'] !== 'Confirmed' && $booking['status'] !== 'Checked-in'): ?>
-                                            <form action="process_booking_status.php" method="POST" class="d-inline-block" onsubmit="return confirm('Confirm Room Release for Room No: <?php echo $booking['room_number']; ?>? Room status will be set to Available.');">
-                                                <input type="hidden" name="booking_id" value="<?php echo $numerical_id; ?>">
-                                                <input type="hidden" name="action" value="make_available">
-                                                <button type="submit" class="btn btn-sm btn-success mb-1"><i class="fas fa-check-circle"></i> Make Available</button>
-                                            </form>
-                                            <br>
-                                        <?php endif; ?>
-                                        
-                                                                                <a href="#" class="btn btn-sm text-muted action-button"
-                                           data-bs-toggle="modal" 
-                                           data-bs-target="#actionModal"
-                                           data-record-id="<?php echo $booking_id_display; ?>"
-                                           data-numerical-id="<?php echo $numerical_id; ?>"
-                                           data-record-type="Booking">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                               
-                                <?php endforeach; ?>
+                            <tr>
+                                <td><span class="fw-bold"><?php echo $booking_id_display; ?></span></td>
+                                <td><?php echo htmlspecialchars($booking['customer_name']); ?></td>
+                                <td><?php echo htmlspecialchars($booking['email'] ?? 'N/A'); ?></td>
+                                <td><?php echo htmlspecialchars($booking['room_name']); ?></td>
+                                <td><span
+                                        class="badge bg-secondary"><?php echo htmlspecialchars($booking['room_number'] ?? 'N/A'); ?></span>
+                                </td>
+                                <td><?php echo date('Y-m-d', strtotime($booking['checkin'])); ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($booking['checkout'])); ?></td>
+                                <td><?php echo htmlspecialchars($booking['booking_guests']) . $extra_bed_icon; ?></td>
+                                <td>₹<?php echo number_format($booking['total_price'], 2); ?></td>
+                                <td>
+                                    <span class="badge rounded-pill status-<?php echo $status_class; ?>">
+                                        <?php echo htmlspecialchars($booking['status']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill status-<?php echo $payment_class; ?>">
+                                        <?php echo htmlspecialchars($booking['payment_status']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <?php if ($booking['status'] !== 'Checked-out'): ?>
+                                        <a href="process_booking_status.php?booking_id=<?php echo $numerical_id; ?>&action=checkout"
+                                            class="btn btn-sm btn-outline-warning"
+                                            onclick="return confirm('Mark room as Checking out / Cleaning?')">
+                                            <i class="fas fa-broom me-1"></i> Checkout
+                                        </a>
+                                        <?php endif; ?>
+
+                                        <a href="process_booking_status.php?booking_id=<?php echo $numerical_id; ?>&action=available"
+                                            class="btn btn-sm btn-outline-success"
+                                            onclick="return confirm('Mark room as Available for new guests?')">
+                                            <i class="fas fa-check me-1"></i> Available
+                                        </a>
+
+                                        <a href="#" class="btn btn-sm text-muted action-button" data-bs-toggle="modal"
+                                            data-bs-target="#actionModal"
+                                            data-record-id="<?php echo $booking_id_display; ?>"
+                                            data-numerical-id="<?php echo $numerical_id; ?>" data-record-type="Booking">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="12" class="text-center text-muted">No bookings found.</td></tr>
+                            <tr>
+                                <td colspan="12" class="text-center text-muted">No bookings found.</td>
+                            </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-        
+
         <div id="customers-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Customer Management</h2>
-                <a href="#" class="btn btn-primary" style="background-color: #5cb85c; border-color: #5cb85c;"><i class="fas fa-user-plus me-2"></i>Add Customer</a>
+                <a href="#" class="btn btn-primary" style="background-color: #5cb85c; border-color: #5cb85c;"><i
+                        class="fas fa-user-plus me-2"></i>Add Customer</a>
             </div>
-            
+
             <hr class="mt-0">
 
             <div class="dashboard-card">
@@ -879,50 +960,53 @@ function countAmenities($amenities_string) {
                         </thead>
                         <tbody>
                             <?php if (count($all_customers) > 0): ?>
-                                <?php foreach ($all_customers as $customer): 
+                            <?php foreach ($all_customers as $customer): 
                                     $numerical_id = $customer['customer_id']; // Using customer_id as the unique ID
                                     $status_class = strtolower($customer['status']);
                                 ?>
-                                <tr>
-                                    <td><span class="fw-bold"><?php echo htmlspecialchars($customer['customer_id']); ?></span></td>
-                                    <td><?php echo htmlspecialchars($customer['name']); ?></td>
-                                    <td><?php echo htmlspecialchars($customer['email']); ?></td>
-                                    <td><?php echo htmlspecialchars($customer['phone']); ?></td>
-                                    <td><?php echo date('Y-m-d', strtotime($customer['member_since'])); ?></td>
-                                    <td><?php echo htmlspecialchars($customer['bookings']); ?></td>
-                                    <td>₹<?php echo number_format($customer['total_spent'], 2); ?></td>
-                                    <td>
-                                        <span class="badge rounded-pill status-<?php echo $status_class; ?>">
-                                            <?php echo htmlspecialchars($customer['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="#" class="btn btn-sm text-muted action-button"
-                                           data-bs-toggle="modal" 
-                                           data-bs-target="#actionModal"
-                                           data-record-id="<?php echo htmlspecialchars($customer['customer_id']); ?>"
-                                           data-numerical-id="<?php echo htmlspecialchars($numerical_id); ?>"
-                                           data-record-type="Customer">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
+                            <tr>
+                                <td><span
+                                        class="fw-bold"><?php echo htmlspecialchars($customer['customer_id']); ?></span>
+                                </td>
+                                <td><?php echo htmlspecialchars($customer['name']); ?></td>
+                                <td><?php echo htmlspecialchars($customer['email']); ?></td>
+                                <td><?php echo htmlspecialchars($customer['phone']); ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($customer['member_since'])); ?></td>
+                                <td><?php echo htmlspecialchars($customer['bookings']); ?></td>
+                                <td>₹<?php echo number_format($customer['total_spent'], 2); ?></td>
+                                <td>
+                                    <span class="badge rounded-pill status-<?php echo $status_class; ?>">
+                                        <?php echo htmlspecialchars($customer['status']); ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="#" class="btn btn-sm text-muted action-button" data-bs-toggle="modal"
+                                        data-bs-target="#actionModal"
+                                        data-record-id="<?php echo htmlspecialchars($customer['customer_id']); ?>"
+                                        data-numerical-id="<?php echo htmlspecialchars($numerical_id); ?>"
+                                        data-record-type="Customer">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="9" class="text-center text-muted">No customers found.</td></tr>
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">No customers found.</td>
+                            </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-        
+
         <div id="payments-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Payment History</h2>
                 <a href="#" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Add Payment</a>
             </div>
-            
+
             <hr class="mt-0">
 
             <div class="dashboard-card">
@@ -941,33 +1025,33 @@ function countAmenities($amenities_string) {
                         </thead>
                         <tbody>
                             <?php if (count($all_payments) > 0): ?>
-                                <?php foreach ($all_payments as $payment): 
+                            <?php foreach ($all_payments as $payment): 
                                     $payment_id_display = 'PM' . str_pad($payment['id'], 3, '0', STR_PAD_LEFT);
                                     $booking_ref_display = !empty($payment['booking_id']) ? 'BK' . str_pad($payment['booking_id'], 4, '0', STR_PAD_LEFT) : 'N/A';
                                     $customer_display = htmlspecialchars($payment['customer_name'] ?? 'N/A');
                                     
                                     $numerical_id = $payment['id']; 
                                 ?>
-                                <tr>
-                                    <td><span class="fw-bold"><?php echo $payment_id_display; ?></span></td>
-                                    <td><?php echo $booking_ref_display; ?></td>
-                                    <td><?php echo $customer_display; ?></td>
-                                    <td>₹<?php echo number_format($payment['amount'], 2); ?></td>
-                                    <td><?php echo date('Y-m-d', strtotime($payment['payment_date'])); ?></td>
-                                    <td>
-                                        <a href="#" class="btn btn-sm text-muted action-button"
-                                           data-bs-toggle="modal" 
-                                           data-bs-target="#actionModal"
-                                           data-record-id="<?php echo $payment_id_display; ?>"
-                                           data-numerical-id="<?php echo $numerical_id; ?>"
-                                           data-record-type="Payment">
-                                            <i class="fas fa-ellipsis-h"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endforeach; ?>
+                            <tr>
+                                <td><span class="fw-bold"><?php echo $payment_id_display; ?></span></td>
+                                <td><?php echo $booking_ref_display; ?></td>
+                                <td><?php echo $customer_display; ?></td>
+                                <td>₹<?php echo number_format($payment['amount'], 2); ?></td>
+                                <td><?php echo date('Y-m-d', strtotime($payment['payment_date'])); ?></td>
+                                <td>
+                                    <a href="#" class="btn btn-sm text-muted action-button" data-bs-toggle="modal"
+                                        data-bs-target="#actionModal"
+                                        data-record-id="<?php echo $payment_id_display; ?>"
+                                        data-numerical-id="<?php echo $numerical_id; ?>" data-record-type="Payment">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
                             <?php else: ?>
-                                <tr><td colspan="6" class="text-center text-muted">No payment records found.</td></tr>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No payment records found.</td>
+                            </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
@@ -985,8 +1069,9 @@ function countAmenities($amenities_string) {
                 <div class="col-12">
                     <div class="dashboard-card">
                         <h5 class="card-title mb-4"><i class="fas fa-camera me-2"></i> Gallery Image Management</h5>
-                        <p class="text-muted small">Upload new images to the gallery and categorize them, or delete existing entries.</p>
-                        
+                        <p class="text-muted small">Upload new images to the gallery and categorize them, or delete
+                            existing entries.</p>
+
                         <form method="post" enctype="multipart/form-data" action="gallery_admin.php">
                             <div class="row g-3 mb-4">
                                 <div class="col-md-4">
@@ -1002,10 +1087,12 @@ function countAmenities($amenities_string) {
 
                                 <div class="col-md-6">
                                     <label for="images">Select Images (Multiple):</label>
-                                    <input type="file" name="images[]" id="images" class="form-control" multiple required>
+                                    <input type="file" name="images[]" id="images" class="form-control" multiple
+                                        required>
                                 </div>
                                 <div class="col-md-2 d-flex align-items-end">
-                                    <button type="submit" name="upload" class="btn btn-warning w-100"><i class="fas fa-upload me-2"></i> Upload</button>
+                                    <button type="submit" name="upload" class="btn btn-warning w-100"><i
+                                            class="fas fa-upload me-2"></i> Upload</button>
                                 </div>
                             </div>
                         </form>
@@ -1018,25 +1105,51 @@ function countAmenities($amenities_string) {
                             foreach ($gallery_images as $img): 
                                 $image_path = htmlspecialchars($img['image_url']);
                             ?>
-                                <div class="gallery-item">
-                                    <img src="<?php echo $image_path; ?>" alt="Gallery Image" class="img-fluid">
-                                    <p class="small text-muted"><?php echo htmlspecialchars($img['image_type']); ?></p>
-                                    
-                                    <form method="post" onsubmit="return confirm('Are you sure you want to delete this image?');" action="gallery_admin.php">
-                                        <input type="hidden" name="image_id" value="<?php echo $img['id']; ?>">
-                                        <input type="hidden" name="delete" value="1">
-                                        <button type="submit" class="btn btn-danger btn-sm w-100 delete-btn"><i class="fas fa-trash"></i> Delete</button>
-                                    </form>
-                                </div>
+                            <div class="gallery-item">
+                                <img src="<?php echo $image_path; ?>" alt="Gallery Image" class="img-fluid">
+                                <p class="small text-muted"><?php echo htmlspecialchars($img['image_type']); ?></p>
+
+                                <form method="post"
+                                    onsubmit="return confirm('Are you sure you want to delete this image?');"
+                                    action="gallery_admin.php">
+                                    <input type="hidden" name="image_id" value="<?php echo $img['id']; ?>">
+                                    <input type="hidden" name="delete" value="1">
+                                    <button type="submit" class="btn btn-danger btn-sm w-100 delete-btn"><i
+                                            class="fas fa-trash"></i> Delete</button>
+                                </form>
+                            </div>
                             <?php endforeach; ?>
                         </div>
-                        
+
                         <style>
-                            /* Inline styles for the gallery section (re-defined here for simplicity) */
-                            .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
-                            .gallery-item { background: #fcfcfc; padding: 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
-                            .gallery-item img { max-width: 100%; border-radius: 6px; height: 120px; object-fit: cover; }
-                            .delete-btn { background: #e74c3c; color: white; margin-top: 5px; }
+                        /* Inline styles for the gallery section (re-defined here for simplicity) */
+                        .gallery {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                            gap: 15px;
+                            margin-top: 20px;
+                        }
+
+                        .gallery-item {
+                            background: #fcfcfc;
+                            padding: 10px;
+                            border-radius: 8px;
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+                            text-align: center;
+                        }
+
+                        .gallery-item img {
+                            max-width: 100%;
+                            border-radius: 6px;
+                            height: 120px;
+                            object-fit: cover;
+                        }
+
+                        .delete-btn {
+                            background: #e74c3c;
+                            color: white;
+                            margin-top: 5px;
+                        }
                         </style>
                     </div>
                 </div>
@@ -1047,37 +1160,42 @@ function countAmenities($amenities_string) {
             <h2>Customer Reviews</h2>
             <p>Content for Reviews will go here...</p>
         </div>
-        
+
         <div id="settings-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Site Settings & Configuration</h2>
             </div>
-            
+
             <hr class="mt-0">
 
             <div class="row g-4">
                 <div class="col-md-6">
                     <div class="dashboard-card">
                         <h5 class="card-title mb-4"><i class="fas fa-images me-2"></i> Hero Slider Images</h5>
-                        <p class="text-muted small">Manage the main background images displayed on the homepage slider.</p>
-                        
+                        <p class="text-muted small">Manage the main background images displayed on the homepage slider.
+                        </p>
+
                         <form method="POST" action="update_hero.php" enctype="multipart/form-data">
                             <?php foreach ($hero_images as $image): ?>
                             <div class="settings-image-container">
-                                <img src="<?php echo htmlspecialchars($image['background_image']); ?>" alt="Hero Image" class="settings-image-preview">
-                                <span class="text-muted small"><?php echo basename($image['background_image']); ?></span>
+                                <img src="<?php echo htmlspecialchars($image['background_image']); ?>" alt="Hero Image"
+                                    class="settings-image-preview">
+                                <span
+                                    class="text-muted small"><?php echo basename($image['background_image']); ?></span>
                                 <input type="hidden" name="image_id[]" value="<?php echo $image['id']; ?>">
-                                <button type="submit" name="delete_image" value="<?php echo $image['id']; ?>" class="btn btn-danger btn-sm ms-auto"
-                                        onclick="return confirm('Are you sure you want to delete this image?');">
+                                <button type="submit" name="delete_image" value="<?php echo $image['id']; ?>"
+                                    class="btn btn-danger btn-sm ms-auto"
+                                    onclick="return confirm('Are you sure you want to delete this image?');">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                             <?php endforeach; ?>
-                            
+
                             <hr>
                             <h6>Upload New Image:</h6>
                             <input type="file" name="new_image" class="form-control mb-3" accept="image/*" required>
-                            <button type="submit" name="add_image" class="btn btn-primary w-100"><i class="fas fa-upload me-2"></i> Upload & Save</button>
+                            <button type="submit" name="add_image" class="btn btn-primary w-100"><i
+                                    class="fas fa-upload me-2"></i> Upload & Save</button>
                         </form>
                     </div>
                 </div>
@@ -1089,17 +1207,21 @@ function countAmenities($amenities_string) {
                         <form method="POST" action="update_contact.php">
                             <div class="mb-3">
                                 <label class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" name="phone" value="<?php echo htmlspecialchars($site_settings['phone_number']); ?>">
+                                <input type="text" class="form-control" name="phone"
+                                    value="<?php echo htmlspecialchars($site_settings['phone_number']); ?>">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Email Address</label>
-                                <input type="email" class="form-control" name="email" value="<?php echo htmlspecialchars($site_settings['email_address']); ?>">
+                                <input type="email" class="form-control" name="email"
+                                    value="<?php echo htmlspecialchars($site_settings['email_address']); ?>">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Physical Address</label>
-                                <textarea class="form-control" name="address"><?php echo htmlspecialchars($site_settings['physical_address']); ?></textarea>
+                                <textarea class="form-control"
+                                    name="address"><?php echo htmlspecialchars($site_settings['physical_address']); ?></textarea>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-2"></i> Save Contact</button>
+                            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-2"></i> Save
+                                Contact</button>
                         </form>
                     </div>
                 </div>
@@ -1111,20 +1233,21 @@ function countAmenities($amenities_string) {
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header pb-0 border-0">
-                    <h5 class="modal-title" id="actionModalLabel">Actions for <span id="modal-record-id" class="fw-bold"></span></h5>
+                    <h5 class="modal-title" id="actionModalLabel">Actions for <span id="modal-record-id"
+                            class="fw-bold"></span></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body pt-2">
                     <p class="text-muted small" id="modal-record-type-text"></p>
-                    
+
                     <a href="#" class="btn btn-outline-secondary" id="action-view-link">
                         <i class="fas fa-eye me-2"></i> View Details
                     </a>
-                    
+
                     <a href="#" class="btn btn-outline-primary" id="action-edit-link">
                         <i class="fas fa-edit me-2"></i> Edit Record
                     </a>
-                    
+
                     <a href="#" class="btn btn-outline-danger" id="action-delete-link">
                         <i class="fas fa-trash-alt me-2"></i> Delete Record
                     </a>
@@ -1135,152 +1258,197 @@ function countAmenities($amenities_string) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const sidebarLinks = document.querySelectorAll('.sidebar .nav-link');
-            const contentSections = document.querySelectorAll('.content-section');
-            const actionModal = document.getElementById('actionModal');
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarLinks = document.querySelectorAll('.sidebar .nav-link');
+        const contentSections = document.querySelectorAll('.content-section');
+        const actionModal = document.getElementById('actionModal');
 
-            // --- 1. Section Switching Logic ---
-            function switchSection(targetId) {
-                contentSections.forEach(section => {
-                    section.style.display = 'none';
-                });
-                
-                const targetSection = document.getElementById(targetId);
-                if (targetSection) {
-                    targetSection.style.display = 'block';
-                }
-                
-                sidebarLinks.forEach(link => {
-                    link.classList.remove('active');
-                });
-                const activeLink = document.querySelector(`.sidebar .nav-link[data-target="${targetId}"]`);
-                if(activeLink) {
-                    activeLink.classList.add('active');
-                }
+        // --- 1. Section Switching Logic ---
+        function switchSection(targetId) {
+            contentSections.forEach(section => {
+                section.style.display = 'none';
+            });
+
+            const targetSection = document.getElementById(targetId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
             }
 
-            // Check URL parameters on load for deep linking
-            const urlParams = new URLSearchParams(window.location.search);
-            const initialSection = urlParams.get('section') || 'dashboard-section';
-            
-            // Set initial active state and display section
-            if (initialSection) {
-                switchSection(initialSection);
-            }
-            
-            // Event listener for sidebar clicks
             sidebarLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('data-target');
-                    switchSection(targetId);
-                });
+                link.classList.remove('active');
             });
-
-            // --- 2. Dynamic Modal Content Logic ---
-            if (actionModal) {
-                actionModal.addEventListener('show.bs.modal', function (event) {
-                    const button = event.relatedTarget; 
-                    
-                    const recordId = button.getAttribute('data-record-id');
-                    const numericalId = button.getAttribute('data-numerical-id'); 
-                    const recordType = button.getAttribute('data-record-type');
-                    
-                    document.getElementById('modal-record-id').textContent = recordId;
-                    document.getElementById('modal-record-type-text').textContent = `Record Type: ${recordType}`;
-
-                    // --- Determine the ID and Script based on recordType ---
-                    let viewScript = 'view_details.php';
-                    let editScript = 'edit_record.php';
-                    let deleteScript = 'delete_record.php';
-                    let viewEditId = numericalId; // Default to numerical ID
-
-                    if (recordType === 'Customer') {
-                        viewScript = 'view_customer.php';
-                        editScript = 'edit_customer.php';
-                        deleteScript = 'delete_customer.php';
-                        viewEditId = recordId; // Use full string customer_id
-                    } else if (recordType === 'Booking') {
-                        viewScript = 'view_booking.php'; 
-                        editScript = 'edit_booking.php';
-                        deleteScript = 'delete_booking.php';
-                    } else if (recordType === 'Room') {
-                        viewScript = 'view_room.php';
-                        editScript = 'edit_room.php';
-                        deleteScript = 'delete_room.php';
-                    } else if (recordType === 'RoomNumber') {
-                        viewScript = 'view_room_number.php';
-                        editScript = 'edit_room_number.php';
-                        deleteScript = 'delete_room_number.php';
-                    }
-                    
-                    // View and Edit Links
-                    document.getElementById('action-view-link').href = `${viewScript}?id=${viewEditId}`; 
-                    document.getElementById('action-edit-link').href = `${editScript}?id=${viewEditId}`;
-                    
-                    // Delete Link uses the numerical ID
-                    document.getElementById('action-delete-link').onclick = function() {
-                        if (confirm(`Are you sure you want to permanently delete ${recordType} ${recordId}? This action cannot be undone.`)) {
-                            // Note: For Customer, the numerical ID passed here is the VARCHAR customer_id
-                            // For Booking/Room/RoomNumber, it is the INT ID
-                            window.location.href = `${deleteScript}?id=${numericalId}`;
-                        }
-                        return false; 
-                    };
-                });
+            const activeLink = document.querySelector(`.sidebar .nav-link[data-target="${targetId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
             }
+        }
 
-            // --- 3. Chart Initialization (Must be inside DOMContentLoaded) ---
-            
-            // 1. Monthly Revenue Chart Setup
-            const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart');
-            new Chart(monthlyRevenueCtx, {
-                type: 'bar',
-                data: {
-                    labels: <?php echo $month_labels_json; ?>,
-                    datasets: [{
-                        label: 'Revenue (₹)',
-                        data: <?php echo $monthly_data_json; ?>,
-                        backgroundColor: 'rgba(160, 82, 45, 0.6)', 
-                        borderColor: 'rgba(160, 82, 45, 1)',
-                        borderWidth: 1,
-                        borderRadius: 4,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false }, title: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
-                }
-            });
+        // Check URL parameters on load for deep linking
+        const urlParams = new URLSearchParams(window.location.search);
+        const initialSection = urlParams.get('section') || 'dashboard-section';
 
-            // 2. Booking Trends Chart Setup
-            const bookingTrendsCtx = document.getElementById('bookingTrendsChart');
-            new Chart(bookingTrendsCtx, {
-                type: 'line',
-                data: {
-                    labels: <?php echo $day_labels_json; ?>,
-                    datasets: [{
-                        label: 'Bookings',
-                        data: <?php echo $daily_data_json; ?>,
-                        borderColor: 'rgba(0, 123, 255, 1)',
-                        backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 5,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: false }, title: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { display: false }, ticks: { precision: 0 } }, x: { grid: { display: false } } }
-                }
+        // Set initial active state and display section
+        if (initialSection) {
+            switchSection(initialSection);
+        }
+
+        // Event listener for sidebar clicks
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-target');
+                switchSection(targetId);
             });
-            
         });
+
+        // --- 2. Dynamic Modal Content Logic ---
+        if (actionModal) {
+            actionModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+
+                const recordId = button.getAttribute('data-record-id');
+                const numericalId = button.getAttribute('data-numerical-id');
+                const recordType = button.getAttribute('data-record-type');
+
+                document.getElementById('modal-record-id').textContent = recordId;
+                document.getElementById('modal-record-type-text').textContent =
+                    `Record Type: ${recordType}`;
+
+                // --- Determine the ID and Script based on recordType ---
+                let viewScript = 'view_details.php';
+                let editScript = 'edit_record.php';
+                let deleteScript = 'delete_record.php';
+                let viewEditId = numericalId; // Default to numerical ID
+
+                if (recordType === 'Customer') {
+                    viewScript = 'view_customer.php';
+                    editScript = 'edit_customer.php';
+                    deleteScript = 'delete_customer.php';
+                    viewEditId = recordId; // Use full string customer_id
+                } else if (recordType === 'Booking') {
+                    viewScript = 'view_booking.php';
+                    editScript = 'edit_booking.php';
+                    deleteScript = 'delete_booking.php';
+                } else if (recordType === 'Room') {
+                    viewScript = 'view_room.php';
+                    editScript = 'edit_room.php';
+                    deleteScript = 'delete_room.php';
+                } else if (recordType === 'RoomNumber') {
+                    viewScript = 'view_room_number.php';
+                    editScript = 'edit_room_number.php';
+                    deleteScript = 'delete_room_number.php';
+                }
+
+                // View and Edit Links
+                document.getElementById('action-view-link').href = `${viewScript}?id=${viewEditId}`;
+                document.getElementById('action-edit-link').href = `${editScript}?id=${viewEditId}`;
+
+                // Delete Link uses the numerical ID
+                document.getElementById('action-delete-link').onclick = function() {
+                    if (confirm(
+                            `Are you sure you want to permanently delete ${recordType} ${recordId}? This action cannot be undone.`
+                            )) {
+                        // Note: For Customer, the numerical ID passed here is the VARCHAR customer_id
+                        // For Booking/Room/RoomNumber, it is the INT ID
+                        window.location.href = `${deleteScript}?id=${numericalId}`;
+                    }
+                    return false;
+                };
+            });
+        }
+
+        // --- 3. Chart Initialization (Must be inside DOMContentLoaded) ---
+
+        // 1. Monthly Revenue Chart Setup
+        const monthlyRevenueCtx = document.getElementById('monthlyRevenueChart');
+        new Chart(monthlyRevenueCtx, {
+            type: 'bar',
+            data: {
+                labels: <?php echo $month_labels_json; ?>,
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: <?php echo $monthly_data_json; ?>,
+                    backgroundColor: 'rgba(160, 82, 45, 0.6)',
+                    borderColor: 'rgba(160, 82, 45, 1)',
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Booking Trends Chart Setup
+        const bookingTrendsCtx = document.getElementById('bookingTrendsChart');
+        new Chart(bookingTrendsCtx, {
+            type: 'line',
+            data: {
+                labels: <?php echo $day_labels_json; ?>,
+                datasets: [{
+                    label: 'Bookings',
+                    data: <?php echo $daily_data_json; ?>,
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 5,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+    });
     </script>
 </body>
+
 </html>
