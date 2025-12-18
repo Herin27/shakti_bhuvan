@@ -67,7 +67,7 @@
                     📞 <a href="tel:+919265900219">+91 92659 00219</a>
                 </li>
                 <li>
-                    ✉️ <a href="mailto:info@shaktibhuvan.com">info@shaktibhuvan.com</a>
+                    ✉️ <a href="mailto:shaktibhuvanambaji.com">shaktibhuvanambaji.com</a>
                 </li>
             </ul>
             </div>

@@ -1,214 +1,218 @@
 <?php
 include 'db.php';
 
-// Fetch all images grouped by type
+/* Fetch images */
 $result = $conn->query("SELECT * FROM gallery ORDER BY image_type, created_at DESC");
 
 $gallery = [];
 while ($row = $result->fetch_assoc()) {
     $gallery[$row['image_type']][] = $row;
 }
+
 $categories = ['Hotel View', 'Luxury Suite', 'Deluxe Room', 'Standard Room'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Hotel Gallery</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="./assets/css/navbar.css">
+
     <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="./assets/css/navbar.css">
+
     <style>
-    /* Reset + layout */
-    html,
-    body {
-        height: 100%;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-    }
+        body {
+            margin: 0;
+            font-family: 'Playfair Display', serif;
+            background: #fdfbf6;
+        }
 
-    body {
-        font-family: 'Playfair Display', serif;
-    }
+        main {
+            padding-top: 120px;
+            max-width: 1800px;
+            margin: auto;
+        }
 
-    main {
-        flex: 1;
-        /* push footer down */
-        padding-top: 120px;
-        /* space for fixed navbar */
-        max-width: 1800px;
-        margin: 0 auto;
-        width: 100%;
-    }
+        h1, p {
+            text-align: center;
+        }
 
-    /* Category buttons */
-    .category-buttons {
-        text-align: center;
-        margin: 20px 0;
-    }
+        /* Category Buttons */
+        .category-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
 
-    .category-buttons button {
-        margin: 5px;
-        padding: 10px 20px;
-        border: none;
-        background: #c4a36f;
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-        border-radius: 5px;
-        transition: background 0.3s;
-    }
+        .category-buttons button {
+            margin: 6px;
+            padding: 10px 22px;
+            border: none;
+            background: #c4a36f;
+            color: #fff;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
 
-    .category-buttons button:hover,
-    .category-buttons button.active {
-        background: #a57e3d;
-    }
+        .category-buttons button.active,
+        .category-buttons button:hover {
+            background: #a57e3d;
+        }
 
-    /* Gallery grid */
-    .gallery-container {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-        padding: 20px;
-    }
+        /* Gallery Grid */
+        .gallery-section {
+            display: none;
+        }
 
-    .gallery-item {
-        position: relative;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s;
-    }
+        .gallery-section.active {
+            display: block;
+        }
 
-    .gallery-item:hover {
-        transform: scale(1.05);
-    }
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
 
-    .gallery-item img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-    }
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+        }
 
-    .gallery-caption {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: rgba(0, 0, 0, 0.6);
-        color: #fff;
-        padding: 10px;
-        text-align: center;
-        font-size: 16px;
-    }
+        .gallery-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
 
-    /* Gallery section toggle */
-    .gallery-section {
-        display: none;
-    }
+        .gallery-item:hover img {
+            transform: scale(1.08);
+        }
 
-    .gallery-section.active {
-        display: block;
-    }
+        .gallery-caption {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            font-size: 15px;
+        }
 
-    /* Fix navbar overlap if it's fixed */
-    header.navbar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-    }
+        /* FULLSCREEN LIGHTBOX */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(255,255,255,0.3);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            font-size: 36px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .lightbox-close:hover {
+            color: #c4a36f;
+        }
     </style>
 </head>
 
 <body>
-    <!-- <header class="navbar">
-        <div class="logo">
-            <div class="logo-icon">
-                <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
-            </div>
-            <div class="logo-text">
-                <h1>Shakti Bhuvan</h1>
-                <span>Premium Stays</span>
-            </div>
-        </div>
 
+<?php include 'header.php'; ?>
 
-        <nav class="nav-links">
-            <a href="index.php">Home</a>
-            <a href="rooms.php">Rooms</a>
-            <a href="gallery.php" class="active">Gallery</a>
-            <a href="contact.php">Contact</a>
-            <a href="admin.php">admin</a>
-        </nav>
+<main>
+    <h1>Hotel Gallery</h1>
+    <p>Explore our hotel photos by categories</p>
 
-        <div class="contact-info">
-            <span><i class="fas fa-phone"></i> +91 92659 00219</span>
-            <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
-            <a href="rooms.php" class="book-btn">Book Now</a>
-        </div>
-    </header> -->\
+    <!-- CATEGORY BUTTONS -->
+    <div class="category-buttons">
+        <?php foreach ($categories as $cat): ?>
+            <button onclick="showCategory('<?php echo $cat; ?>', this)">
+                <?php echo $cat; ?>
+            </button>
+        <?php endforeach; ?>
+    </div>
 
-    <?php include 'header.php'; ?>
-
-    <main>
-        <h1 style="text-align:center;">Hotel Gallery</h1>
-        <p style="text-align:center;">Explore our hotel photos by categories</p>
-
-        <!-- Category Buttons -->
-        <div class="category-buttons">
-            <?php foreach($categories as $cat): ?>
-            <button onclick="showCategory('<?php echo $cat; ?>')"><?php echo $cat; ?></button>
-            <?php endforeach; ?>
-        </div>
-
-        <!-- Gallery Sections -->
-        <?php foreach($gallery as $type => $images): ?>
+    <!-- GALLERY -->
+    <?php foreach ($gallery as $type => $images): ?>
         <div class="gallery-section" id="<?php echo $type; ?>">
             <div class="gallery-container">
-                <?php foreach($images as $img): ?>
-                <div class="gallery-item">
-                    <img src="<?php echo $img['image_url']; ?>" alt="<?php echo htmlspecialchars($type); ?>">
-                    <div class="gallery-caption"><?php echo htmlspecialchars($type); ?></div>
-                </div>
+                <?php foreach ($images as $img): ?>
+                    <div class="gallery-item" onclick="openLightbox('<?php echo $img['image_url']; ?>')">
+                        <img src="<?php echo $img['image_url']; ?>" alt="<?php echo htmlspecialchars($type); ?>">
+                        <div class="gallery-caption"><?php echo htmlspecialchars($type); ?></div>
+                    </div>
                 <?php endforeach; ?>
             </div>
         </div>
-        <?php endforeach; ?>
-    </main>
+    <?php endforeach; ?>
+</main>
 
-    <?php include 'footer.php'; ?>
+<?php include 'footer.php'; ?>
 
-    <script>
-    function showCategory(category) {
-        // Hide all sections
-        document.querySelectorAll('.gallery-section').forEach(sec => {
-            sec.classList.remove('active');
-        });
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+    <span class="lightbox-close" onclick="closeLightbox()">×</span>
+    <img id="lightbox-img">
+</div>
 
-        // Remove active class from all buttons
-        document.querySelectorAll('.category-buttons button').forEach(btn => {
-            btn.classList.remove('active');
-        });
+<script>
+    function showCategory(category, btn) {
+        document.querySelectorAll('.gallery-section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.category-buttons button').forEach(b => b.classList.remove('active'));
 
-        // Show selected category
         document.getElementById(category).classList.add('active');
-
-        // Mark clicked button active
-        event.target.classList.add('active');
+        btn.classList.add('active');
     }
 
-    // Auto-show first category when page loads
     document.addEventListener("DOMContentLoaded", () => {
-        const firstBtn = document.querySelector(".category-buttons button");
-        if (firstBtn) {
-            firstBtn.click();
-        }
+        document.querySelector(".category-buttons button")?.click();
     });
-    </script>
-</body>
 
+    function openLightbox(src) {
+        document.getElementById('lightbox-img').src = src;
+        document.getElementById('lightbox').classList.add('active');
+    }
+
+    function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+    }
+
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+        if (e.target === this) closeLightbox();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") closeLightbox();
+    });
+</script>
+
+</body>
 </html>

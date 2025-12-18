@@ -15,10 +15,19 @@
       font-family: "Inter", sans-serif;
       background-color: #faf7f1;
     }
+    .contact-info a {
+    color: inherit;
+    text-decoration: none;
+    }
+
+    .contact-info a:hover {
+    text-decoration: none;
+    }
     a {
       color: black;
       text-decoration: none;
     }
+
     .contact-section {
       text-align: center;
       padding: 60px 20px;
@@ -71,10 +80,19 @@
     </nav>
 
     <div class="contact-info">
-        <span><i class="fas fa-phone"></i> +91 92659 00219</span>
-        <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
-        <a href="rooms.php" class="book-btn">Book Now</a>
-    </div>
+    <span>
+        <i class="fas fa-phone"></i>
+        <a href="tel:+919265900219">+91 92659 00219</a>
+    </span>
+
+    <span>
+        <i class="fas fa-envelope"></i>
+        <a href="mailto:shaktibhuvanambaji.com">shaktibhuvanambaji.com</a>
+    </span>
+
+    <a href="rooms.php" class="book-btn">Book Now</a>
+</div>
+
 </header>
 
 <section class="contact-section">
