@@ -1,68 +1,64 @@
 <?php
 session_start();
-// Include database connection and header/footer files
 include 'db.php'; 
-// NOTE: header.php will be included later in the HTML body
 
 if (!isset($_SESSION['booking']) || empty($_SESSION['booking'])) {
-    // If no booking session, redirect the user away
-    echo "<div style='text-align:center; padding: 50px;'>No pending booking found. Please select a room first. <a href='rooms.php'>Browse Rooms</a></div>";
+    echo "<div style='text-align:center; padding: 50px;'>No pending booking found. <a href='rooms.php'>Browse Rooms</a></div>";
     include 'footer.php';
     exit;
 }
 $booking = $_SESSION['booking'];
 
-// Determine tax rate for display from the room rate
-$room_rate = $booking['room_rate'];
+// --- STEP 1: Determine Tiered Tax Percentage ---
+$room_rate = $booking['room_rate']; // This should be the per-night rate
+
+// --- STEP 2: Calculate Subtotal and Tax Amount ---
+// Subtotal = (Room Charge * Nights) + (Extra Bed Total)
+$total_room_charge = ($booking['room_rate'] ?? 0) * ($booking['nights'] ?? 0);
+$total_extra_bed_charge = ($booking['extra_bed_unit_price'] ?? 0) * ($booking['extra_bed_included'] ?? 0) * ($booking['nights'] ?? 0);
+$subtotal = $total_room_charge + $total_extra_bed_charge;
+
 $display_tax_pct = 0;
-if ($room_rate >= 1000 && $room_rate <= 7500) {
+
+if ($subtotal <= 1000) {
+    $display_tax_pct = 0;
+} elseif ($subtotal > 1000 && $subtotal <= 7500) {
     $display_tax_pct = 5;
-} elseif ($room_rate > 7500) {
+} else {
     $display_tax_pct = 18;
 }
 
 $tax_multiplier = $display_tax_pct / 100;
-$subtotal_before_tax = $booking['total_price'] / (1 + $tax_multiplier);
+$tax_amount = $subtotal * $tax_multiplier;
+$final_payable = $subtotal + $tax_amount;
+
+// Update session with the precisely calculated final price for Razorpay
+$_SESSION['booking']['total_price'] = $final_payable;
 
 // --- Razorpay config ---
-$keyId = "rzp_test_RqeUyvsrea1Qdx";   // replace with your Test Key ID
-$keySecret = "DypnwCtjMOpiwBcJmZKkeYbd"; // replace with your Test Secret
+$keyId = "rzp_test_RqeUyvsrea1Qdx";   
+$keySecret = "DypnwCtjMOpiwBcJmZKkeYbd"; 
 
-require('razorpay-php-master/Razorpay.php'); // Ensure this path is correct
+require('razorpay-php-master/Razorpay.php'); 
 use Razorpay\Api\Api;
 
-try {
-    $api = new Api($keyId, $keySecret);
-} catch (\Exception $e) {
-    die("Razorpay API Initialization Error: " . $e->getMessage());
-}
+$api = new Api($keyId, $keySecret);
 
-// Amount must be in paise (₹1 = 100 paise)
-$total_price = number_format($booking['total_price'], 2, '.', '');
-$amount = (int)($total_price * 100);
+// Amount in paise
+$amount = (int)(round($final_payable, 2) * 100);
 
-// Create order in Razorpay
 try {
     $orderData = [
-        'receipt'         => 'BK_' . $booking['booking_id'], // Use DB booking ID as part of receipt
+        'receipt'         => 'BK_' . $booking['booking_id'],
         'amount'          => $amount,
         'currency'        => 'INR',
-        'payment_capture' => 1 // auto capture
+        'payment_capture' => 1
     ];
     $razorpayOrder = $api->order->create($orderData);
     $orderId = $razorpayOrder['id'];
 } catch (\Exception $e) {
-    die("Razorpay Order Creation Error: " . $e->getMessage());
+    die("Razorpay Order Error: " . $e->getMessage());
 }
-
-// Store the Razorpay order ID in session for verification
-$_SESSION['booking']['razorpay_order_id'] = $orderId; 
-
-// Calculate estimated discount and taxes for display (not for calculation)
-// Recalculate subtotal before tax assuming 5% tax
-$tax_rate = 0.05;
-$subtotal_before_tax = $booking['total_price'] / (1 + $tax_rate); 
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -291,42 +287,39 @@ if (file_exists('header.php')) {
     <h3>Proceed to Payment</h3>
 
     <div class="price-details">
-  <div class="row">
-    <span>Room Charge (<?= $booking['nights'] ?? 0; ?> Nights):</span>
-    <span>₹<?= number_format(($booking['room_rate'] ?? 0) * ($booking['nights'] ?? 0), 2); ?></span>
-  </div>
+        <div class="row">
+            <span>Room Charge (<?= $booking['nights']; ?> Nights):</span>
+            <span>₹<?= number_format($total_room_charge, 2); ?></span>
+        </div>
 
-  <?php if (($booking['extra_bed_included'] ?? 0) > 0): ?>
-  <div class="row">
-    <span>Extra Bed (<?= $booking['extra_bed_included']; ?> beds × <?= $booking['nights']; ?> nights):</span>
-    <span>₹<?= number_format(
-        ($booking['extra_bed_unit_price'] ?? 0) * $booking['extra_bed_included'] * $booking['nights'], 
-        2
-    ); ?></span> 
-  </div>
-  <?php endif; ?>
+        <?php if (($booking['extra_bed_included'] ?? 0) > 0): ?>
+        <div class="row">
+            <span>Extra Bed (<?= $booking['extra_bed_included']; ?> beds):</span>
+            <span>₹<?= number_format($total_extra_bed_charge, 2); ?></span>
+        </div>
+        <?php endif; ?>
 
-  <div class="row">
-    <span>Subtotal:</span>
-    <span>₹<?php echo number_format($subtotal_before_tax, 2); ?></span>
-  </div>
-  <div class="row">
-    <span>Taxes & Fees (<?php echo $display_tax_pct; ?>%):</span>
-    <span>₹<?php echo number_format($booking['total_price'] - $subtotal_before_tax, 2); ?></span>
-</div>
+        <div class="row" style="border-top: 1px solid #eee; margin-top: 5px; padding-top: 10px;">
+            <span>Subtotal:</span>
+            <span>₹<?= number_format($subtotal, 2); ?></span>
+        </div>
+        
+        <div class="row">
+            <span>GST (<?= $display_tax_pct; ?>%):</span>
+            <span>₹<?= number_format($tax_amount, 2); ?></span>
+        </div>
 
-  <div class="row total">
-    <span>Total Payable:</span>
-    <strong>₹<?php echo number_format($booking['total_price'], 2); ?></strong>
-  </div>
-</div>
+        <div class="row total">
+            <span>Total Payable:</span>
+            <strong>₹<?= number_format($final_payable, 2); ?></strong>
+        </div>
+    </div>
 
-    <button id="payBtn" class="book-btn2">Pay ₹<?php echo number_format($booking['total_price'], 2); ?></button>
+    <button id="payBtn" class="book-btn2">Pay ₹<?= number_format($final_payable, 2); ?></button>
     <a href="booking.php?room_id=<?= $booking['room_id']; ?>" class="edit-btn">
         <i class="fas fa-edit"></i> Back to Edit Details
     </a>
-    <p class="note"><i class="fas fa-lock"></i> Secure payment powered by Razorpay</p>
-  </div>
+</div>
 </div>
 
 <?php 

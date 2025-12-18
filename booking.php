@@ -1,5 +1,3 @@
-
-
 <?php
 include 'db.php';
 include 'header.php'; // For navigation and styles
@@ -41,7 +39,7 @@ if (!$room) {
     exit;
 }
 
-$tax_rate = 0.05; 
+// $tax_rate = 0.05; 
 ?>
 
 <!DOCTYPE html>
@@ -119,7 +117,7 @@ $tax_rate = 0.05;
                 <td class="value">₹<span id="extra_bed_charge_value">0.00</span></td>
             </tr>
             <tr>
-                <td class="label">Taxes & Fees (5%)</td>
+                <td class="label">Taxes & Fees</td>
                 <td class="value">₹<span id="tax_value">0.00</span></td>
             </tr>
             <tr class="total-row">
@@ -129,7 +127,7 @@ $tax_rate = 0.05;
         </table>
         
         <button type="submit" form="bookingForm" class="submit-btn-summary">Book Now</button>
-        <p class="cancellation-policy">Free cancellation up to 24 hours before check-in</p>
+        <!-- <p class="cancellation-policy">Free cancellation up to 24 hours before check-in</p> -->
     </div>
 
     <div class="booking-form">
@@ -199,7 +197,6 @@ $tax_rate = 0.05;
 
 <script>
     const ROOM_RATE = parseFloat(document.getElementById('room_rate').value);
-    const TAX_RATE = parseFloat(document.getElementById('tax_rate').value);
     const EXTRA_BED_PRICE_UNIT = parseFloat(document.getElementById('extra_bed_price_val').value);
 
     const checkinInput = document.getElementById('checkin');
@@ -221,7 +218,7 @@ $tax_rate = 0.05;
             extraBedWrapper.style.display = "flex";
         } else {
             extraBedWrapper.style.display = "none";
-            extraBedCountSelect.value = "1"; // Reset count if set to No
+            extraBedCountSelect.value = "1"; 
         }
         calculatePrice();
     }
@@ -246,13 +243,30 @@ $tax_rate = 0.05;
         const totalRoomCharge = ROOM_RATE * nights;
         const totalExtraBedCharge = (EXTRA_BED_PRICE_UNIT * bedCount) * nights;
         const subtotal = totalRoomCharge + totalExtraBedCharge;
-        const taxes = subtotal * TAX_RATE;
+
+        // --- GST Logic Correction ---
+        // Calculate the rate per night per room to determine GST slab
+        // Usually, GST is based on the transaction value per unit per day
+        let currentTaxRate = 0;
+        
+       if (subtotal <= 1000) {
+        currentTaxRate = 0.00; // Tier 1: 0%
+    } 
+    else if (subtotal > 1000 && subtotal <= 7500) {
+        currentTaxRate = 0.05; // Tier 2: 5%
+    } 
+    else {
+        currentTaxRate = 0.18; // Tier 3: 18% (Above 7500)
+    }
+
+        const taxes = subtotal * currentTaxRate;
         const totalPayable = subtotal + taxes;
 
+        // Update the UI
         nightsValue.textContent = nights;
         roomChargeValue.textContent = formatCurrency(totalRoomCharge);
         extraBedChargeValue.textContent = formatCurrency(totalExtraBedCharge);
-        taxValue.textContent = formatCurrency(taxes);
+        taxValue.textContent = formatCurrency(taxes) + " (" + (currentTaxRate * 100) + "%)";
         totalPayableValue.textContent = formatCurrency(totalPayable);
     }
 
