@@ -1,3 +1,5 @@
+
+
 <?php
 include 'db.php';
 include 'header.php'; // For navigation and styles
@@ -40,14 +42,6 @@ if (!$room) {
 }
 
 $tax_rate = 0.05; 
-// Start session if not already started
-if (session_status() == PHP_SESSION_NONE) { session_start(); }
-
-$room_id = isset($_GET['room_id']) ? intval($_GET['room_id']) : 0;
-// ... (rest of the room fetching code) ...
-
-// Fetch existing data from session if it exists
-$saved = $_SESSION['booking'] ?? [];
 ?>
 
 <!DOCTYPE html>
@@ -147,46 +141,56 @@ $saved = $_SESSION['booking'] ?? [];
             <input type="hidden" id="extra_bed_price_val" value="<?php echo htmlspecialchars($room['extra_bed_price']); ?>">
             
             <div class="form-grid">
-    <div class="form-group">
-        <label for="checkin">Check-in Date *</label>
-        <input type="date" id="checkin" name="checkin" required value="<?= $saved['checkin'] ?? ''; ?>">
-    </div>
-    <div class="form-group">
-        <label for="checkout">Check-out Date *</label>
-        <input type="date" id="checkout" name="checkout" required value="<?= $saved['checkout'] ?? ''; ?>">
-    </div>
-    <div class="form-group">
-        <label for="customer_name">Full Name *</label>
-        <input type="text" id="customer_name" name="customer_name" required value="<?= htmlspecialchars($saved['customer_name'] ?? ''); ?>">
-    </div>
-    <div class="form-group">
-        <label for="phone">Phone Number *</label>
-        <input type="tel" id="phone" name="phone" required value="<?= htmlspecialchars($saved['phone'] ?? ''); ?>">
-    </div>
-    <div class="form-group">
-        <label for="email">Email *</label>
-        <input type="email" id="email" name="email" value="<?= htmlspecialchars($saved['email'] ?? ''); ?>">
-    </div>
-    <div class="form-group">
-        <label for="extra_bed">Include Extra Bed?</label>
-        <select id="extra_bed" name="extra_bed" onchange="toggleExtraBedCount()">
-            <option value="0" <?= (isset($saved['extra_bed_included']) && $saved['extra_bed_included'] == 0) ? 'selected' : ''; ?>>No Extra Bed</option>
-            <option value="1" <?= (isset($saved['extra_bed_included']) && $saved['extra_bed_included'] > 0) ? 'selected' : ''; ?>>Yes (₹<?php echo number_format($room['extra_bed_price'], 2); ?> / night)</option>
-        </select>
-    </div>
-    <div class="form-group" id="extra_bed_count_wrapper">
-        <label for="extra_bed_count">How many Extra Beds?</label>
-        <select id="extra_bed_count" name="extra_bed_count" onchange="calculatePrice()">
-            <?php for($i=1; $i<=3; $i++): ?>
-                <option value="<?= $i; ?>" <?= (isset($saved['extra_bed_included']) && $saved['extra_bed_included'] == $i) ? 'selected' : ''; ?>><?= $i; ?> Bed<?= $i>1?'s':''; ?></option>
-            <?php endfor; ?>
-        </select>
-    </div>
-    <div class="form-group" style="grid-column: 1 / -1;">
-        <label for="notes">Special Requests / Notes</label>
-        <textarea id="notes" name="notes" rows="3" placeholder="e.g., Early check-in..."><?= htmlspecialchars($saved['notes'] ?? ''); ?></textarea>
-    </div>
-</div>
+                <div class="form-group">
+                    <label for="checkin">Check-in Date *</label>
+                    <input type="date" id="checkin" name="checkin" required>
+                </div>
+                <div class="form-group">
+                    <label for="checkout">Check-out Date *</label>
+                    <input type="date" id="checkout" name="checkout" required>
+                </div>
+                <div class="form-group">
+                    <label for="customer_name">Full Name *</label>
+                    <input type="text" id="customer_name" name="customer_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                <!-- <div class="form-group">
+                    <label for="guests">Number of Guests *</label>
+                    <select id="guests" name="guests" required>
+                        <?php 
+                        for ($i = 1; $i <= 10; $i++) {
+                            echo "<option value='{$i}'>{$i} Guest" . ($i > 1 ? "s" : "") . "</option>";
+                        }
+                        ?>
+                    </select>
+                </div> -->
+                <div class="form-group">
+                    <label for="extra_bed">Include Extra Bed?</label>
+                    <select id="extra_bed" name="extra_bed" onchange="toggleExtraBedCount()">
+                        <option value="0">No Extra Bed</option>
+                        <option value="1">Yes (₹<?php echo htmlspecialchars(number_format($room['extra_bed_price'], 2)); ?> / night)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="extra_bed_count_wrapper">
+                    <label for="extra_bed_count">How many Extra Beds?</label>
+                    <select id="extra_bed_count" name="extra_bed_count" onchange="calculatePrice()">
+                        <option value="1">1 Bed</option>
+                        <option value="2">2 Beds</option>
+                        <option value="3">3 Beds</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="notes">Special Requests / Notes</label>
+                    <textarea id="notes" name="notes" rows="3" placeholder="e.g., Early check-in..."></textarea>
+                </div>
+            </div>
         </form>
     </div>
 </div>
@@ -271,13 +275,6 @@ $saved = $_SESSION['booking'] ?? [];
         checkoutInput.addEventListener('change', calculatePrice);
         calculatePrice();
     });
-    document.addEventListener('DOMContentLoaded', function() {
-    // ... existing date logic ...
-
-    // Run initial calculation and UI state check if returning from session
-    toggleExtraBedCount(); 
-    calculatePrice();
-});
 </script>
 </body>
 </html>

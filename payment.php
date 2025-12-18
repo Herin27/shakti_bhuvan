@@ -12,6 +12,18 @@ if (!isset($_SESSION['booking']) || empty($_SESSION['booking'])) {
 }
 $booking = $_SESSION['booking'];
 
+// Determine tax rate for display from the room rate
+$room_rate = $booking['room_rate'];
+$display_tax_pct = 0;
+if ($room_rate >= 1000 && $room_rate <= 7500) {
+    $display_tax_pct = 5;
+} elseif ($room_rate > 7500) {
+    $display_tax_pct = 18;
+}
+
+$tax_multiplier = $display_tax_pct / 100;
+$subtotal_before_tax = $booking['total_price'] / (1 + $tax_multiplier);
+
 // --- Razorpay config ---
 $keyId = "rzp_test_RqeUyvsrea1Qdx";   // replace with your Test Key ID
 $keySecret = "DypnwCtjMOpiwBcJmZKkeYbd"; // replace with your Test Secret
@@ -299,9 +311,9 @@ if (file_exists('header.php')) {
     <span>₹<?php echo number_format($subtotal_before_tax, 2); ?></span>
   </div>
   <div class="row">
-    <span>Taxes & Fees (5%):</span>
+    <span>Taxes & Fees (<?php echo $display_tax_pct; ?>%):</span>
     <span>₹<?php echo number_format($booking['total_price'] - $subtotal_before_tax, 2); ?></span>
-  </div>
+</div>
 
   <div class="row total">
     <span>Total Payable:</span>

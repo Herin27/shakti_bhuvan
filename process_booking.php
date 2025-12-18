@@ -23,6 +23,7 @@ $extra_bed_count = ($extra_bed_included == 1) ? intval($_POST['extra_bed_count']
 $notes = mysqli_real_escape_string($conn, trim($_POST['notes']));
 
 // --- 2. Price Calculation ---
+// --- 2. Price Calculation ---
 $sql_rate = "SELECT name, discount_price, extra_bed_price FROM rooms WHERE id = $room_id";
 $result_rate = mysqli_query($conn, $sql_rate);
 $room_data = mysqli_fetch_assoc($result_rate);
@@ -30,16 +31,25 @@ $room_data = mysqli_fetch_assoc($result_rate);
 $room_name = $room_data['name'];
 $room_rate_per_night = (float)$room_data['discount_price'];
 $extra_bed_rate_per_night = (float)$room_data['extra_bed_price'];
-$tax_rate = 0.05;
+
+// DYNAMIC GST LOGIC
+$tax_rate = 0;
+if ($room_rate_per_night >= 1000 && $room_rate_per_night <= 7500) {
+    $tax_rate = 0.05;
+} elseif ($room_rate_per_night > 7500) {
+    $tax_rate = 0.18;
+}
 
 $date1 = new DateTime($checkin);
 $date2 = new DateTime($checkout);
 $nights = $date1->diff($date2)->days;
-if($nights <= 0) $nights = 1; // Safety check
+if($nights <= 0) $nights = 1;
 
-// UPDATED CALCULATION: (Room Rate + (Price per bed * Number of beds)) * Nights
 $subtotal = ($room_rate_per_night + ($extra_bed_count * $extra_bed_rate_per_night)) * $nights;
 $total_price = $subtotal * (1 + $tax_rate);
+
+// Add tax_rate to session for payment.php display
+$_SESSION['temp_tax_rate'] = $tax_rate;
 
 // --- 3. User Management (No changes needed here) ---
 $customer_id = null;
