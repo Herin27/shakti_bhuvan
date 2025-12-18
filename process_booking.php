@@ -12,10 +12,14 @@ $room_id = intval($_POST['room_id']);
 $customer_name = mysqli_real_escape_string($conn, trim($_POST['customer_name']));
 $phone = mysqli_real_escape_string($conn, trim($_POST['phone']));
 $email = mysqli_real_escape_string($conn, trim($_POST['email']));
-$guests = intval($_POST['guests']);
+$guests = isset($_POST['guests']) ? intval($_POST['guests']) : 0;
 $checkin = mysqli_real_escape_string($conn, $_POST['checkin']);
 $checkout = mysqli_real_escape_string($conn, $_POST['checkout']);
+
+// UPDATED: Get the actual count of extra beds
 $extra_bed_included = isset($_POST['extra_bed']) ? intval($_POST['extra_bed']) : 0;
+$extra_bed_count = ($extra_bed_included == 1) ? intval($_POST['extra_bed_count']) : 0;
+
 $notes = mysqli_real_escape_string($conn, trim($_POST['notes']));
 
 // --- 2. Price Calculation ---
@@ -31,10 +35,13 @@ $tax_rate = 0.05;
 $date1 = new DateTime($checkin);
 $date2 = new DateTime($checkout);
 $nights = $date1->diff($date2)->days;
+if($nights <= 0) $nights = 1; // Safety check
 
-$total_price = (($room_rate_per_night + ($extra_bed_included ? $extra_bed_rate_per_night : 0)) * $nights) * (1 + $tax_rate);
+// UPDATED CALCULATION: (Room Rate + (Price per bed * Number of beds)) * Nights
+$subtotal = ($room_rate_per_night + ($extra_bed_count * $extra_bed_rate_per_night)) * $nights;
+$total_price = $subtotal * (1 + $tax_rate);
 
-// --- 3. User Management ---
+// --- 3. User Management (No changes needed here) ---
 $customer_id = null;
 $sql_check_user = "SELECT customer_id FROM users WHERE phone = '$phone'";
 $result_check_user = mysqli_query($conn, $sql_check_user);
@@ -50,11 +57,12 @@ if (mysqli_num_rows($result_check_user) > 0) {
     $customer_id = $new_customer_id;
 }
 
-// --- 4. Insert Booking (Room Number is NULL for now) ---
+// --- 4. Insert Booking ---
+// UPDATED: Storing extra_bed_count in the notes or you can add a column 'extra_bed_count' to your DB table
 $sql_insert_booking = "INSERT INTO bookings 
     (customer_name, phone, email, guests, room_id, room_number, checkin, checkout, total_price, extra_bed_included, status, payment_status, notes)
     VALUES 
-    ('$customer_name', '$phone', '$email', '$guests', '$room_id', NULL, '$checkin', '$checkout', '$total_price', '$extra_bed_included', 'Pending', 'Pending', '$notes')";
+    ('$customer_name', '$phone', '$email', '$guests', '$room_id', NULL, '$checkin', '$checkout', '$total_price', '$extra_bed_count', 'Pending', 'Pending', '$notes')";
 
 if (mysqli_query($conn, $sql_insert_booking)) {
     $new_booking_id = mysqli_insert_id($conn);
@@ -63,7 +71,7 @@ if (mysqli_query($conn, $sql_insert_booking)) {
         'booking_id' => $new_booking_id,
         'customer_id' => $customer_id,
         'customer_name' => $customer_name,
-        'room_id' => $room_id, // Store room_id to find a room later
+        'room_id' => $room_id,
         'room_name' => $room_name,
         'total_price' => $total_price,
         'checkin' => $checkin,
@@ -71,7 +79,8 @@ if (mysqli_query($conn, $sql_insert_booking)) {
         'nights' => $nights,
         'phone' => $phone,
         'email' => $email,
-        'extra_bed_included' => $extra_bed_included,
+        'extra_bed_included' => $extra_bed_count, // Store the count here
+        'extra_bed_unit_price' => $extra_bed_rate_per_night, // Added for payment.php display
         'room_rate' => $room_rate_per_night
     ];
 

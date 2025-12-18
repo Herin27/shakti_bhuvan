@@ -201,6 +201,25 @@ $subtotal_before_tax = $booking['total_price'] / (1 + $tax_rate);
         font-size: 0.85rem;
         color: #888;
     }
+
+    .edit-btn {
+        display: block;
+        width: 100%;
+        background: #6c757d;
+        color: white;
+        text-decoration: none;
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        margin-top: 10px;
+        transition: background 0.3s;
+        text-align: center;
+    }
+    .edit-btn:hover {
+        background: #5a6268;
+        color: white;
+    }
     
     /* Responsive */
     @media (max-width: 768px) {
@@ -234,12 +253,13 @@ if (file_exists('header.php')) {
       <h3>Booking Details</h3>
       <ul>
         <strong>Room Type:</strong> <span><?= htmlspecialchars($booking['room_name'] ?? 'N/A'); ?></span><br>
-        <strong>Specific Room:</strong> <span>Room - <?= htmlspecialchars($booking['room_number'] ?? 'N/A'); ?></span><br>
+        <!-- <strong>Specific Room:</strong> <span>Room - <?= htmlspecialchars($booking['room_number'] ?? 'N/A'); ?></span><br> -->
         <strong>Check-in Date:</strong> <span><?= htmlspecialchars($booking['checkin'] ?? 'N/A'); ?></span><br>
         <strong>Check-out Date:</strong> <span><?= htmlspecialchars($booking['checkout'] ?? 'N/A'); ?></span><br>
         <strong>Nights:</strong> <span><?= $booking['nights'] ?? 0; ?></span><br>
-        <strong>Guests:</strong> <span><?= $booking['guests'] ?? 0; ?></span><br>
+        <!-- <strong>Guests:</strong> <span><?= $booking['guests'] ?? 0; ?></span><br> -->
         <strong>Extra Bed Included:</strong> <span><?= ($booking['extra_bed_included'] ?? 0) ? 'Yes' : 'No'; ?></span><br>
+        <strong>No Of Extra Beds:</strong> <span><?= $booking['extra_bed_included'] ?? 0; ?></span><br>
       </ul>
     </div>
     <div class="card">
@@ -259,37 +279,40 @@ if (file_exists('header.php')) {
     <h3>Proceed to Payment</h3>
 
     <div class="price-details">
-      <div class="row">
-        <span>Room Charge (<?= $booking['nights'] ?? 0; ?> Nights):</span>
-        <span>₹<?= number_format(($booking['room_rate'] ?? 0) * ($booking['nights'] ?? 0), 2); ?></span>
-      </div>
-      <?php if ($booking['extra_bed_included'] ?? 0): ?>
-      <div class="row">
-        <span>Extra Bed Charge:</span>
-        <span>₹<?= number_format(
-            $booking['total_price'] - 
-            (($booking['room_rate'] ?? 0) * ($booking['nights'] ?? 0)) -
-            ($booking['total_price'] - $subtotal_before_tax), 
-            2
-        ); ?></span> 
-      </div>
-      <?php endif; ?>
-      <div class="row">
-        <span>Subtotal (Room + Bed):</span>
-        <span>₹<?php echo number_format($subtotal_before_tax, 2); ?></span>
-      </div>
-      <div class="row">
-        <span>Taxes & Fees (5%):</span>
-        <span>₹<?php echo number_format($booking['total_price'] - $subtotal_before_tax, 2); ?></span>
-      </div>
+  <div class="row">
+    <span>Room Charge (<?= $booking['nights'] ?? 0; ?> Nights):</span>
+    <span>₹<?= number_format(($booking['room_rate'] ?? 0) * ($booking['nights'] ?? 0), 2); ?></span>
+  </div>
 
-      <div class="row total">
-        <span>Total Payable:</span>
-        <strong>₹<?php echo number_format($booking['total_price'], 2); ?></strong>
-      </div>
-    </div>
+  <?php if (($booking['extra_bed_included'] ?? 0) > 0): ?>
+  <div class="row">
+    <span>Extra Bed (<?= $booking['extra_bed_included']; ?> beds × <?= $booking['nights']; ?> nights):</span>
+    <span>₹<?= number_format(
+        ($booking['extra_bed_unit_price'] ?? 0) * $booking['extra_bed_included'] * $booking['nights'], 
+        2
+    ); ?></span> 
+  </div>
+  <?php endif; ?>
+
+  <div class="row">
+    <span>Subtotal:</span>
+    <span>₹<?php echo number_format($subtotal_before_tax, 2); ?></span>
+  </div>
+  <div class="row">
+    <span>Taxes & Fees (5%):</span>
+    <span>₹<?php echo number_format($booking['total_price'] - $subtotal_before_tax, 2); ?></span>
+  </div>
+
+  <div class="row total">
+    <span>Total Payable:</span>
+    <strong>₹<?php echo number_format($booking['total_price'], 2); ?></strong>
+  </div>
+</div>
 
     <button id="payBtn" class="book-btn2">Pay ₹<?php echo number_format($booking['total_price'], 2); ?></button>
+    <a href="booking.php?room_id=<?= $booking['room_id']; ?>" class="edit-btn">
+        <i class="fas fa-edit"></i> Back to Edit Details
+    </a>
     <p class="note"><i class="fas fa-lock"></i> Secure payment powered by Razorpay</p>
   </div>
 </div>

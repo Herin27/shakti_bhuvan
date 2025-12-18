@@ -45,6 +45,7 @@ $sql_month_revenue = "
     WHERE MONTH(checkin) = '$current_month' 
     AND YEAR(checkin) = '$current_year' 
     AND (status = 'Confirmed' OR status = 'Checked-in')
+    AND payment_status = 'Paid'
 ";
 $revenue_this_month = fetchSingleValue($conn, $sql_month_revenue) ?: 0.00;
 

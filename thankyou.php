@@ -79,7 +79,7 @@ $booking_id = $_GET['booking_id'] ?? 'N/A';
     <?php if($status === 'success'): ?>
         <div class="icon" style="color: #28a745;"><i class="fa fa-check-circle"></i></div>
         <h1>Booking Confirmed!</h1>
-        <p>Payment successful. Your Booking ID is: <strong>#<?php echo $booking_id; ?></strong></p>
+        <p>Payment successful.</p>
     <?php else: ?>
         <div class="icon" style="color: #dc3545;"><i class="fa fa-times-circle"></i></div>
         <h1>Payment Failed</h1>
