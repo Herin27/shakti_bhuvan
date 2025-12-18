@@ -86,6 +86,15 @@ $images = $result->fetch_all(MYSQLI_ASSOC);
     .gallery-item { background: #fff; padding: 10px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; }
     .gallery-item img { max-width: 100%; border-radius: 8px; height: 150px; object-fit: cover; }
     .gallery-item p { margin: 10px 0; font-weight: bold; }
+
+    .contact-info a {
+    color: inherit;
+    text-decoration: none;
+    }
+
+    .contact-info a:hover {
+    text-decoration: none;
+    }
   </style>
 </head>
 <body class="admin-page">
@@ -111,9 +120,17 @@ $images = $result->fetch_all(MYSQLI_ASSOC);
         </nav>
 
         <div class="contact-info">
-            <span><i class="fas fa-phone"></i> +91 92659 00219</span>
-            <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
-            <a href="rooms.php" class="book-btn">Book Now</a>
+        <span>
+            <i class="fas fa-phone"></i>
+            <a href="tel:+919265900219">+91 92659 00219</a>
+        </span>
+
+        <span>
+            <i class="fas fa-envelope"></i>
+            <a href="mailto:shaktibhuvanambaji.com">shaktibhuvanambaji.com</a>
+        </span>
+
+        <a href="rooms.php" class="book-btn">Book Now</a>
         </div>
     </header>
 
