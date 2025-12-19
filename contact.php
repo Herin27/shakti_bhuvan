@@ -137,7 +137,7 @@
     <h4>Phone</h4>
     <p>
       <a href="tel:+919265900219">+91 92659 00219</a><br>
-      <a href="tel:+919876543211">+91 98765 43211</a>
+      <!-- <a href="tel:+919876543211">+91 98765 43211</a> -->
     </p>
     <span>Available 24/7 for reservations</span>
   </div>
@@ -168,75 +168,88 @@
 </section>
 
 <section class="bottom-form">
-  <!-- Send us a Message form -->
   <div class="contact-form">
-  <h3>📩 Send us a Message</h3>
-  <form action="save_message.php" method="POST">
-    <div class="form-row">
-      <div class="form-group">
-        <label>Full Name *</label>
-        <input type="text" name="fullname" placeholder="Enter your full name" required>
+    <h3>📩 Send us a Message</h3>
+    <form action="save_message.php" method="POST" onsubmit="return validateForm()">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" name="fullname" id="fullname" placeholder="Enter your full name" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" name="email" id="email" placeholder="Enter your email" required>
+        </div>
       </div>
-      <div class="form-group">
-        <label>Email Address *</label>
-        <input type="email" name="email" placeholder="Enter your email" required>
-      </div>
-    </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label>Phone Number</label>
-        <input type="text" name="phone" placeholder="Enter your phone number">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="number" name="phone" id="phone" placeholder="Enter your 10-digit phone number">
+        </div>
+        <div class="form-group">
+          <label>Subject</label>
+          <input type="text" name="subject" placeholder="What is this regarding?">
+        </div>
       </div>
-      <div class="form-group">
-        <label>Subject</label>
-        <input type="text" name="subject" placeholder="What is this regarding?">
-      </div>
-    </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label>Check-in Date (Optional)</label>
-        <input type="date" name="checkin">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Check-in Date (Optional)</label>
+          <input type="date" name="checkin" id="checkin">
+        </div>
+        <div class="form-group">
+          <label>Check-out Date (Optional)</label>
+          <input type="date" name="checkout" id="checkout">
+        </div>
       </div>
-      <div class="form-group">
-        <label>Check-out Date (Optional)</label>
-        <input type="date" name="checkout">
+
+      <div class="form-group full">
+        <label>Message *</label>
+        <textarea name="message" rows="4" placeholder="Tell us how we can help you..." required></textarea>
       </div>
-    </div>
 
-    <div class="form-group full">
-      <label>Message *</label>
-      <textarea name="message" rows="4" placeholder="Tell us how we can help you..." required></textarea>
-    </div>
-
-    <button type="submit" class="btn-send">✉️ Send Message</button>
-  </form>
-</div>
+      <button type="submit" class="btn-send">✉️ Send Message</button>
+    </form>
+  </div>
 </section>
 
 <?php include 'footer.php'; ?>
 
 <script>
 function validateForm() {
+    // Get values from the inputs
     const phone = document.getElementById('phone').value;
     const email = document.getElementById('email').value;
+    const checkin = document.getElementById('checkin').value;
+    const checkout = document.getElementById('checkout').value;
     
-    // Phone validation (ensure 10 digits)
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(phone)) {
-        alert("Please enter a valid 10-digit phone number.");
-        return false;
+    // 1. Phone validation (10 digits)
+    // Only validate if user actually typed something in phone
+    if (phone !== "") {
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(phone)) {
+            alert("Please enter a valid 10-digit phone number.");
+            return false;
+        }
     }
 
-    // Email validation (Basic regex)
+    // 2. Email validation (Basic regex)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         alert("Please enter a valid email address.");
         return false;
     }
 
-    return true; // Form submits if validation passes
+    // 3. Date Logic (Check-out cannot be before Check-in)
+    if (checkin && checkout) {
+        if (new Date(checkout) <= new Date(checkin)) {
+            alert("Check-out date must be after the Check-in date.");
+            return false;
+        }
+    }
+
+    return true; // Form submits if all checks pass
 }
 </script>
 

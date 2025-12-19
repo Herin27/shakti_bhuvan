@@ -41,6 +41,8 @@ $amenities = !empty($room['amenities']) ? explode(',', $room['amenities']) : [];
 $features = !empty($room['features']) ? explode(',', $room['features']) : [];
 $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
 
+
+
 ?>
 
 <!DOCTYPE html>
@@ -265,12 +267,43 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
             </ul>
         </div>
 
-        <div class="detail-box">
+        <?php
+// --- ADD THIS HELPER FUNCTION AT THE TOP OF YOUR PHP ---
+function getIcon($text) {
+    $text = strtolower(trim($text));
+    
+    // Icon Mapping for Amenities & Features
+    if (str_contains($text, 'wifi')) return '📶';
+    if (str_contains($text, 'ac') || str_contains($text, 'air')) return '❄️';
+    if (str_contains($text, 'tv') || str_contains($text, 'television')) return '📺';
+    if (str_contains($text, 'water')) return '🚰';
+    if (str_contains($text, 'parking')) return '🅿️';
+    if (str_contains($text, 'breakfast') || str_contains($text, 'food')) return '☕';
+    if (str_contains($text, 'bed')) return '🛏️';
+    if (str_contains($text, 'bath') || str_contains($text, 'shower')) return '🚿';
+    if (str_contains($text, 'service')) return '🛎️';
+    
+    // Icon Mapping for Policies
+    if (str_contains($text, 'check-in')) return '🔑';
+    if (str_contains($text, 'check-out')) return '🚪';
+    if (str_contains($text, 'smoke') || str_contains($text, 'smoking')) return '🚭';
+    if (str_contains($text, 'pet')) return '🐾';
+    if (str_contains($text, 'id') || str_contains($text, 'proof')) return '🪪';
+    if (str_contains($text, 'cancel')) return '📅';
+
+    // Default icon if no match found
+    return '🔹'; 
+}
+?>
+
+<div class="detail-box">
             <h3>Amenities</h3>
             <?php if (!empty($amenities[0])): ?>
             <div class="tag-list">
-                <?php foreach($amenities as $amenity): ?>
-                    <span class="tag">📶 <?php echo htmlspecialchars(trim($amenity)); ?></span>
+                <?php foreach($amenities as $amenity): 
+                    $clean_amenity = trim($amenity);
+                ?>
+                    <span class="tag"><?php echo getIcon($clean_amenity); ?> <?php echo htmlspecialchars($clean_amenity); ?></span>
                 <?php endforeach; ?>
             </div>
             <?php else: ?>
@@ -282,8 +315,10 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
             <h3>Room Features</h3>
             <?php if (!empty($features[0])): ?>
             <div class="tag-list">
-                <?php foreach($features as $feature): ?>
-                    <span class="tag">✨ <?php echo htmlspecialchars(trim($feature)); ?></span>
+                <?php foreach($features as $feature): 
+                    $clean_feature = trim($feature);
+                ?>
+                    <span class="tag"><?php echo getIcon($clean_feature); ?> <?php echo htmlspecialchars($clean_feature); ?></span>
                 <?php endforeach; ?>
             </div>
             <?php else: ?>
@@ -295,8 +330,10 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
             <h3>Hotel & Room Policies</h3>
             <?php if (!empty($policies[0])): ?>
             <ul class="detail-list">
-                <?php foreach($policies as $policy): ?>
-                    <li>✔️ <?php echo htmlspecialchars(trim($policy)); ?></li>
+                <?php foreach($policies as $policy): 
+                    $clean_policy = trim($policy);
+                ?>
+                    <li><?php echo getIcon($clean_policy); ?> &nbsp; <?php echo htmlspecialchars($clean_policy); ?></li>
                 <?php endforeach; ?>
             </ul>
             <?php else: ?>
@@ -327,7 +364,7 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
             <div class="physical-rooms-grid">
                 <?php foreach ($physical_rooms as $physical_room): ?>
                     <span class="room-number-tag <?php echo $physical_room['status']; ?>" title="Status: <?php echo htmlspecialchars($physical_room['status']); ?>">
-                        Room<?php echo htmlspecialchars($physical_room['room_number']); ?>
+                        Room - <?php echo htmlspecialchars($physical_room['room_number']); ?>
                     </span>
                 <?php endforeach; ?>
             </div>
