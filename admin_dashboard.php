@@ -116,6 +116,63 @@ for ($i = 6; $i >= 0; $i--) {
 $daily_data_json = json_encode($daily_data);
 $day_labels_json = json_encode($day_labels);
 
+
+
+// =========================================================
+//            ROOM DASHBOARD DATA FETCHING (DATE-BASED)
+// =========================================================
+$view_checkin = $_GET['dash_checkin'] ?? date('Y-m-d');
+$view_checkout = $_GET['dash_checkout'] ?? date('Y-m-d', strtotime('+1 day'));
+
+// Fetch all room numbers
+$room_dashboard_data = [];
+$sql_all_rooms = "
+    SELECT r.name AS type_name, rn.room_number, rn.status as current_status, rn.room_type_id
+    FROM room_numbers rn
+    JOIN rooms r ON rn.room_type_id = r.id
+    ORDER BY r.name, rn.room_number ASC
+";
+$res_rooms = mysqli_query($conn, $sql_all_rooms);
+
+// Fetch bookings that overlap with the selected dates
+$occupied_rooms_in_range = [];
+$sql_booked = "
+    SELECT room_number 
+    FROM bookings 
+    WHERE status IN ('Confirmed', 'Checked-in') 
+    AND NOT (checkout <= '$view_checkin' OR checkin >= '$view_checkout')
+";
+$res_booked = mysqli_query($conn, $sql_booked);
+while($row = mysqli_fetch_assoc($res_booked)) {
+    $occupied_rooms_in_range[] = $row['room_number'];
+}
+
+if ($res_rooms) {
+    while ($row = mysqli_fetch_assoc($res_rooms)) {
+        $isBooked = in_array($row['room_number'], $occupied_rooms_in_range);
+        
+        $room_dashboard_data[$row['type_name']]['rooms'][] = [
+            'number' => $row['room_number'],
+            'is_occupied' => $isBooked,
+            'type_id' => $row['room_type_id']
+        ];
+    }
+}
+
+// Calculate totals
+foreach ($room_dashboard_data as $type => $data) {
+    $total = count($data['rooms']);
+    $occ_count = 0;
+    foreach($data['rooms'] as $rm) if($rm['is_occupied']) $occ_count++;
+    
+    $room_dashboard_data[$type]['total'] = $total;
+    $room_dashboard_data[$type]['occupied'] = $occ_count;
+    $room_dashboard_data[$type]['available'] = $total - $occ_count;
+}
+
+
+
+
 // =========================================================
 //          MANAGE ROOMS DATA FETCHING
 // =========================================================
@@ -188,6 +245,19 @@ $result_all_bookings = mysqli_query($conn, $sql_all_bookings);
 if ($result_all_bookings) {
     while ($row = mysqli_fetch_assoc($result_all_bookings)) {
         $all_bookings[] = $row;
+    }
+}
+
+
+// =========================================================
+//            OFFLINE BOOKINGS DATA FETCHING
+// =========================================================
+$offline_bookings = [];
+$sql_offline = "SELECT * FROM offline_booking ORDER BY created_at DESC";
+$res_offline = mysqli_query($conn, $sql_offline);
+if ($res_offline) {
+    while ($row = mysqli_fetch_assoc($res_offline)) {
+        $offline_bookings[] = $row;
     }
 }
 
@@ -501,6 +571,104 @@ function countAmenities($amenities_string) {
         left: 35px;
         text-decoration: none;
     }
+
+    /* Room Dashboard Box Styles */
+    .room-box {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        border-radius: 4px;
+    }
+
+    .status-square {
+        width: 50px;
+        height: 50px;
+        border: 2px solid #333;
+    }
+
+    /* "Shaded" effect for Occupied as seen in sketch */
+    .occupied {
+        background: repeating-linear-gradient(45deg,
+                #ccc,
+                #ccc 5px,
+                #fff 5px,
+                #fff 10px);
+        background-color: #eee;
+    }
+
+    .available {
+        background-color: transparent;
+    }
+
+    /* Hero Slider Specific modern styles */
+.hero-manage-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.hero-image-card {
+    background: #fff;
+    border: 1px solid #eef0f2;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    position: relative;
+}
+
+.hero-image-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.hero-img-wrapper {
+    height: 140px;
+    width: 100%;
+    overflow: hidden;
+    background: #f8f9fa;
+}
+
+.hero-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.hero-image-card:hover .hero-img-wrapper img {
+    transform: scale(1.1);
+}
+
+.hero-card-body {
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hero-filename {
+    font-size: 0.75rem;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+
+/* Custom Upload Area */
+.upload-box {
+    border: 2px dashed #d1d9e0;
+    border-radius: 12px;
+    padding: 20px;
+    background: #fafbfc;
+    text-align: center;
+}
     </style>
 </head>
 
@@ -510,11 +678,16 @@ function countAmenities($amenities_string) {
         <h3 class="ms-3 mb-5" style="font-family: 'Playfair Display', serif;">Shakti Bhuvan</h3>
         <nav class="nav flex-column">
             <a class="nav-link active" data-target="dashboard-section"><i class="fas fa-home me-2"></i>Dashboard</a>
-            <!-- <a class="nav-link" data-target="manage-rooms-section"><i class="fas fa-key me-2"></i>Manage Room Types</a> -->
+            <a class="nav-link active" data-target="room-dashboard-section">
+    <i class="fas fa-th-large me-2"></i> Room Dashboard
+</a>
+            <a class="nav-link" data-target="manage-rooms-section"><i class="fas fa-key me-2"></i>Manage Room Types</a>
             <a class="nav-link" data-target="manage-room-numbers-section"><i class="fas fa-list-ol me-2"></i>Manage Room
                 Numbers</a>
 
             <a class="nav-link" data-target="bookings-section"><i class="fas fa-calendar-alt me-2"></i>Bookings</a>
+            <a class="nav-link" data-target="offline-bookings-section"><i class="fas fa-bed-pulse me-2"></i>Offline
+                Bookings</a>
             <a class="nav-link" data-target="customers-section"><i class="fas fa-users me-2"></i>Customers</a>
 
             <a class="nav-link" data-target="gallery-section"><i class="fas fa-images me-2"></i>Gallery</a>
@@ -658,6 +831,65 @@ function countAmenities($amenities_string) {
             </div>
         </div>
 
+
+        <div id="room-dashboard-section" class="content-section" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Room Availability Dashboard</h2>
+                <form class="d-flex gap-2 align-items-end" method="GET">
+                    <input type="hidden" name="section" value="room-dashboard-section">
+                    <div>
+                        <label class="small">Check-in</label>
+                        <input type="date" name="dash_checkin" class="form-control form-control-sm"
+                            value="<?= $view_checkin ?>">
+                    </div>
+                    <div>
+                        <label class="small">Check-out</label>
+                        <input type="date" name="dash_checkout" class="form-control form-control-sm"
+                            value="<?= $view_checkout ?>">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-dark">Filter</button>
+                </form>
+            </div>
+            <hr class="mt-0">
+
+            <div class="row g-4">
+                <?php foreach ($room_dashboard_data as $type_name => $data): ?>
+                <div class="col-md-6 mb-4">
+                    <div class="dashboard-card h-100">
+                        <h5 class="mb-4 text-primary"><?= htmlspecialchars($type_name) ?></h5>
+                        <div class="d-flex flex-wrap gap-3 mb-4">
+                            <?php foreach ($data['rooms'] as $room): 
+                            $statusClass = $room['is_occupied'] ? 'occupied' : 'available';
+                            $clickAction = $room['is_occupied'] ? "alert('Room already booked for these dates')" : "openOfflineBooking('".$room['number']."', '".$view_checkin."')";
+                        ?>
+                            <div class="room-box <?= $statusClass ?>" onclick="<?= $clickAction ?>"
+                                style="cursor: pointer;" title="Room <?= $room['number'] ?>">
+                                R<?= htmlspecialchars($room['number']) ?>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="mt-auto p-3 bg-light rounded border d-flex justify-content-around text-center">
+                            <div><small class="d-block">Total</small><strong><?= $data['total'] ?></strong></div>
+                            <div><small
+                                    class="d-block text-danger">Booked</small><strong><?= $data['occupied'] ?></strong>
+                            </div>
+                            <div><small
+                                    class="d-block text-success">Available</small><strong><?= $data['available'] ?></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+
+
+
+
+
+
+
         <div id="manage-rooms-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
@@ -763,6 +995,10 @@ function countAmenities($amenities_string) {
                 </div>
             </div>
         </div>
+
+
+
+
 
         <div id="manage-room-numbers-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -928,6 +1164,54 @@ function countAmenities($amenities_string) {
                             </tr>
                             <?php endif; ?>
                         </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div id="offline-bookings-section" class="content-section" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Offline Booking Records</h2>
+            </div>
+            <hr class="mt-0">
+
+            <div class="dashboard-card">
+                <h5 class="card-title mb-4">Manual / Walk-in Bookings</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Room Number</th>
+                                <th>Check-in Date</th>
+                                <th>Booking Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    <?php if (count($offline_bookings) > 0): ?>
+        <?php foreach ($offline_bookings as $off): ?>
+        <tr>
+            <td>#<?php echo $off['id']; ?></td>
+            <td><span class="badge bg-primary fs-6">Room - <?php echo htmlspecialchars($off['room_number']); ?></span></td>
+            <td><?php echo date('d M, Y', strtotime($off['checkin_date'])); ?></td>
+            <td><?php echo date('d M, Y h:i A', strtotime($off['created_at'])); ?></td>
+            <td>
+                <a href="process_offline_checkout.php?id=<?php echo $off['id']; ?>&room=<?php echo $off['room_number']; ?>" 
+                   class="btn btn-sm btn-danger" 
+                   onclick="return confirm('Are you sure? This room will become Available again.');">
+                   <i class="fas fa-sign-out-alt me-1"></i> Check-out
+                </a>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <tr>
+            <td colspan="5" class="text-center text-muted">No offline bookings found.</td>
+        </tr>
+    <?php endif; ?>
+</tbody>
                     </table>
                 </div>
             </div>
@@ -1157,77 +1441,64 @@ function countAmenities($amenities_string) {
             </div>
         </div>
 
-        <div id="reviews-section" class="content-section" style="display: none;">
+        <!-- <div id="reviews-section" class="content-section" style="display: none;">
             <h2>Customer Reviews</h2>
             <p>Content for Reviews will go here...</p>
-        </div>
+        </div> -->
 
         <div id="settings-section" class="content-section" style="display: none;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Site Settings & Configuration</h2>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Site Settings & Configuration</h2>
+    </div>
 
-            <hr class="mt-0">
+    <hr class="mt-0">
 
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="dashboard-card">
-                        <h5 class="card-title mb-4"><i class="fas fa-images me-2"></i> Hero Slider Images</h5>
-                        <p class="text-muted small">Manage the main background images displayed on the homepage slider.
-                        </p>
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <h5 class="card-title mb-4"><i class="fas fa-images me-2 text-warning"></i> Homepage Hero Slider</h5>
+                <p class="text-muted small">Manage high-resolution background images for your homepage slider.</p>
 
-                        <form method="POST" action="update_hero.php" enctype="multipart/form-data">
-                            <?php foreach ($hero_images as $image): ?>
-                            <div class="settings-image-container">
-                                <img src="<?php echo htmlspecialchars($image['background_image']); ?>" alt="Hero Image"
-                                    class="settings-image-preview">
-                                <span
-                                    class="text-muted small"><?php echo basename($image['background_image']); ?></span>
+                <form method="POST" action="update_hero.php" enctype="multipart/form-data">
+                    <div class="hero-manage-grid">
+                        <?php foreach ($hero_images as $image): ?>
+                        <div class="hero-image-card">
+                            <div class="hero-img-wrapper">
+                                <img src="<?php echo htmlspecialchars($image['background_image']); ?>" alt="Slider Image">
+                            </div>
+                            <div class="hero-card-body">
+                                <span class="hero-filename"><?php echo basename($image['background_image']); ?></span>
                                 <input type="hidden" name="image_id[]" value="<?php echo $image['id']; ?>">
                                 <button type="submit" name="delete_image" value="<?php echo $image['id']; ?>"
-                                    class="btn btn-danger btn-sm ms-auto"
-                                    onclick="return confirm('Are you sure you want to delete this image?');">
-                                    <i class="fas fa-trash"></i>
+                                    class="btn btn-sm btn-outline-danger border-0"
+                                    onclick="return confirm('Delete this hero slider image?');">
+                                    <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
-                            <?php endforeach; ?>
-
-                            <hr>
-                            <h6>Upload New Image:</h6>
-                            <input type="file" name="new_image" class="form-control mb-3" accept="image/*" required>
-                            <button type="submit" name="add_image" class="btn btn-primary w-100"><i
-                                    class="fas fa-upload me-2"></i> Upload & Save</button>
-                        </form>
+                        </div>
+                        <?php endforeach; ?>
                     </div>
-                </div>
 
-                <div class="col-md-6">
-                    <div class="dashboard-card">
-                        <h5 class="card-title mb-4"><i class="fas fa-phone-alt me-2"></i> Contact Information</h5>
-                        <p class="text-muted small">Update global contact details (e.g., footer, header).</p>
-                        <form method="POST" action="update_contact.php">
-                            <div class="mb-3">
-                                <label class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" name="phone"
-                                    value="<?php echo htmlspecialchars($site_settings['phone_number']); ?>">
+                    <div class="upload-box mt-4">
+                        <h6 class="mb-3">Add New Slide Image</h6>
+                        <div class="row justify-content-center">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <input type="file" name="new_image" class="form-control" accept="image/*" required>
+                                    <button type="submit" name="add_image" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i> Upload
+                                    </button>
+                                </div>
+                                <small class="text-muted mt-2 d-block">Recommended size: 1920x1080px (JPG/PNG)</small>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email Address</label>
-                                <input type="email" class="form-control" name="email"
-                                    value="<?php echo htmlspecialchars($site_settings['email_address']); ?>">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Physical Address</label>
-                                <textarea class="form-control"
-                                    name="address"><?php echo htmlspecialchars($site_settings['physical_address']); ?></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save me-2"></i> Save
-                                Contact</button>
-                        </form>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
+        
+        </div>
+</div>
     </div>
 
     <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
@@ -1324,16 +1595,16 @@ function countAmenities($amenities_string) {
                 let viewEditId = numericalId; // Default to numerical ID
 
                 if (recordType === 'Customer') {
-                    viewScript = 'view_customer.php';
+                    // viewScript = 'view_customer.php';
                     editScript = 'edit_customer.php';
                     deleteScript = 'delete_customer.php';
                     viewEditId = recordId; // Use full string customer_id
                 } else if (recordType === 'Booking') {
-                    viewScript = 'view_booking.php';
+                    // viewScript = 'view_booking.php';
                     editScript = 'edit_booking.php';
                     deleteScript = 'delete_booking.php';
                 } else if (recordType === 'Room') {
-                    viewScript = 'view_room.php';
+                    // viewScript = 'view_room.php';
                     editScript = 'edit_room.php';
                     deleteScript = 'delete_room.php';
                 } else if (recordType === 'RoomNumber') {
@@ -1350,7 +1621,7 @@ function countAmenities($amenities_string) {
                 document.getElementById('action-delete-link').onclick = function() {
                     if (confirm(
                             `Are you sure you want to permanently delete ${recordType} ${recordId}? This action cannot be undone.`
-                            )) {
+                        )) {
                         // Note: For Customer, the numerical ID passed here is the VARCHAR customer_id
                         // For Booking/Room/RoomNumber, it is the INT ID
                         window.location.href = `${deleteScript}?id=${numericalId}`;
@@ -1449,6 +1720,15 @@ function countAmenities($amenities_string) {
         });
 
     });
+
+    function openOfflineBooking(roomNum, checkin) {
+        if (confirm("Room " + roomNum + " is available. Do you want to book it OFFLINE for " + checkin + "?")) {
+            // Simple way to handle it: Redirect to a processing script
+            window.location.href = "process_offline_booking.php?room_number=" + roomNum + "&checkin=" + checkin;
+        } else if (recordType === 'OfflineBooking') {
+            deleteScript = 'delete_offline.php';
+        }
+    }
     </script>
 </body>
 

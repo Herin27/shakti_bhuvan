@@ -8,6 +8,9 @@
 </head>
 
 <style>
+.footer-col{
+    width: 23px;
+}
 .footer-col a {
     color: inherit;
     text-decoration: none;
@@ -67,7 +70,7 @@
                     📞 <a href="tel:+919265900219">+91 92659 00219</a>
                 </li>
                 <li>
-                    ✉️ <a href="mailto:shaktibhuvanambaji.com">shaktibhuvanambaji.com</a>
+                    ✉️ <a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a>
                 </li>
             </ul>
             </div>

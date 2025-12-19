@@ -87,7 +87,7 @@
 
     <span>
         <i class="fas fa-envelope"></i>
-        <a href="mailto:shaktibhuvanambaji.com">shaktibhuvanambaji.com</a>
+        <a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a>
     </span>
 
     <a href="rooms.php" class="book-btn">Book Now</a>
@@ -148,7 +148,7 @@
   <div>
     <h4>Email</h4>
     <p>
-      <a href="mailto:shaktibhuvanambaji.com">shaktibhuvanambaji.com</a><br>
+      <a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a><br>
       
     </p>
     <span>We’ll respond within some time</span>
