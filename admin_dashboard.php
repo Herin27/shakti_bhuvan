@@ -225,8 +225,11 @@ if ($result_room_numbers_inventory) {
 
 
 // =========================================================
-//          BOOKINGS DATA FETCHING (UPDATED)
+//           BOOKINGS DATA FETCHING (DATE-FILTER UPDATED)
 // =========================================================
+$filter_checkin = $_GET['book_checkin'] ?? '';
+$filter_checkout = $_GET['book_checkout'] ?? '';
+
 $all_bookings = [];
 $sql_all_bookings = "
     SELECT 
@@ -237,9 +240,14 @@ $sql_all_bookings = "
         bookings b
     JOIN 
         rooms r ON b.room_id = r.id
-    ORDER BY 
-        b.checkin DESC
 ";
+
+// જો તારીખ પસંદ કરેલી હોય તો ફિલ્ટર ઉમેરો
+if (!empty($filter_checkin) && !empty($filter_checkout)) {
+    $sql_all_bookings .= " WHERE b.checkin >= '$filter_checkin' AND b.checkout <= '$filter_checkout'";
+}
+
+$sql_all_bookings .= " ORDER BY b.checkin DESC";
 
 $result_all_bookings = mysqli_query($conn, $sql_all_bookings);
 if ($result_all_bookings) {
@@ -247,6 +255,7 @@ if ($result_all_bookings) {
         $all_bookings[] = $row;
     }
 }
+
 
 
 // =========================================================
@@ -260,6 +269,34 @@ if ($res_offline) {
         $offline_bookings[] = $row;
     }
 }
+
+// =========================================================
+//            TODAY'S CHECKOUTS REMINDER DATA
+// =========================================================
+$today_date = date('Y-m-d');
+$today_checkouts = [];
+
+$sql_today_checkouts = "
+    SELECT 
+        b.id, b.customer_name, b.phone, b.room_number, r.name AS room_name, b.status
+    FROM 
+        bookings b
+    JOIN 
+        rooms r ON b.room_id = r.id
+    WHERE 
+        b.checkout = '$today_date' 
+        AND b.status IN ('Confirmed', 'Checked-in')
+    ORDER BY 
+        b.room_number ASC
+";
+
+$res_today = mysqli_query($conn, $sql_today_checkouts);
+if ($res_today) {
+    while ($row = mysqli_fetch_assoc($res_today)) {
+        $today_checkouts[] = $row;
+    }
+}
+$total_today_checkouts = count($today_checkouts);
 
 // =========================================================
 //          CUSTOMERS DATA FETCHING (ACTIVE)
@@ -688,6 +725,12 @@ function countAmenities($amenities_string) {
             <a class="nav-link" data-target="bookings-section"><i class="fas fa-calendar-alt me-2"></i>Bookings</a>
             <a class="nav-link" data-target="offline-bookings-section"><i class="fas fa-bed-pulse me-2"></i>Offline
                 Bookings</a>
+                <a class="nav-link" data-target="today-checkouts-section">
+    <i class="fas fa-bell me-2 text-danger"></i> Today's Checkouts 
+    <?php if($total_today_checkouts > 0): ?>
+        <span class="badge bg-danger rounded-pill ms-1"><?= $total_today_checkouts ?></span>
+    <?php endif; ?>
+</a>
             <a class="nav-link" data-target="customers-section"><i class="fas fa-users me-2"></i>Customers</a>
 
             <a class="nav-link" data-target="gallery-section"><i class="fas fa-images me-2"></i>Gallery</a>
@@ -1073,6 +1116,24 @@ function countAmenities($amenities_string) {
         <div id="bookings-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>All Bookings</h2>
+                <form class="d-flex gap-2 align-items-end" method="GET">
+            <input type="hidden" name="section" value="bookings-section">
+            <div>
+                <label class="small fw-bold">From Check-in:</label>
+                <input type="date" name="book_checkin" class="form-control form-control-sm" value="<?= $filter_checkin ?>">
+            </div>
+            <div>
+                <label class="small fw-bold">To Check-out:</label>
+                <input type="date" name="book_checkout" class="form-control form-control-sm" value="<?= $filter_checkout ?>">
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-filter"></i> Filter</button>
+            <?php if(!empty($filter_checkin)): ?>
+                <a href="admin_dashboard.php?section=bookings-section" class="btn btn-sm btn-outline-secondary">Clear</a>
+            <?php endif; ?>
+            <button type="button" class="btn btn-sm btn-success ms-2" onclick="exportToExcel()">
+    <i class="fas fa-file-excel"></i> Export to Excel
+</button>
+        </form>
                 <a href="rooms.php" class="btn btn-success"><i class="fas fa-calendar-plus me-2"></i>New Booking</a>
             </div>
 
@@ -1216,6 +1277,67 @@ function countAmenities($amenities_string) {
                 </div>
             </div>
         </div>
+
+
+<div id="today-checkouts-section" class="content-section" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>📅 Today's Checkouts Reminder</h2>
+        <span class="text-muted">Date: <?= date('d M, Y') ?></span>
+    </div>
+    <hr class="mt-0">
+
+    <?php if ($total_today_checkouts > 0): ?>
+        <div class="alert alert-warning border-start border-4 border-warning shadow-sm mb-4">
+            <i class="fas fa-exclamation-triangle me-2"></i> 
+            <strong>Reminder:</strong> Today you have <strong><?= $total_today_checkouts ?></strong> room(s) scheduled for checkout.
+        </div>
+
+        <div class="dashboard-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Room No.</th>
+                            <th>Customer Details</th>
+                            <th>Room Type</th>
+                            <th>Status</th>
+                            <th>Quick Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($today_checkouts as $checkout): ?>
+                        <tr>
+                            <td><span class="badge bg-dark fs-6">R-<?= htmlspecialchars($checkout['room_number']) ?></span></td>
+                            <td>
+                                <strong><?= htmlspecialchars($checkout['customer_name']) ?></strong><br>
+                                <small class="text-muted"><i class="fas fa-phone-alt"></i> <?= htmlspecialchars($checkout['phone']) ?></small>
+                            </td>
+                            <td><?= htmlspecialchars($checkout['room_name']) ?></td>
+                            <td>
+                                <span class="badge bg-info text-dark"><?= $checkout['status'] ?></span>
+                            </td>
+                            <td>
+                                <a href="process_booking_status.php?booking_id=<?= $checkout['id'] ?>&action=checkout" 
+                                   class="btn btn-sm btn-success"
+                                   onclick="return confirm('Complete checkout process for Room <?= $checkout['room_number'] ?>?')">
+                                   Check-out Now
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php else: ?>
+        <div class="text-center py-5">
+            <i class="fas fa-calendar-check fa-4x text-light mb-3"></i>
+            <h4 class="text-muted">No checkouts scheduled for today.</h4>
+        </div>
+    <?php endif; ?>
+</div>
+
+        <!-- Customers Section -->
 
         <div id="customers-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -1729,6 +1851,19 @@ function countAmenities($amenities_string) {
             deleteScript = 'delete_offline.php';
         }
     }
+
+    function exportToExcel() {
+    // ટેબલ પસંદ કરો (Bookings ટેબલ)
+    const table = document.querySelector("#bookings-section table");
+    let html = table.outerHTML;
+
+    // Excel ફાઇલ ડાઉનલોડ કરવા માટે બ્લોબ (Blob) બનાવો
+    const url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+    const link = document.createElement("a");
+    link.download = "Shakti_Bhuvan_Bookings.xls";
+    link.href = url;
+    link.click();
+}
     </script>
 </body>
 
