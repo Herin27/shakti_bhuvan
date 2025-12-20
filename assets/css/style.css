@@ -265,6 +265,10 @@ a, .hero-section p {
   color: #444;
   transition: all 0.3s ease;
 }
+.view_btn:hover {
+  background: #f1c45f;
+  color:#fff
+}
 a .view_btn{
 padding: 8px 16px;
   background: #f9f5ef;
