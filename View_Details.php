@@ -50,12 +50,13 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
 <head>
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($room['name']); ?> Details</title>
-    <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./assets/css/style.css"> 
     <link rel="stylesheet" href="./assets/css/navbar.css"> 
-    <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
-    <link rel="stylesheet" href="./assets/css/rooms.css"> <style>
+    <link rel="stylesheet" href="./assets/css/rooms.css"> 
+    
+    <style>
+        
         /* Specific Styles for View_Details Page */
         .details-container {
             max-width: 1200px;
@@ -234,8 +235,7 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
     <div class="main-content">
         <h1 class="room-title"><?php echo htmlspecialchars($room['name']); ?></h1>
         <div class="rating">
-            ⭐ <?php echo htmlspecialchars($room['rating'] ?? 'N/A'); ?> (<?php echo htmlspecialchars($room['reviews'] ?? '0'); ?> Reviews)
-        </div>
+            ⭐ <?php echo htmlspecialchars($room['rating'] ?? 'N/A'); ?>         </div>
 
         <div class="image-gallery">
             <img id="main-room-image" src="uploads/<?php echo htmlspecialchars($first_image); ?>" alt="<?php echo htmlspecialchars($room['name']); ?>" class="main-image">
@@ -346,14 +346,14 @@ function getIcon($text) {
 
     <div class="sidebar">
         <div class="detail-box price-section">
-            <p class="original-price">Total Price: ₹<?php echo htmlspecialchars(number_format($room['price'], 2)); ?></p>
+            <p class="original-price">Total Price: ₹<?php echo htmlspecialchars(number_format($room['price'] )); ?></p>
             <p>From only</p>
-            <p class="current-price">₹<?php echo htmlspecialchars(number_format($room['discount_price'], 2)); ?></p>
+            <p class="current-price">₹<?php echo htmlspecialchars(number_format($room['discount_price'])); ?></p>
             <small>/ per night</small>
             
             <hr style="margin: 15px 0;">
             <p style="font-size: 1rem; color: #5a4636;">
-                Extra Bed Charge: <?php echo htmlspecialchars(number_format($room['extra_bed_price'], 2)); ?>
+                Extra Bed Charge: ₹<?php echo htmlspecialchars(number_format($room['extra_bed_price'])); ?>
             </p>
             <hr style="margin: 15px 0 25px;">
             
@@ -361,19 +361,22 @@ function getIcon($text) {
         </div>
         
         <div class="detail-box physical-rooms">
-            <h3>Available Room Numbers (Type: <?php echo htmlspecialchars($room['name']); ?>)</h3>
-            <?php if (!empty($physical_rooms)): ?>
-            <div class="physical-rooms-grid">
-                <?php foreach ($physical_rooms as $physical_room): ?>
-                    <span class="room-number-tag <?php echo $physical_room['status']; ?>" title="Status: <?php echo htmlspecialchars($physical_room['status']); ?>">
-                        Room - <?php echo htmlspecialchars($physical_room['room_number']); ?>
-                    </span>
-                <?php endforeach; ?>
+    <h3>Total Available Rooms</h3>
+    <?php if (!empty($physical_rooms)): ?>
+        <div class="room-count-display" style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+            <!-- <i class="fas fa-door-open" style="font-size: 2rem; color: #b58900;"></i> -->
+            
+            <div>
+                <span style="font-size: 1.5rem; font-weight: 700; color: #5a4636;">
+                    <?php echo count($physical_rooms); ?>
+                </span>
+                <span style="font-size: 1rem; color: #666; margin-left: 5px;">Rooms available in this category</span>
             </div>
-            <?php else: ?>
-                <p>No individual physical room numbers have been assigned to this room type yet.</p>
-            <?php endif; ?>
         </div>
+    <?php else: ?>
+        <p>No rooms are currently available for this type.</p>
+    <?php endif; ?>
+</div>
 
     </div>
 </div>

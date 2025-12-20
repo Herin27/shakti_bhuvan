@@ -289,33 +289,33 @@ if (file_exists('header.php')) {
     <div class="price-details">
         <div class="row">
             <span>Room Charge (<?= $booking['nights']; ?> Nights):</span>
-            <span>₹<?= number_format($total_room_charge, 2); ?></span>
+            <span>₹<?= number_format($total_room_charge, 0); ?></span>
         </div>
 
         <?php if (($booking['extra_bed_included'] ?? 0) > 0): ?>
         <div class="row">
             <span>Extra Bed (<?= $booking['extra_bed_included']; ?> beds):</span>
-            <span>₹<?= number_format($total_extra_bed_charge, 2); ?></span>
+            <span>₹<?= number_format($total_extra_bed_charge, 0); ?></span>
         </div>
         <?php endif; ?>
 
         <div class="row" style="border-top: 1px solid #eee; margin-top: 5px; padding-top: 10px;">
             <span>Subtotal:</span>
-            <span>₹<?= number_format($subtotal, 2); ?></span>
+            <span>₹<?= number_format($subtotal, 0); ?></span>
         </div>
         
         <div class="row">
             <span>GST (<?= $display_tax_pct; ?>%):</span>
-            <span>₹<?= number_format($tax_amount, 2); ?></span>
+            <span>₹<?= number_format($tax_amount, 0); ?></span>
         </div>
 
         <div class="row total">
             <span>Total Payable:</span>
-            <strong>₹<?= number_format($final_payable, 2); ?></strong>
+            <strong>₹<?= number_format($final_payable, 0); ?></strong>
         </div>
     </div>
 
-    <button id="payBtn" class="book-btn2">Pay ₹<?= number_format($final_payable, 2); ?></button>
+    <button id="payBtn" class="book-btn2">Pay ₹<?= number_format($final_payable, 0); ?></button>
     <a href="booking.php?room_id=<?= $booking['room_id']; ?>" class="edit-btn">
         <i class="fas fa-edit"></i> Back to Edit Details
     </a>

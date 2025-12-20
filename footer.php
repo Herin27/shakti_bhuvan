@@ -27,7 +27,7 @@
             <div class="footer-col">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
+                        <a href="index.php"><img src="assets/images/logo.png" alt="Shakti Bhuvan Logo"></a>
                     </div>
                     <div class="logo-text">
                         <h1 style="color: #fff;">Shakti Bhuvan</h1>
@@ -39,12 +39,11 @@
                     amenities.
                 </p>
                 <div class="social-icons">
-                    <a href="#">🌐</a>
-
-                    <a href="#">📘</a>
-                    <a href="#">🐦</a>
-                    <a href="#">📸</a>
-                </div>
+    <a href="#"><i class="fas fa-globe"></i></a>
+    <a href="#"><i class="fab fa-facebook-f"></i></a>
+    <a href="#"><i class="fab fa-twitter"></i></a>
+    <a href="#"><i class="fab fa-instagram"></i></a>
+</div>
             </div>
 
             <!-- Quick Links -->
@@ -59,19 +58,13 @@
 
             <!-- Contact Info -->
             <div class="footer-col">
-            <h4>Contact Info</h4>
-            <ul>
-                <li>
-                    📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110
-                </li>
-                <li>
-                    📞 <a href="tel:+919265900219">+91 92659 00219</a>
-                </li>
-                <li>
-                    ✉️ <a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a>
-                </li>
-            </ul>
-            </div>
+    <h4>Contact Info</h4>
+    <ul>
+        <li><i class="fas fa-map-marker-alt"></i> Shakti bhuvan, GJ SH 56, Ambaji, Gujarat 385110</li>
+        <li><i class="fas fa-phone"></i> <a href="tel:+919265900219">+91 92659 00219</a></li>
+        <li><i class="fas fa-envelope"></i> <a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a></li>
+    </ul>
+</div>
 
             <!-- Services -->
             <div class="footer-col">

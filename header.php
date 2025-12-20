@@ -23,7 +23,7 @@
   <header class="navbar">
         <div class="logo">
         <div class="logo-icon">
-            <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
+            <a href="index.php"><a href="index.php"><img src="assets/images/logo.png" alt="Shakti Bhuvan Logo"></a></a>
         </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>

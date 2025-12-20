@@ -107,39 +107,50 @@ $categories = ['Hotel View', 'Luxury Suite', 'Deluxe Room', 'Standard Room'];
 
         /* FULLSCREEN LIGHTBOX */
         .lightbox {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-        }
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.9);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+}
 
-        .lightbox.active {
-            display: flex;
-        }
+.lightbox.active { display: flex; }
 
-        .lightbox img {
-            max-width: 90%;
-            max-height: 90%;
-            border-radius: 10px;
-            box-shadow: 0 0 30px rgba(255,255,255,0.3);
-        }
+.lightbox img {
+    max-width: 85%;
+    max-height: 85%;
+    border-radius: 10px;
+}
 
-        .lightbox-close {
-            position: absolute;
-            top: 25px;
-            right: 30px;
-            font-size: 36px;
-            color: #fff;
-            cursor: pointer;
-            font-weight: bold;
-        }
+/* CONTROLS */
+.lightbox-close {
+    position: absolute;
+    top: 25px;
+    right: 30px;
+    font-size: 36px;
+    color: #fff;
+    cursor: pointer;
+}
 
-        .lightbox-close:hover {
-            color: #c4a36f;
-        }
+.lightbox-nav {
+    position: absolute;
+    top: 50%;
+    font-size: 50px;
+    color: #fff;
+    cursor: pointer;
+    padding: 15px;
+    transform: translateY(-50%);
+    user-select: none;
+}
+
+.lightbox-prev { left: 30px; }
+.lightbox-next { right: 30px; }
+
+.lightbox-nav:hover,
+.lightbox-close:hover { color: #c4a36f; }
+
     </style>
 </head>
 
@@ -162,56 +173,82 @@ $categories = ['Hotel View', 'Luxury Suite', 'Deluxe Room', 'Standard Room'];
 
     <!-- GALLERY -->
     <?php foreach ($gallery as $type => $images): ?>
-        <div class="gallery-section" id="<?php echo $type; ?>">
-            <div class="gallery-container">
-                <?php foreach ($images as $img): ?>
-                    <div class="gallery-item" onclick="openLightbox('<?php echo $img['image_url']; ?>')">
-                        <img src="<?php echo $img['image_url']; ?>" alt="<?php echo htmlspecialchars($type); ?>">
-                        <div class="gallery-caption"><?php echo htmlspecialchars($type); ?></div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
+<div class="gallery-section" id="<?php echo $type; ?>">
+    <div class="gallery-container">
+    <?php foreach ($images as $index => $img): ?>
+        <div class="gallery-item"
+             onclick="openLightbox('<?php echo $type; ?>', <?php echo $index; ?>)">
+            <img src="<?php echo $img['image_url']; ?>">
+            <div class="gallery-caption"><?php echo $type; ?></div>
         </div>
     <?php endforeach; ?>
+    </div>
+</div>
+<?php endforeach; ?>
 </main>
 
 <?php include 'footer.php'; ?>
 
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox">
-    <span class="lightbox-close" onclick="closeLightbox()">×</span>
-    <img id="lightbox-img">
+<span class="lightbox-close" onclick="closeLightbox()">×</span>
+<span class="lightbox-nav lightbox-prev" onclick="prevImage()">❮</span>
+<img id="lightbox-img">
+<span class="lightbox-nav lightbox-next" onclick="nextImage()">❯</span>
 </div>
 
 <script>
-    function showCategory(category, btn) {
-        document.querySelectorAll('.gallery-section').forEach(sec => sec.classList.remove('active'));
-        document.querySelectorAll('.category-buttons button').forEach(b => b.classList.remove('active'));
+const galleryData = <?php echo json_encode($gallery); ?>;
+let currentCategory = "";
+let currentIndex = 0;
 
-        document.getElementById(category).classList.add('active');
-        btn.classList.add('active');
-    }
+function showCategory(cat, btn) {
+    document.querySelectorAll('.gallery-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.category-buttons button').forEach(b => b.classList.remove('active'));
+    document.getElementById(cat).classList.add('active');
+    btn.classList.add('active');
+}
 
-    document.addEventListener("DOMContentLoaded", () => {
-        document.querySelector(".category-buttons button")?.click();
-    });
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelector(".category-buttons button")?.click();
+});
 
-    function openLightbox(src) {
-        document.getElementById('lightbox-img').src = src;
-        document.getElementById('lightbox').classList.add('active');
-    }
+function openLightbox(category, index) {
+    currentCategory = category;
+    currentIndex = index;
+    updateImage();
+    document.getElementById('lightbox').classList.add('active');
+}
 
-    function closeLightbox() {
-        document.getElementById('lightbox').classList.remove('active');
-    }
+function updateImage() {
+    document.getElementById('lightbox-img').src =
+        galleryData[currentCategory][currentIndex].image_url;
+}
 
-    document.getElementById('lightbox').addEventListener('click', function(e) {
-        if (e.target === this) closeLightbox();
-    });
+function nextImage() {
+    currentIndex = (currentIndex + 1) % galleryData[currentCategory].length;
+    updateImage();
+}
 
-    document.addEventListener('keydown', function(e) {
-        if (e.key === "Escape") closeLightbox();
-    });
+function prevImage() {
+    currentIndex = (currentIndex - 1 + galleryData[currentCategory].length) %
+                   galleryData[currentCategory].length;
+    updateImage();
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === "ArrowRight") nextImage();
+    if (e.key === "ArrowLeft") prevImage();
+    if (e.key === "Escape") closeLightbox();
+});
+
+document.getElementById('lightbox').addEventListener('click', e => {
+    if (e.target.id === "lightbox") closeLightbox();
+});
 </script>
 
 </body>

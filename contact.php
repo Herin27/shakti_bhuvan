@@ -63,7 +63,7 @@
 <header class="navbar">
     <div class="logo">
         <div class="logo-icon">
-            <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
+            <a href="index.php"><img src="assets/images/logo.png" alt="Shakti Bhuvan Logo"></a>
         </div>
         <div class="logo-text">
             <h1>Shakti Bhuvan</h1>
@@ -129,7 +129,6 @@
   <div class="right-col">
     <!-- Get in Touch -->
     <div class="contact-info-box">
-    <h3>📞 Get in Touch</h3>
     <!-- Phone -->
     <div class="info-card">
   <div class="icon">📱</div>

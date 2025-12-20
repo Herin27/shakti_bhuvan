@@ -33,6 +33,22 @@ $result = mysqli_query($conn, $query);
 </head>
 
 <style>
+    /* Make all font-awesome icons white */
+.amenity .fas, 
+.testimonial-user .fas, 
+.cta .fas, 
+.footer-col .fas, 
+.footer-col .fab {
+    color: #ffffff;
+    margin-top: 20px;
+    margin-right: 0px;
+}
+
+.amenity .icon {
+    font-size: 2rem;
+    margin-bottom: 0px;
+    display: block;
+}
 .hero-section {
     position: relative;
     height: 100vh;
@@ -160,7 +176,7 @@ $result = mysqli_query($conn, $query);
     <!-- <header class="navbar">
         <div class="logo">
             <div class="logo-icon">
-                <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
+                <a href="index.php"><img src="assets/images/logo.png" alt="Shakti Bhuvan Logo"></a>
             </div>
             <div class="logo-text">
                 <h1>Shakti Bhuvan</h1>
@@ -303,7 +319,7 @@ $result = mysqli_query($conn, $query);
 
                     <!-- Price + Button -->
                     <div class="room-footer">
-                        <span class="price">₹<?php echo htmlspecialchars($row['discount_price']); ?><small>/night</small></span>
+                        <span class="price">₹<?php echo (int)$row['discount_price']; ?><small>/night</small></span>
                         <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="view_btn">View Details</a>
                     </div>
                 </div>
@@ -320,44 +336,44 @@ $result = mysqli_query($conn, $query);
     </section>
 
     <section class="amenities">
-        <h2 class="section-title">Premium Amenities</h2>
-        <p class="section-subtitle">
-            Enjoy world-class facilities and services designed to make your stay comfortable and memorable
-        </p>
+    <h2 class="section-title">Premium Amenities</h2>
+    <p class="section-subtitle">
+        Enjoy world-class facilities and services designed to make your stay comfortable and memorable
+    </p>
 
-        <div class="amenities-container">
-            <div class="amenity">
-                <div class="icon">📶</div>
-                <h3>Free Wi-Fi</h3>
-                <p>High-speed internet throughout</p>
-            </div>
-            <div class="amenity">
-                <div class="icon">🚗</div>
-                <h3>Free Parking</h3>
-                <p>Secure parking for guests</p>
-            </div>
-            <div class="amenity">
-                <div class="icon">🍽️</div>
-                <h3>Restaurant</h3>
-                <p>In-house dining options</p>
-            </div>
-            <div class="amenity">
-                <div class="icon">👨‍💼</div>
-                <h3>Concierge</h3>
-                <p>24/7 guest services</p>
-            </div>
-            <div class="amenity">
-                <div class="icon">🛡️</div>
-                <h3>Security</h3>
-                <p>Round-the-clock security</p>
-            </div>
-            <div class="amenity">
-                <div class="icon">⏰</div>
-                <h3>24/7 Service</h3>
-                <p>Always here for you</p>
-            </div>
+    <div class="amenities-container">
+        <div class="amenity">
+            <div class="icon"><i class="fas fa-wifi"></i></div>
+            <h3>Free Wi-Fi</h3>
+            <p>High-speed internet throughout</p>
         </div>
-    </section>
+        <div class="amenity">
+            <div class="icon"><i class="fas fa-car"></i></div>
+            <h3>Free Parking</h3>
+            <p>Secure parking for guests</p>
+        </div>
+        <div class="amenity">
+            <div class="icon"><i class="fas fa-utensils"></i></div>
+            <h3>Restaurant</h3>
+            <p>In-house dining options</p>
+        </div>
+        <div class="amenity">
+            <div class="icon"><i class="fas fa-concierge-bell"></i></div>
+            <h3>Concierge</h3>
+            <p>24/7 guest services</p>
+        </div>
+        <div class="amenity">
+            <div class="icon"><i class="fas fa-shield-alt"></i></div>
+            <h3>Security</h3>
+            <p>Round-the-clock security</p>
+        </div>
+        <div class="amenity">
+            <div class="icon"><i class="fas fa-clock"></i></div>
+            <h3>24/7 Service</h3>
+            <p>Always here for you</p>
+        </div>
+    </div>
+</section>
     <section class="testimonials">
         <h2 class="section-title">What Our Guests Say</h2>
         <p class="section-subtitle">
@@ -430,19 +446,18 @@ $result = mysqli_query($conn, $query);
         </p>
         <div class="cta-buttons">
             <a href="rooms.php" class="btn book">✨ Book Now</a>
-            <a href="tel:+919876543210" class="btn call">📞 Call Us</a>
+            <a href="tel:+9192659 00219" class="btn call">📞 Call Us</a>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="footer">
+    <!-- <footer class="footer">
         <div class="footer-container">
 
-            <!-- About -->
             <div class="footer-col">
                 <div class="logo">
                     <div class="logo-icon">
-                        <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
+                        <a href="index.php"><img src="assets/images/logo.png" alt="Shakti Bhuvan Logo"></a>
                     </div>
                     <div class="logo-text">
                         <h1 style="color: #fff;">Shakti Bhuvan</h1>
@@ -462,7 +477,6 @@ $result = mysqli_query($conn, $query);
                 </div>
             </div>
 
-            <!-- Quick Links -->
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul>
@@ -472,7 +486,6 @@ $result = mysqli_query($conn, $query);
                 </ul>
             </div>
 
-            <!-- Contact Info -->
             <div class="footer-col">
             <h4>Contact Info</h4>
             <ul>
@@ -488,7 +501,6 @@ $result = mysqli_query($conn, $query);
             </ul>
             </div>
 
-            <!-- Services -->
             <div class="footer-col">
                 <h4>Services</h4>
                 <ul>
@@ -502,7 +514,6 @@ $result = mysqli_query($conn, $query);
 
         </div>
 
-        <!-- Bottom -->
         <div class="footer-bottom">
             <p>© 2025 Shakti Bhuvan Powerd By <span><a style="text-decoration: none;" href="https://www.veloxgroup.co.in/">Velox Group</a></span>. All rights reserved.</p>
             <div>
@@ -510,7 +521,8 @@ $result = mysqli_query($conn, $query);
                 <a href="#">Terms of Service</a>
             </div>
         </div>
-    </footer>
+    </footer> -->
+    <?php include 'footer.php'; ?>
 
 
 

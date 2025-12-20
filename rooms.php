@@ -53,7 +53,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
 <!-- <header class="navbar">
   <div class="logo">
     <div class="logo-icon">
-        <img src="assets/images/logo.png" alt="Shakti Bhuvan Logo">
+        <a href="index.php"><img src="assets/images/logo.png" alt="Shakti Bhuvan Logo"></a>
     </div>
     <div class="logo-text">
         <h1>Shakti Bhuvan</h1>
@@ -165,7 +165,7 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
       </div>
 
       <div class="room-footer">
-        <span class="price">₹<?php echo $row['discount_price']; ?><small>/night</small></span>
+        <span class="price">₹<?php echo (int)$row['discount_price']; ?><small>/night</small></span>
         <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="view_btn">View Details</a>
       </div>
     </div>

@@ -6,14 +6,16 @@ $room_id = isset($_GET['room_id']) ? intval($_GET['room_id']) : 0;
 $room = null;
 $available_room_numbers = [];
 
+// Fetch room details and available room numbers
 if ($room_id > 0) {
+    // 1. Fetch Room Type Details
     $sql_room = "SELECT * FROM rooms WHERE id = $room_id";
     $result_room = mysqli_query($conn, $sql_room);
     
     if ($result_room && mysqli_num_rows($result_room) > 0) {
         $room = mysqli_fetch_assoc($result_room);
         
-        // PHYSICAL ROOM AVAILABILITY CHECK
+        // 2. Fetch Available Physical Room Numbers
         $sql_room_numbers = "SELECT room_number FROM room_numbers 
                              WHERE room_type_id = $room_id AND status = 'Available' 
                              ORDER BY room_number ASC";
@@ -25,13 +27,6 @@ if ($room_id > 0) {
             }
         }
     }
-}
-if (empty($available_room_numbers)) {
-    echo "<script>
-            alert('No Rooms Available in that category.');
-            window.location.href = 'rooms.php';
-          </script>";
-    exit;
 }
 
 if (!$room) {
@@ -107,7 +102,7 @@ if (!$room) {
         <table class="calculation-table">
             <tr>
                 <td class="label">Room Rate (per night)</td>
-                <td class="value">₹<span id="display_room_rate"><?php echo htmlspecialchars(number_format($room['discount_price'], 2)); ?></span></td>
+                <td class="value">₹<span id="display_room_rate"><?php echo htmlspecialchars(number_format($room['discount_price'])); ?></span></td>
             </tr>
             <tr>
                 <td class="label">Nights</td>
@@ -115,19 +110,19 @@ if (!$room) {
             </tr>
             <tr>
                 <td class="label">Room Subtotal</td>
-                <td class="value">₹<span id="room_charge_value">0.00</span></td>
+                <td class="value">₹<span id="room_charge_value">0</span></td>
             </tr>
             <tr>
                 <td class="label">Extra Bed Charge</td>
-                <td class="value">₹<span id="extra_bed_charge_value">0.00</span></td>
+                <td class="value">₹<span id="extra_bed_charge_value">0</span></td>
             </tr>
             <tr>
                 <td class="label">Taxes & Fees</td>
-                <td class="value">₹<span id="tax_value">0.00</span></td>
+                <td class="value">₹<span id="tax_value">0</span></td>
             </tr>
             <tr class="total-row">
                 <td class="label">Total</td>
-                <td class="value">₹<span id="total_payable_value">0.00</span></td>
+                <td class="value">₹<span id="total_payable_value">0</span></td>
             </tr>
         </table>
         
@@ -178,7 +173,7 @@ if (!$room) {
                     <label for="extra_bed">Include Extra Bed?</label>
                     <select id="extra_bed" name="extra_bed" onchange="toggleExtraBedCount()">
                         <option value="0">No Extra Bed</option>
-                        <option value="1">Yes (₹<?php echo htmlspecialchars(number_format($room['extra_bed_price'], 2)); ?> / night)</option>
+                        <option value="1">Yes (₹<?php echo htmlspecialchars(number_format($room['extra_bed_price'])); ?> / night)</option>
                     </select>
                 </div>
                 <div class="form-group" id="extra_bed_count_wrapper">
@@ -216,7 +211,7 @@ if (!$room) {
     const taxValue = document.getElementById('tax_value');
     const totalPayableValue = document.getElementById('total_payable_value');
     
-    const formatCurrency = (amount) => amount.toFixed(2);
+    const formatCurrency = (amount) => amount.toFixed(0);
 
     function toggleExtraBedCount() {
         if (extraBedSelect.value === "1") {
@@ -236,10 +231,10 @@ if (!$room) {
 
         if (!checkin || !checkout || checkin >= checkout) {
             nightsValue.textContent = '-';
-            roomChargeValue.textContent = '0.00';
-            extraBedChargeValue.textContent = '0.00';
-            taxValue.textContent = '0.00';
-            totalPayableValue.textContent = '0.00';
+            roomChargeValue.textContent = '0';
+            extraBedChargeValue.textContent = '0';
+            taxValue.textContent = '0';
+            totalPayableValue.textContent = '0';
             return;
         }
 
