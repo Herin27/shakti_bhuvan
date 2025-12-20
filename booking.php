@@ -6,16 +6,14 @@ $room_id = isset($_GET['room_id']) ? intval($_GET['room_id']) : 0;
 $room = null;
 $available_room_numbers = [];
 
-// Fetch room details and available room numbers
 if ($room_id > 0) {
-    // 1. Fetch Room Type Details
     $sql_room = "SELECT * FROM rooms WHERE id = $room_id";
     $result_room = mysqli_query($conn, $sql_room);
     
     if ($result_room && mysqli_num_rows($result_room) > 0) {
         $room = mysqli_fetch_assoc($result_room);
         
-        // 2. Fetch Available Physical Room Numbers
+        // PHYSICAL ROOM AVAILABILITY CHECK
         $sql_room_numbers = "SELECT room_number FROM room_numbers 
                              WHERE room_type_id = $room_id AND status = 'Available' 
                              ORDER BY room_number ASC";
@@ -27,6 +25,13 @@ if ($room_id > 0) {
             }
         }
     }
+}
+if (empty($available_room_numbers)) {
+    echo "<script>
+            alert('No Rooms Available in that category.');
+            window.location.href = 'rooms.php';
+          </script>";
+    exit;
 }
 
 if (!$room) {

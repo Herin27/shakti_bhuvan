@@ -642,70 +642,70 @@ function countAmenities($amenities_string) {
     }
 
     /* Hero Slider Specific modern styles */
-.hero-manage-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
+    .hero-manage-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
 
-.hero-image-card {
-    background: #fff;
-    border: 1px solid #eef0f2;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
-    position: relative;
-}
+    .hero-image-card {
+        background: #fff;
+        border: 1px solid #eef0f2;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+        position: relative;
+    }
 
-.hero-image-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
+    .hero-image-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
 
-.hero-img-wrapper {
-    height: 140px;
-    width: 100%;
-    overflow: hidden;
-    background: #f8f9fa;
-}
+    .hero-img-wrapper {
+        height: 140px;
+        width: 100%;
+        overflow: hidden;
+        background: #f8f9fa;
+    }
 
-.hero-img-wrapper img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.5s ease;
-}
+    .hero-img-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
 
-.hero-image-card:hover .hero-img-wrapper img {
-    transform: scale(1.1);
-}
+    .hero-image-card:hover .hero-img-wrapper img {
+        transform: scale(1.1);
+    }
 
-.hero-card-body {
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+    .hero-card-body {
+        padding: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-.hero-filename {
-    font-size: 0.75rem;
-    color: #6c757d;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 120px;
-}
+    .hero-filename {
+        font-size: 0.75rem;
+        color: #6c757d;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 120px;
+    }
 
-/* Custom Upload Area */
-.upload-box {
-    border: 2px dashed #d1d9e0;
-    border-radius: 12px;
-    padding: 20px;
-    background: #fafbfc;
-    text-align: center;
-}
+    /* Custom Upload Area */
+    .upload-box {
+        border: 2px dashed #d1d9e0;
+        border-radius: 12px;
+        padding: 20px;
+        background: #fafbfc;
+        text-align: center;
+    }
     </style>
 </head>
 
@@ -716,8 +716,8 @@ function countAmenities($amenities_string) {
         <nav class="nav flex-column">
             <a class="nav-link active" data-target="dashboard-section"><i class="fas fa-home me-2"></i>Dashboard</a>
             <a class="nav-link active" data-target="room-dashboard-section">
-    <i class="fas fa-th-large me-2"></i> Room Dashboard
-</a>
+                <i class="fas fa-th-large me-2"></i> Room Dashboard
+            </a>
             <a class="nav-link" data-target="manage-rooms-section"><i class="fas fa-key me-2"></i>Manage Room Types</a>
             <a class="nav-link" data-target="manage-room-numbers-section"><i class="fas fa-list-ol me-2"></i>Manage Room
                 Numbers</a>
@@ -725,12 +725,12 @@ function countAmenities($amenities_string) {
             <a class="nav-link" data-target="bookings-section"><i class="fas fa-calendar-alt me-2"></i>Bookings</a>
             <a class="nav-link" data-target="offline-bookings-section"><i class="fas fa-bed-pulse me-2"></i>Offline
                 Bookings</a>
-                <a class="nav-link" data-target="today-checkouts-section">
-    <i class="fas fa-bell me-2 text-danger"></i> Today's Checkouts 
-    <?php if($total_today_checkouts > 0): ?>
-        <span class="badge bg-danger rounded-pill ms-1"><?= $total_today_checkouts ?></span>
-    <?php endif; ?>
-</a>
+            <a class="nav-link" data-target="today-checkouts-section">
+                <i class="fas fa-bell me-2 text-danger"></i> Today's Checkouts
+                <?php if($total_today_checkouts > 0): ?>
+                <span class="badge bg-danger rounded-pill ms-1"><?= $total_today_checkouts ?></span>
+                <?php endif; ?>
+            </a>
             <a class="nav-link" data-target="customers-section"><i class="fas fa-users me-2"></i>Customers</a>
 
             <a class="nav-link" data-target="gallery-section"><i class="fas fa-images me-2"></i>Gallery</a>
@@ -1117,23 +1117,26 @@ function countAmenities($amenities_string) {
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>All Bookings</h2>
                 <form class="d-flex gap-2 align-items-end" method="GET">
-            <input type="hidden" name="section" value="bookings-section">
-            <div>
-                <label class="small fw-bold">From Check-in:</label>
-                <input type="date" name="book_checkin" class="form-control form-control-sm" value="<?= $filter_checkin ?>">
-            </div>
-            <div>
-                <label class="small fw-bold">To Check-out:</label>
-                <input type="date" name="book_checkout" class="form-control form-control-sm" value="<?= $filter_checkout ?>">
-            </div>
-            <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-filter"></i> Filter</button>
-            <?php if(!empty($filter_checkin)): ?>
-                <a href="admin_dashboard.php?section=bookings-section" class="btn btn-sm btn-outline-secondary">Clear</a>
-            <?php endif; ?>
-            <button type="button" class="btn btn-sm btn-success ms-2" onclick="exportToExcel()">
-    <i class="fas fa-file-excel"></i> Export to Excel
-</button>
-        </form>
+                    <input type="hidden" name="section" value="bookings-section">
+                    <div>
+                        <label class="small fw-bold">From Check-in:</label>
+                        <input type="date" name="book_checkin" class="form-control form-control-sm"
+                            value="<?= $filter_checkin ?>">
+                    </div>
+                    <div>
+                        <label class="small fw-bold">To Check-out:</label>
+                        <input type="date" name="book_checkout" class="form-control form-control-sm"
+                            value="<?= $filter_checkout ?>">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-filter"></i> Filter</button>
+                    <?php if(!empty($filter_checkin)): ?>
+                    <a href="admin_dashboard.php?section=bookings-section"
+                        class="btn btn-sm btn-outline-secondary">Clear</a>
+                    <?php endif; ?>
+                    <button type="button" class="btn btn-sm btn-success ms-2" onclick="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Export to Excel
+                    </button>
+                </form>
                 <a href="rooms.php" class="btn btn-success"><i class="fas fa-calendar-plus me-2"></i>New Booking</a>
             </div>
 
@@ -1251,91 +1254,96 @@ function countAmenities($amenities_string) {
                             </tr>
                         </thead>
                         <tbody>
-    <?php if (count($offline_bookings) > 0): ?>
-        <?php foreach ($offline_bookings as $off): ?>
-        <tr>
-            <td>#<?php echo $off['id']; ?></td>
-            <td><span class="badge bg-primary fs-6">Room - <?php echo htmlspecialchars($off['room_number']); ?></span></td>
-            <td><?php echo date('d M, Y', strtotime($off['checkin_date'])); ?></td>
-            <td><?php echo date('d M, Y h:i A', strtotime($off['created_at'])); ?></td>
-            <td>
-                <a href="process_offline_checkout.php?id=<?php echo $off['id']; ?>&room=<?php echo $off['room_number']; ?>" 
-                   class="btn btn-sm btn-danger" 
-                   onclick="return confirm('Are you sure? This room will become Available again.');">
-                   <i class="fas fa-sign-out-alt me-1"></i> Check-out
-                </a>
-            </td>
-        </tr>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <tr>
-            <td colspan="5" class="text-center text-muted">No offline bookings found.</td>
-        </tr>
-    <?php endif; ?>
-</tbody>
+                            <?php if (count($offline_bookings) > 0): ?>
+                            <?php foreach ($offline_bookings as $off): ?>
+                            <tr>
+                                <td>#<?php echo $off['id']; ?></td>
+                                <td><span class="badge bg-primary fs-6">Room -
+                                        <?php echo htmlspecialchars($off['room_number']); ?></span></td>
+                                <td><?php echo date('d M, Y', strtotime($off['checkin_date'])); ?></td>
+                                <td><?php echo date('d M, Y h:i A', strtotime($off['created_at'])); ?></td>
+                                <td>
+                                    <a href="process_offline_checkout.php?id=<?php echo $off['id']; ?>&room=<?php echo $off['room_number']; ?>"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Are you sure? This room will become Available again.');">
+                                        <i class="fas fa-sign-out-alt me-1"></i> Check-out
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php else: ?>
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No offline bookings found.</td>
+                            </tr>
+                            <?php endif; ?>
+                        </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
 
-<div id="today-checkouts-section" class="content-section" style="display: none;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>📅 Today's Checkouts Reminder</h2>
-        <span class="text-muted">Date: <?= date('d M, Y') ?></span>
-    </div>
-    <hr class="mt-0">
-
-    <?php if ($total_today_checkouts > 0): ?>
-        <div class="alert alert-warning border-start border-4 border-warning shadow-sm mb-4">
-            <i class="fas fa-exclamation-triangle me-2"></i> 
-            <strong>Reminder:</strong> Today you have <strong><?= $total_today_checkouts ?></strong> room(s) scheduled for checkout.
-        </div>
-
-        <div class="dashboard-card">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Room No.</th>
-                            <th>Customer Details</th>
-                            <th>Room Type</th>
-                            <th>Status</th>
-                            <th>Quick Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($today_checkouts as $checkout): ?>
-                        <tr>
-                            <td><span class="badge bg-dark fs-6">R-<?= htmlspecialchars($checkout['room_number']) ?></span></td>
-                            <td>
-                                <strong><?= htmlspecialchars($checkout['customer_name']) ?></strong><br>
-                                <small class="text-muted"><i class="fas fa-phone-alt"></i> <?= htmlspecialchars($checkout['phone']) ?></small>
-                            </td>
-                            <td><?= htmlspecialchars($checkout['room_name']) ?></td>
-                            <td>
-                                <span class="badge bg-info text-dark"><?= $checkout['status'] ?></span>
-                            </td>
-                            <td>
-                                <a href="process_booking_status.php?booking_id=<?= $checkout['id'] ?>&action=checkout" 
-                                   class="btn btn-sm btn-success"
-                                   onclick="return confirm('Complete checkout process for Room <?= $checkout['room_number'] ?>?')">
-                                   Check-out Now
-                                </a>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+        <div id="today-checkouts-section" class="content-section" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>📅 Today's Checkouts Reminder</h2>
+                <span class="text-muted">Date: <?= date('d M, Y') ?></span>
             </div>
+            <hr class="mt-0">
+
+            <?php if ($total_today_checkouts > 0): ?>
+            <div class="alert alert-warning border-start border-4 border-warning shadow-sm mb-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Reminder:</strong> Today you have <strong><?= $total_today_checkouts ?></strong> room(s)
+                scheduled for checkout.
+            </div>
+
+            <div class="dashboard-card">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Room No.</th>
+                                <th>Customer Details</th>
+                                <th>Room Type</th>
+                                <th>Status</th>
+                                <th>Quick Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($today_checkouts as $checkout): ?>
+                            <tr>
+                                <td><span
+                                        class="badge bg-dark fs-6">R-<?= htmlspecialchars($checkout['room_number']) ?></span>
+                                </td>
+                                <td>
+                                    <strong><?= htmlspecialchars($checkout['customer_name']) ?></strong><br>
+                                    <small class="text-muted"><i class="fas fa-phone-alt"></i>
+                                        <?= htmlspecialchars($checkout['phone']) ?></small>
+                                </td>
+                                <td><?= htmlspecialchars($checkout['room_name']) ?></td>
+                                <td>
+                                    <span class="badge bg-info text-dark"><?= $checkout['status'] ?></span>
+                                </td>
+                                <td>
+                                    <a href="process_booking_status.php?booking_id=<?= $checkout['id'] ?>&action=checkout"
+                                        class="btn btn-sm btn-success"
+                                        onclick="return confirm('Complete checkout process for Room <?= $checkout['room_number'] ?>?')">
+                                        Check-out Now
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <?php else: ?>
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-check fa-4x text-light mb-3"></i>
+                <h4 class="text-muted">No checkouts scheduled for today.</h4>
+            </div>
+            <?php endif; ?>
         </div>
-    <?php else: ?>
-        <div class="text-center py-5">
-            <i class="fas fa-calendar-check fa-4x text-light mb-3"></i>
-            <h4 class="text-muted">No checkouts scheduled for today.</h4>
-        </div>
-    <?php endif; ?>
-</div>
 
         <!-- Customers Section -->
 
@@ -1569,58 +1577,64 @@ function countAmenities($amenities_string) {
         </div> -->
 
         <div id="settings-section" class="content-section" style="display: none;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Site Settings & Configuration</h2>
-    </div>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Site Settings & Configuration</h2>
+            </div>
 
-    <hr class="mt-0">
+            <hr class="mt-0">
 
-    <div class="row g-4">
-        <div class="col-12">
-            <div class="dashboard-card">
-                <h5 class="card-title mb-4"><i class="fas fa-images me-2 text-warning"></i> Homepage Hero Slider</h5>
-                <p class="text-muted small">Manage high-resolution background images for your homepage slider.</p>
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="dashboard-card">
+                        <h5 class="card-title mb-4"><i class="fas fa-images me-2 text-warning"></i> Homepage Hero Slider
+                        </h5>
+                        <p class="text-muted small">Manage high-resolution background images for your homepage slider.
+                        </p>
 
-                <form method="POST" action="update_hero.php" enctype="multipart/form-data">
-                    <div class="hero-manage-grid">
-                        <?php foreach ($hero_images as $image): ?>
-                        <div class="hero-image-card">
-                            <div class="hero-img-wrapper">
-                                <img src="<?php echo htmlspecialchars($image['background_image']); ?>" alt="Slider Image">
-                            </div>
-                            <div class="hero-card-body">
-                                <span class="hero-filename"><?php echo basename($image['background_image']); ?></span>
-                                <input type="hidden" name="image_id[]" value="<?php echo $image['id']; ?>">
-                                <button type="submit" name="delete_image" value="<?php echo $image['id']; ?>"
-                                    class="btn btn-sm btn-outline-danger border-0"
-                                    onclick="return confirm('Delete this hero slider image?');">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <div class="upload-box mt-4">
-                        <h6 class="mb-3">Add New Slide Image</h6>
-                        <div class="row justify-content-center">
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <input type="file" name="new_image" class="form-control" accept="image/*" required>
-                                    <button type="submit" name="add_image" class="btn btn-primary">
-                                        <i class="fas fa-plus me-2"></i> Upload
-                                    </button>
+                        <form method="POST" action="update_hero.php" enctype="multipart/form-data">
+                            <div class="hero-manage-grid">
+                                <?php foreach ($hero_images as $image): ?>
+                                <div class="hero-image-card">
+                                    <div class="hero-img-wrapper">
+                                        <img src="<?php echo htmlspecialchars($image['background_image']); ?>"
+                                            alt="Slider Image">
+                                    </div>
+                                    <div class="hero-card-body">
+                                        <span
+                                            class="hero-filename"><?php echo basename($image['background_image']); ?></span>
+                                        <input type="hidden" name="image_id[]" value="<?php echo $image['id']; ?>">
+                                        <button type="submit" name="delete_image" value="<?php echo $image['id']; ?>"
+                                            class="btn btn-sm btn-outline-danger border-0"
+                                            onclick="return confirm('Delete this hero slider image?');">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                <small class="text-muted mt-2 d-block">Recommended size: 1920x1080px (JPG/PNG)</small>
+                                <?php endforeach; ?>
                             </div>
-                        </div>
+
+                            <div class="upload-box mt-4">
+                                <h6 class="mb-3">Add New Slide Image</h6>
+                                <div class="row justify-content-center">
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <input type="file" name="new_image" class="form-control" accept="image/*"
+                                                required>
+                                            <button type="submit" name="add_image" class="btn btn-primary">
+                                                <i class="fas fa-plus me-2"></i> Upload
+                                            </button>
+                                        </div>
+                                        <small class="text-muted mt-2 d-block">Recommended size: 1920x1080px
+                                            (JPG/PNG)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
+
             </div>
         </div>
-        
-        </div>
-</div>
     </div>
 
     <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
@@ -1726,9 +1740,8 @@ function countAmenities($amenities_string) {
                     editScript = 'edit_booking.php';
                     deleteScript = 'delete_booking.php';
                 } else if (recordType === 'Room') {
-                    // viewScript = 'view_room.php';
                     editScript = 'edit_room.php';
-                    deleteScript = 'delete_room.php';
+                    deleteScript = 'delete_room.php'; // આ ફાઈલ આપણે ઉપર બનાવી
                 } else if (recordType === 'RoomNumber') {
                     viewScript = 'view_room_number.php';
                     editScript = 'edit_room_number.php';
@@ -1742,10 +1755,8 @@ function countAmenities($amenities_string) {
                 // Delete Link uses the numerical ID
                 document.getElementById('action-delete-link').onclick = function() {
                     if (confirm(
-                            `Are you sure you want to permanently delete ${recordType} ${recordId}? This action cannot be undone.`
-                        )) {
-                        // Note: For Customer, the numerical ID passed here is the VARCHAR customer_id
-                        // For Booking/Room/RoomNumber, it is the INT ID
+                            `Are you sure you want to permanently delete ${recordType} ${recordId}?`
+                            )) {
                         window.location.href = `${deleteScript}?id=${numericalId}`;
                     }
                     return false;
@@ -1853,17 +1864,17 @@ function countAmenities($amenities_string) {
     }
 
     function exportToExcel() {
-    // ટેબલ પસંદ કરો (Bookings ટેબલ)
-    const table = document.querySelector("#bookings-section table");
-    let html = table.outerHTML;
+        // ટેબલ પસંદ કરો (Bookings ટેબલ)
+        const table = document.querySelector("#bookings-section table");
+        let html = table.outerHTML;
 
-    // Excel ફાઇલ ડાઉનલોડ કરવા માટે બ્લોબ (Blob) બનાવો
-    const url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
-    const link = document.createElement("a");
-    link.download = "Shakti_Bhuvan_Bookings.xls";
-    link.href = url;
-    link.click();
-}
+        // Excel ફાઇલ ડાઉનલોડ કરવા માટે બ્લોબ (Blob) બનાવો
+        const url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+        const link = document.createElement("a");
+        link.download = "Shakti_Bhuvan_Bookings.xls";
+        link.href = url;
+        link.click();
+    }
     </script>
 </body>
 

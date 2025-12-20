@@ -1,31 +1,36 @@
 <?php
 include 'db.php';
 
-$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+if (isset($_GET['id'])) {
+    $room_id = intval($_GET['id']);
 
-if ($id > 0) {
-    // CHECK: Does this room have bookings?
-    $check_sql = "SELECT COUNT(*) as count FROM bookings WHERE room_id = $id";
-    $result = mysqli_query($conn, $check_sql);
-    $row = mysqli_fetch_assoc($result);
+    // ટ્રાન્ઝેક્શન શરૂ કરો જેથી જો કોઈ એક ક્વેરી ફેલ થાય તો ડેટા સુરક્ષિત રહે
+    mysqli_begin_transaction($conn);
 
-    if ($row['count'] > 0) {
-        // OPTION A: Soft Delete (Change status so it doesn't show to users)
-        // This avoids the #1451 Foreign Key Error
-        $update_sql = "UPDATE rooms SET status = 'Maintenance' WHERE id = $id";
-        if (mysqli_query($conn, $update_sql)) {
-            header("Location: admin.php?section=manage-rooms-section&msg=Room hidden because it has active bookings");
-        }
-    } else {
-        // OPTION B: Hard Delete (Only if no bookings exist)
-        $delete_sql = "DELETE FROM rooms WHERE id = $id";
-        if (mysqli_query($conn, $delete_sql)) {
-            header("Location: admin.php?section=manage-rooms-section&msg=Room deleted successfully");
+    try {
+        // ૧. પેલા આ રૂમ ટાઈપ સાથે જોડાયેલા રૂમ નંબર્સ ડિલીટ કરો (Foreign Key constraints ને કારણે)
+        mysqli_query($conn, "DELETE FROM room_numbers WHERE room_type_id = $room_id");
+
+        // ૨. મુખ્ય રૂમ ટાઈપ ડિલીટ કરો
+        $sql_delete = "DELETE FROM rooms WHERE id = $room_id";
+        
+        if (mysqli_query($conn, $sql_delete)) {
+            mysqli_commit($conn);
+            echo "<script>
+                    alert('room is successfully deleted');
+                    window.location.href = 'admin_dashboard.php?section=manage-rooms-section';
+                  </script>";
         } else {
-            echo "Error deleting record: " . mysqli_error($conn);
+            throw new Exception("Error deleting record");
         }
+    } catch (Exception $e) {
+        mysqli_rollback($conn);
+        echo "<script>
+                alert('Error: This room type cannot be deleted. It may have active bookings.');
+                window.location.href = 'admin_dashboard.php?section=manage-rooms-section';
+              </script>";
     }
-} else {
-    header("Location: admin_dashboard.php?section=manage-rooms-section");
 }
+
+mysqli_close($conn);
 ?>

@@ -1,6 +1,5 @@
 <?php
 session_start();
-// Prevent any warnings from breaking JSON output
 error_reporting(0); 
 include 'db.php'; 
 
@@ -28,6 +27,23 @@ $booking_id = intval($_POST['booking_id']);
 $room_type_id = intval($_SESSION['booking']['room_id']); 
 
 try {
+    // --- STEP 1: પહેલા ચેક કરો કે રૂમ ઉપલબ્ધ છે કે નહીં ---
+    $sql_check = "SELECT room_number FROM room_numbers 
+                  WHERE room_type_id = $room_type_id AND status = 'Available' 
+                  LIMIT 1";
+    $result_check = mysqli_query($conn, $sql_check);
+
+    if (!$result_check || mysqli_num_rows($result_check) == 0) {
+        // જો રૂમ ખાલી ન હોય તો અહીં જ અટકી જશે
+        $response['error'] = "Sorry, no rooms are currently available in this category.";
+        echo json_encode($response);
+        exit;
+    }
+
+    $row = mysqli_fetch_assoc($result_check);
+    $assigned_room = $row['room_number'];
+
+    // --- STEP 2: Razorpay સિગ્નેચર વેરિફાય કરો ---
     $api = new Api($keyId, $keySecret);
     $attributes = [
         'razorpay_order_id' => $order_id,
@@ -37,41 +53,31 @@ try {
 
     $api->utility->verifyPaymentSignature($attributes);
     
-    // Find room
-    $sql_find = "SELECT room_number FROM room_numbers 
-                 WHERE room_type_id = $room_type_id AND status = 'Available' 
-                 LIMIT 1";
-    $result_find = mysqli_query($conn, $sql_find);
+    // --- STEP 3: રૂમ અસાઇન કરો અને બુકિંગ કન્ફર્મ કરો ---
+    mysqli_begin_transaction($conn);
 
-    if ($result_find && mysqli_num_rows($result_find) > 0) {
-        $row = mysqli_fetch_assoc($result_find);
-        $assigned_room = $row['room_number'];
+    // રૂમનું સ્ટેટસ બદલો
+    $upd_room = mysqli_query($conn, "UPDATE room_numbers SET status = 'Occupied' WHERE room_number = '$assigned_room'");
+    
+    // બુકિંગ રેકોર્ડ અપડેટ કરો
+    $sql_update = "UPDATE bookings SET 
+                   status = 'Confirmed', 
+                   payment_status = 'Paid', 
+                   razorpay_id = '$payment_id', 
+                   room_number = '$assigned_room' 
+                   WHERE id = $booking_id";
+    $upd_book = mysqli_query($conn, $sql_update);
 
-        // Start transaction for safety
-        mysqli_begin_transaction($conn);
-
-        $upd_room = mysqli_query($conn, "UPDATE room_numbers SET status = 'Occupied' WHERE room_number = '$assigned_room'");
-        
-        $sql_update = "UPDATE bookings SET 
-                       status = 'Confirmed', 
-                       payment_status = 'Paid', 
-                       razorpay_id = '$payment_id', 
-                       room_number = '$assigned_room' 
-                       WHERE id = $booking_id";
-        $upd_book = mysqli_query($conn, $sql_update);
-
-        if ($upd_room && $upd_book) {
-            mysqli_commit($conn);
-            $response['status'] = 'success';
-            $response['booking_id'] = $booking_id;
-            unset($_SESSION['booking']); 
-        } else {
-            mysqli_rollback($conn);
-            $response['error'] = "Database update failed: " . mysqli_error($conn);
-        }
+    if ($upd_room && $upd_book) {
+        mysqli_commit($conn);
+        $response['status'] = 'success';
+        $response['booking_id'] = $booking_id;
+        unset($_SESSION['booking']); 
     } else {
-        $response['error'] = "No rooms available in this category.";
+        mysqli_rollback($conn);
+        $response['error'] = "Payment verified but database update failed.";
     }
+
 } catch(SignatureVerificationError $e) {
     $response['error'] = "Signature verification failed.";
 } catch(\Exception $e) {
