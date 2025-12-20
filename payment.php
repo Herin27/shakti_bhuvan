@@ -310,41 +310,39 @@ document.getElementById('payBtn').onclick = function(e){
         "name": "Shakti Bhuvan",
         "description": "Room Booking Payment",
         "order_id": "<?php echo $orderId; ?>", 
-        "handler": function (response){
-            
-            // Data to send to server for verification
-            var paymentData = {
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_signature: response.razorpay_signature,
-                booking_id: "<?php echo $booking['booking_id']; ?>" // Pass DB booking ID
-            };
+        // Inside the Razorpay handler function in payment.php
+"handler": function (response){
+    var paymentData = {
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_order_id: response.razorpay_order_id,
+        razorpay_signature: response.razorpay_signature,
+        booking_id: "<?php echo $booking['booking_id']; ?>" 
+    };
 
-            // Send data to server for verification and DB update
-            fetch('verify_payment.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams(paymentData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if(data.status === 'success') {
-                    // Redirect to thank you page on successful verification
-                    window.location.href = "thankyou.php?status=success&booking_id=" + data.booking_id;
-                } else {
-                    // Redirect to thank you page on verification failure
-                    console.error("Verification failed:", data.error);
-                    window.location.href = "thankyou.php?status=failed&booking_id=" + paymentData.booking_id;
-                }
-            })
-            .catch(error => {
-                console.error('Error during AJAX verification:', error);
-                alert('An unexpected error occurred. Please contact support.');
-                window.location.href = "thankyou.php?status=failed&booking_id=" + paymentData.booking_id;
-            });
+    // Corrected the filename from verify_payment.php to process_payment.php
+    fetch('process_payment.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
+        body: new URLSearchParams(paymentData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.status === 'success') {
+            // Success redirect
+            window.location.href = "thankyou.php?status=success&booking_id=" + data.booking_id;
+        } else {
+            // Failure redirect with error message
+            console.error("Verification failed:", data.error);
+            window.location.href = "thankyou.php?status=failed&booking_id=" + paymentData.booking_id;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        window.location.href = "thankyou.php?status=failed&booking_id=" + paymentData.booking_id;
+    });
+},
         "prefill": {
             "name": "<?php echo $booking['customer_name'] ?? 'Guest'; ?>",
             "email": "<?php echo $booking['email'] ?? ''; ?>",

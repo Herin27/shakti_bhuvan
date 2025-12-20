@@ -278,68 +278,52 @@ $tax_rate = 0.05; // 5% as seen in your image
             <input type="hidden" id="extra_bed_price_val" value="<?php echo htmlspecialchars($room['extra_bed_price']); ?>">
             
             <div class="form-grid">
-                <div class="form-group">
-                    <label for="checkin">Check-in Date *</label>
-                    <input type="date" id="checkin" name="checkin" required>
-                </div>
-                <div class="form-group">
-                    <label for="checkout">Check-out Date *</label>
-                    <input type="date" id="checkout" name="checkout" required>
-                </div>
+    <div class="form-group">
+        <label for="checkin">Check-in Date *</label>
+        <input type="date" id="checkin" name="checkin" required>
+    </div>
+    <div class="form-group">
+        <label for="checkout">Check-out Date *</label>
+        <input type="date" id="checkout" name="checkout" required>
+    </div>
 
-                <div class="form-group">
-                    <label for="customer_name">Full Name *</label>
-                    <input type="text" id="customer_name" name="customer_name" required>
-                </div>
-                <div class="form-group">
-                    <label for="phone">Phone Number *</label>
-                    <input type="tel" id="phone" name="phone" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email (Optional)</label>
-                    <input type="email" id="email" name="email">
-                </div>
-                <div class="form-group">
-                    <label for="guests">Number of Guests * (Max: <?php echo htmlspecialchars($room['guests']); ?>)</label>
-                    <select id="guests" name="guests" required>
-                        <?php 
-                        $max_guests = intval($room['guests']);
-                        for ($i = 1; $i <= $max_guests; $i++) {
-                            echo "<option value='{$i}'>{$i} Guest" . ($i > 1 ? "s" : "") . "</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="physical_room_number">Select Specific Room *</label>
-                    <select id="physical_room_number" name="physical_room_number" required>
-                        <option value="" disabled selected>Select a Room Number</option>
-                        <?php if (!empty($available_room_numbers)): ?>
-                            <?php foreach ($available_room_numbers as $room_num): ?>
-                                <option value="<?php echo htmlspecialchars($room_num); ?>">Room <?php echo htmlspecialchars($room_num); ?></option>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <option value="" disabled>No Available Rooms Found</option>
-                        <?php endif; ?>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="extra_bed">Include Extra Bed?</label>
-                    <select id="extra_bed" name="extra_bed">
-                        <option value="0">No Extra Bed</option>
-                        <option value="1">Yes (₹<?php echo htmlspecialchars(number_format($room['extra_bed_price'], 2)); ?> / night)</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" style="grid-column: 1 / -1;">
-                    <label for="notes">Special Requests / Notes</label>
-                    <textarea id="notes" name="notes" rows="3" placeholder="e.g., Early check-in, dietary restrictions..."></textarea>
-                </div>
-                
-                <button type="submit" class="submit-btn" style="display: none;">Confirm Booking</button>
-            </div>
+    <div class="form-group">
+        <label for="customer_name">Full Name *</label>
+        <input type="text" id="customer_name" name="customer_name" required>
+    </div>
+    <div class="form-group">
+        <label for="phone">Phone Number *</label>
+        <input type="tel" id="phone" name="phone" required>
+    </div>
+    <div class="form-group">
+        <label for="email">Email (Optional)</label>
+        <input type="email" id="email" name="email">
+    </div>
+    <div class="form-group">
+        <label for="guests">Number of Guests * (Max: <?php echo htmlspecialchars($room['guests']); ?>)</label>
+        <select id="guests" name="guests" required>
+            <?php 
+            $max_guests = intval($room['guests']);
+            for ($i = 1; $i <= $max_guests; $i++) {
+                echo "<option value='{$i}'>{$i} Guest" . ($i > 1 ? "s" : "") . "</option>";
+            }
+            ?>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="extra_bed">Include Extra Bed?</label>
+        <select id="extra_bed" name="extra_bed">
+            <option value="0">No Extra Bed</option>
+            <option value="1">Yes (₹<?php echo htmlspecialchars(number_format($room['extra_bed_price'], 2)); ?> / night)</option>
+        </select>
+    </div>
+    
+    <div class="form-group" style="grid-column: 1 / -1;">
+        <label for="notes">Special Requests / Notes</label>
+        <textarea id="notes" name="notes" rows="3" placeholder="e.g., Early check-in..."></textarea>
+    </div>
+</div>
         </form>
     </div>
 

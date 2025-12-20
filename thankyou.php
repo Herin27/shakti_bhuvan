@@ -8,6 +8,8 @@
 //     $stmt->execute();
 //     $booking = $stmt->get_result()->fetch_assoc();
 // }
+$status = $_GET['status'] ?? 'failed';
+$booking_id = $_GET['booking_id'] ?? 'N/A';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,21 +76,16 @@
 </head>
 <body>
   <div class="thankyou-box">
-    <div class="icon"><i class="fa fa-check-circle"></i></div>
-    <h1>Thank You for Your Booking!</h1>
-    <p>Your reservation has been successfully confirmed. We look forward to hosting you.</p>
-
-    <!-- Example if booking details are fetched -->
-    <!--
-    <div class="details">
-      <p><strong>Room:</strong> <?php echo $booking['name']; ?></p>
-      <p><strong>Check-in:</strong> <?php echo $booking['checkin']; ?></p>
-      <p><strong>Check-out:</strong> <?php echo $booking['checkout']; ?></p>
-      <p><strong>Total Paid:</strong> ₹<?php echo $booking['total_price']; ?></p>
-    </div>
-    -->
-
+    <?php if($status === 'success'): ?>
+        <div class="icon" style="color: #28a745;"><i class="fa fa-check-circle"></i></div>
+        <h1>Booking Confirmed!</h1>
+        <p>Payment successful. Your Booking ID is: <strong>#<?php echo $booking_id; ?></strong></p>
+    <?php else: ?>
+        <div class="icon" style="color: #dc3545;"><i class="fa fa-times-circle"></i></div>
+        <h1>Payment Failed</h1>
+        <p>There was an issue processing your payment. Please try again.</p>
+    <?php endif; ?>
     <a href="index.php" class="btn">Back to Home</a>
-  </div>
+</div>
 </body>
 </html>
