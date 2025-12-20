@@ -20,13 +20,34 @@ if (!$result_room || mysqli_num_rows($result_room) == 0) {
 
 $room = mysqli_fetch_assoc($result_room);
 
-// --- 2. Fetch Associated Physical Room Numbers ---
+// --- 2. Fetch Associated Physical Room Numbers & Next Available Date ---
 $sql_room_numbers = "SELECT room_number, status FROM room_numbers WHERE room_type_id = $room_id ORDER BY room_number ASC";
 $result_room_numbers = mysqli_query($conn, $sql_room_numbers);
-$physical_rooms = [];
+
+$available_count = 0;
+$next_available_date = null;
+
 if ($result_room_numbers) {
     while ($row = mysqli_fetch_assoc($result_room_numbers)) {
-        $physical_rooms[] = $row;
+        if ($row['status'] === 'Available') {
+            $available_count++;
+        }
+    }
+}
+
+// If fully occupied, find the earliest checkout date from the bookings table
+if ($available_count === 0) {
+    // This query assumes you have a 'bookings' table linked by room_id or room_type_id
+    // and a column named 'checkout_date'
+    $sql_next_date = "SELECT MIN(checkout) as next_date 
+                      FROM bookings 
+                      WHERE room_id IN (SELECT id FROM room_numbers WHERE room_type_id = $room_id)
+                      AND checkout > NOW()";
+    
+    $result_next_date = mysqli_query($conn, $sql_next_date);
+    if ($result_next_date) {
+        $date_row = mysqli_fetch_assoc($result_next_date);
+        $next_available_date = $date_row['next_date'];
     }
 }
 
@@ -361,20 +382,41 @@ function getIcon($text) {
         </div>
         
         <div class="detail-box physical-rooms">
-    <h3>Total Available Rooms</h3>
-    <?php if (!empty($physical_rooms)): ?>
+    <h3>Availability Status</h3>
+    
+    <?php if ($available_count > 0): ?>
         <div class="room-count-display" style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-            <!-- <i class="fas fa-door-open" style="font-size: 2rem; color: #b58900;"></i> -->
-            
+            <!-- <i class="fas fa-check-circle" style="font-size: 2rem; color: #28a745;"></i>  -->
             <div>
                 <span style="font-size: 1.5rem; font-weight: 700; color: #5a4636;">
-                    <?php echo count($physical_rooms); ?>
+                    <?php echo $available_count; ?>
                 </span>
-                <span style="font-size: 1rem; color: #666; margin-left: 5px;">Rooms available in this category</span>
+                <span style="font-size: 1rem; color: #666; margin-left: 5px;">
+                    Room<?php echo ($available_count > 1) ? 's' : ''; ?> currently available
+                </span>
             </div>
         </div>
+
     <?php else: ?>
-        <p>No rooms are currently available for this type.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-calendar-times" style="font-size: 2rem; color: #dc3545;"></i>
+                <div>
+                    <span style="font-size: 1.2rem; font-weight: 700; color: #dc3545;">Fully Occupied</span>
+                    <p style="font-size: 0.9rem; color: #666; margin: 0;">No rooms available today.</p>
+                </div>
+            </div>
+
+            <?php if ($next_available_date): ?>
+                <div style="background: #fff5f5; border-left: 4px solid #dc3545; padding: 10px 15px; border-radius: 4px; margin-top: 5px;">
+                    <p style="margin: 0; font-size: 0.95rem; color: #444;">
+                        <i class="fas fa-calendar-alt" style="color: #dc3545; margin-right: 8px;"></i>
+                        Next Expected Availability: 
+                        <strong><?php echo date('d M, Y', strtotime($next_available_date)); ?></strong>
+                    </p>
+                </div>
+            <?php endif; ?>
+        </div>
     <?php endif; ?>
 </div>
 

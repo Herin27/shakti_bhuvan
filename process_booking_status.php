@@ -1,39 +1,23 @@
 <?php
 include 'db.php';
 
-if (isset($_GET['booking_id']) && isset($_GET['action'])) {
-    $booking_id = mysqli_real_escape_string($conn, $_GET['booking_id']);
-    $action = $_GET['action'];
+if (isset($_GET['booking_id']) && $_GET['action'] == 'checkout') {
+    $booking_id = intval($_GET['booking_id']);
 
-    // 1. Get room details from the booking
-    $sql_get_room = "SELECT room_id, room_number FROM bookings WHERE id = '$booking_id'";
-    $res = mysqli_query($conn, $sql_get_room);
-    $booking = mysqli_fetch_assoc($res);
+    // ૧. રૂમ નંબર મેળવો
+    $res = mysqli_query($conn, "SELECT room_number FROM bookings WHERE id = $booking_id");
+    $row = mysqli_fetch_assoc($res);
+    $rm_no = $row['room_number'];
 
-    if ($booking) {
-        $room_type_id = $booking['room_id'];
-        $room_number = $booking['room_number'];
-
-        if ($action == 'checkout') {
-            $new_status = 'Cleaning';
-            $booking_status = 'Checked-out';
-        } else {
-            $new_status = 'Available';
-            $booking_status = 'Confirmed'; // Keep confirmed or change as per logic
-        }
-
-        // 2. Update Physical Room Number Status
-        mysqli_query($conn, "UPDATE room_numbers SET status = '$new_status' WHERE room_number = '$room_number' AND room_type_id = '$room_type_id'");
-
-        // 3. Update Room Type Status (The general category)
-        mysqli_query($conn, "UPDATE rooms SET status = '$new_status' WHERE id = '$room_type_id'");
-
-        // 4. Update Booking Status
-        if ($action == 'checkout') {
-            mysqli_query($conn, "UPDATE bookings SET status = '$booking_status' WHERE id = '$booking_id'");
-        }
-
-        header("Location: admin_dashboard.php?section=bookings-section&msg=Status Updated");
+    // ૨. બુકિંગ ટેબલમાં સ્ટેટસ અપડેટ
+    mysqli_query($conn, "UPDATE bookings SET status = 'Checked-out' WHERE id = $booking_id");
+    
+    // ૩. રૂમ નંબર્સ ટેબલમાં સ્ટેટસ ડાયરેક્ટ 'Available' કરો
+    if (!empty($rm_no)) {
+        mysqli_query($conn, "UPDATE room_numbers SET status = 'Available' WHERE room_number = '$rm_no'");
     }
+
+    header("Location: admin_dashboard.php?section=bookings-section&msg=checkout_success");
+    exit;
 }
 ?>
