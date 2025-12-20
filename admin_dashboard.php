@@ -21,9 +21,43 @@ function fetchSingleValue($conn, $sql) {
 //             DASHBOARD DATA FETCHING
 // =========================================================
 
-// Total Bookings
-$sql_total_bookings = "SELECT COUNT(*) FROM bookings";
+// =========================================================
+//         DATE FILTER LOGIC FOR DASHBOARD
+// =========================================================
+
+// બાયડિફોલ્ટ આજની તારીખ સેટ કરો
+$start_date = $_GET['start_date'] ?? date('Y-m-d');
+$end_date   = $_GET['end_date']   ?? date('Y-m-d');
+
+// ૧. Total Bookings (Checked-out સિવાયના અને તારીખ મુજબ)
+$sql_total_bookings = "SELECT COUNT(*) FROM bookings 
+                       WHERE status != 'Checked-out' 
+                       AND (checkin BETWEEN '$start_date' AND '$end_date')";
 $total_bookings = fetchSingleValue($conn, $sql_total_bookings);
+
+// ૨. Revenue (તારીખ મુજબ)
+$sql_month_revenue = "SELECT SUM(total_price) FROM bookings 
+                      WHERE (status = 'Confirmed' OR status = 'Checked-in') 
+                      AND payment_status = 'Paid'
+                      AND (checkin BETWEEN '$start_date' AND '$end_date')";
+$revenue_filtered = fetchSingleValue($conn, $sql_month_revenue) ?: 0.00;
+
+// ૩. Recent Bookings Table (માત્ર પસંદ કરેલી તારીખના જ)
+$recent_bookings = [];
+$sql_recent_bookings = "
+    SELECT b.id, b.customer_name, b.checkin, b.checkout, b.status, r.name AS room_name
+    FROM bookings b
+    JOIN rooms r ON b.room_id = r.id
+    WHERE (b.checkin BETWEEN '$start_date' AND '$end_date')
+    ORDER BY b.created_at DESC
+";
+
+$result_bookings = mysqli_query($conn, $sql_recent_bookings);
+if ($result_bookings) {
+    while ($row = mysqli_fetch_assoc($result_bookings)) {
+        $recent_bookings[] = $row;
+    }
+}
 
 // Available Rooms (Physical Room Numbers)
 $sql_available_rooms = "SELECT COUNT(*) FROM room_numbers WHERE status = 'Available'";
@@ -48,27 +82,6 @@ $sql_month_revenue = "
     AND payment_status = 'Paid'
 ";
 $revenue_this_month = fetchSingleValue($conn, $sql_month_revenue) ?: 0.00;
-
-// Recent Bookings Table
-$recent_bookings = [];
-$sql_recent_bookings = "
-    SELECT 
-        b.id, b.customer_name, b.checkin, b.checkout, b.status, r.name AS room_name
-    FROM 
-        bookings b
-    JOIN 
-        rooms r ON b.room_id = r.id
-    ORDER BY 
-        b.created_at DESC
-    LIMIT 5
-";
-
-$result_bookings = mysqli_query($conn, $sql_recent_bookings);
-if ($result_bookings) {
-    while ($row = mysqli_fetch_assoc($result_bookings)) {
-        $recent_bookings[] = $row;
-    }
-}
 
 // Monthly Revenue Data for Chart 
 $monthly_data = [];
@@ -119,12 +132,12 @@ $day_labels_json = json_encode($day_labels);
 
 
 // =========================================================
-//            ROOM DASHBOARD DATA FETCHING (DATE-BASED)
+//         ROOM DASHBOARD DATA FETCHING (UPDATED)
 // =========================================================
 $view_checkin = $_GET['dash_checkin'] ?? date('Y-m-d');
 $view_checkout = $_GET['dash_checkout'] ?? date('Y-m-d', strtotime('+1 day'));
 
-// Fetch all room numbers
+// ૧. બધા જ રૂમ નંબર્સ મેળવો
 $room_dashboard_data = [];
 $sql_all_rooms = "
     SELECT r.name AS type_name, rn.room_number, rn.status as current_status, rn.room_type_id
@@ -134,21 +147,31 @@ $sql_all_rooms = "
 ";
 $res_rooms = mysqli_query($conn, $sql_all_rooms);
 
-// Fetch bookings that overlap with the selected dates
+// ૨. ઓનલાઇન અને ઓફલાઇન બંને બુકિંગમાંથી ઓક્યુપાઈડ રૂમ મેળવો
 $occupied_rooms_in_range = [];
+
+// UNION ક્વેરી: bookings અને offline_booking બંનેમાંથી રૂમ નંબર લેશે
 $sql_booked = "
-    SELECT room_number 
-    FROM bookings 
-    WHERE status IN ('Confirmed', 'Checked-in') 
-    AND NOT (checkout <= '$view_checkin' OR checkin >= '$view_checkout')
+    (SELECT room_number 
+     FROM bookings 
+     WHERE status IN ('Confirmed', 'Checked-in') 
+     AND NOT (checkout <= '$view_checkin' OR checkin >= '$view_checkout'))
+    UNION
+    (SELECT room_number 
+     FROM offline_booking 
+     WHERE (checkin_date <= '$view_checkin')) 
 ";
+// નોંધ: ઓફલાઇન બુકિંગમાં જો માત્ર ચેક-ઇન તારીખ જ હોય, તો તે મુજબ ફિલ્ટર થશે.
+
 $res_booked = mysqli_query($conn, $sql_booked);
 while($row = mysqli_fetch_assoc($res_booked)) {
     $occupied_rooms_in_range[] = $row['room_number'];
 }
 
+// ૩. ડેટા સ્ટ્રક્ચર તૈયાર કરો
 if ($res_rooms) {
     while ($row = mysqli_fetch_assoc($res_rooms)) {
+        // જો રૂમ ઓનલાઇન અથવા ઓફલાઇન બુકિંગમાં હોય તો 'is_occupied' true થશે
         $isBooked = in_array($row['room_number'], $occupied_rooms_in_range);
         
         $room_dashboard_data[$row['type_name']]['rooms'][] = [
@@ -159,7 +182,7 @@ if ($res_rooms) {
     }
 }
 
-// Calculate totals
+// Totals ગણતરી (પહેલા જેવું જ)
 foreach ($room_dashboard_data as $type => $data) {
     $total = count($data['rooms']);
     $occ_count = 0;
@@ -170,8 +193,30 @@ foreach ($room_dashboard_data as $type => $data) {
     $room_dashboard_data[$type]['available'] = $total - $occ_count;
 }
 
+// =========================================================
+//      AUTO CLEANUP FOR OVERDUE OFFLINE BOOKINGS
+// =========================================================
 
+$today_now = date('Y-m-d');
 
+// ૧. એવા રૂમ નંબર્સ શોધો જેની ચેક-આઉટ ડેટ વીતી ગઈ છે
+$sql_overdue_rooms = "SELECT room_number FROM offline_booking WHERE checkout_date < '$today_now'";
+$res_overdue = mysqli_query($conn, $sql_overdue_rooms);
+
+if (mysqli_num_rows($res_overdue) > 0) {
+    $overdue_room_list = [];
+    while($row = mysqli_fetch_assoc($res_overdue)) {
+        $overdue_room_list[] = "'" . $row['room_number'] . "'";
+    }
+    
+    $room_numbers_str = implode(',', $overdue_room_list);
+
+    // ૨. રૂમનું સ્ટેટસ 'Available' કરો
+    mysqli_query($conn, "UPDATE room_numbers SET status = 'Available' WHERE room_number IN ($room_numbers_str)");
+
+    // ૩. ઓવરડ્યુ બુકિંગ રેકોર્ડ્સ ડિલીટ કરો
+    mysqli_query($conn, "DELETE FROM offline_booking WHERE checkout_date < '$today_now'");
+}
 
 // =========================================================
 //          MANAGE ROOMS DATA FETCHING
@@ -271,23 +316,33 @@ if ($res_offline) {
 }
 
 // =========================================================
-//            TODAY'S CHECKOUTS REMINDER DATA
+//            TODAY'S CHECKOUTS REMINDER DATA (UPDATED)
 // =========================================================
 $today_date = date('Y-m-d');
 $today_checkouts = [];
 
+// UNION ક્વેરી: bookings (Online) અને offline_booking બંનેમાંથી આજની ચેક-આઉટ લિસ્ટ લાવશે
 $sql_today_checkouts = "
-    SELECT 
-        b.id, b.customer_name, b.phone, b.room_number, r.name AS room_name, b.status
+    (SELECT 
+        b.id, b.customer_name, b.phone, b.room_number, r.name AS room_name, b.status, 'online' AS booking_type
     FROM 
         bookings b
     JOIN 
         rooms r ON b.room_id = r.id
     WHERE 
         b.checkout = '$today_date' 
-        AND b.status IN ('Confirmed', 'Checked-in')
-    ORDER BY 
-        b.room_number ASC
+        AND b.status IN ('Confirmed', 'Checked-in'))
+    
+    UNION ALL
+    
+    (SELECT 
+        o.id, o.customer_name, o.phone, o.room_number, 'Offline Room' AS room_name, o.payment_status AS status, 'offline' AS booking_type
+    FROM 
+        offline_booking o
+    WHERE 
+        o.checkout_date = '$today_date')
+    
+    ORDER BY room_number ASC
 ";
 
 $res_today = mysqli_query($conn, $sql_today_checkouts);
@@ -426,7 +481,7 @@ function countAmenities($amenities_string) {
 
     .sidebar {
         height: 100vh;
-        width: 250px;
+        width: 300px;
         position: fixed;
         top: 0;
         left: 0;
@@ -436,7 +491,7 @@ function countAmenities($amenities_string) {
     }
 
     .main-content {
-        margin-left: 250px;
+        margin-left: 300px;
         padding: 30px;
     }
 
@@ -715,22 +770,21 @@ function countAmenities($amenities_string) {
         <h3 class="ms-3 mb-5" style="font-family: 'Playfair Display', serif;">Shakti Bhuvan</h3>
         <nav class="nav flex-column">
             <a class="nav-link active" data-target="dashboard-section"><i class="fas fa-home me-2"></i>Dashboard</a>
-            <a class="nav-link active" data-target="room-dashboard-section">
-                <i class="fas fa-th-large me-2"></i> Room Dashboard
-            </a>
-            <a class="nav-link" data-target="manage-rooms-section"><i class="fas fa-key me-2"></i>Manage Room Types</a>
-            <a class="nav-link" data-target="manage-room-numbers-section"><i class="fas fa-list-ol me-2"></i>Manage Room
-                Numbers</a>
-
-            <a class="nav-link" data-target="bookings-section"><i class="fas fa-calendar-alt me-2"></i>Bookings</a>
-            <a class="nav-link" data-target="offline-bookings-section"><i class="fas fa-bed-pulse me-2"></i>Offline
-                Bookings</a>
+            <a class="nav-link active" data-target="room-dashboard-section"><i class="fas fa-th-large me-2"></i> Room
+                Dashboard</a>
             <a class="nav-link" data-target="today-checkouts-section">
                 <i class="fas fa-bell me-2 text-danger"></i> Today's Checkouts
                 <?php if($total_today_checkouts > 0): ?>
                 <span class="badge bg-danger rounded-pill ms-1"><?= $total_today_checkouts ?></span>
                 <?php endif; ?>
             </a>
+            <a class="nav-link" data-target="bookings-section"><i class="fas fa-calendar-alt me-2"></i>Bookings</a>
+            <a class="nav-link" data-target="offline-bookings-section"><i class="fas fa-bed-pulse me-2"></i>Offline
+                Bookings</a>
+            <a class="nav-link" data-target="manage-rooms-section"><i class="fas fa-key me-2"></i>Manage Room Types</a>
+            <a class="nav-link" data-target="manage-room-numbers-section"><i class="fas fa-list-ol me-2"></i>Manage Room
+                Numbers</a>
+
             <a class="nav-link" data-target="customers-section"><i class="fas fa-users me-2"></i>Customers</a>
 
             <a class="nav-link" data-target="gallery-section"><i class="fas fa-images me-2"></i>Gallery</a>
@@ -746,8 +800,27 @@ function countAmenities($amenities_string) {
         <div id="dashboard-section" class="content-section">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Dashboard</h2>
+                <form method="GET" class="d-flex gap-2">
+                    <input type="hidden" name="section" value="dashboard-section">
+                    <div>
+                        <label class="small fw-bold">From:</label>
+                        <input type="date" name="start_date" class="form-control form-control-sm"
+                            value="<?= $start_date ?>">
+                    </div>
+                    <div>
+                        <label class="small fw-bold">To:</label>
+                        <input type="date" name="end_date" class="form-control form-control-sm"
+                            value="<?= $end_date ?>">
+                    </div>
+                    <div class="align-self-end">
+                        <button type="submit" class="btn btn-sm btn-primary">Apply</button>
+                        <a href="admin_dashboard.php" class="btn btn-sm btn-outline-secondary">Today</a>
+                    </div>
+                </form>
             </div>
-            <p class="text-muted">Welcome back to Shakti Bhuvan admin panel</p>
+            <p class="text-muted">Showing data from <strong><?= date('d M, Y', strtotime($start_date)) ?></strong> to
+                <strong><?= date('d M, Y', strtotime($end_date)) ?></strong>
+            </p>
 
             <hr class="mt-0">
 
@@ -761,8 +834,9 @@ function countAmenities($amenities_string) {
                             </div>
                             <i class="fas fa-calendar-check fs-3 text-muted"></i>
                         </div>
-                        <small class="text-success"><i class="fas fa-arrow-up me-1"></i> 4.2% more than last
-                            month</small>
+                        <small>--</small>
+                        <!-- <small class="text-success"><i class="fas fa-arrow-up me-1"></i> 4.2% more than last
+                            month</small> -->
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -781,12 +855,13 @@ function countAmenities($amenities_string) {
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <p class="card-title-text mb-1">Revenue This Month</p>
-                                <h3 class="card-value">₹<?php echo number_format($revenue_this_month, 2); ?></h3>
+                                <p class="card-title-text mb-1">Revenue </p>
+                                <h3 class="card-value">₹<?php echo number_format($revenue_filtered, 2); ?></h3>
                             </div>
                             <i class="fas fa-money-bill-wave fs-3 text-muted"></i>
                         </div>
-                        <small class="text-success"><i class="fas fa-arrow-up me-1"></i> 7.8% up from last month</small>
+                        <small>--</small>
+                        <!-- <small class="text-success"><i class="fas fa-arrow-up me-1"></i> 7.8% up from last month</small> -->
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -798,8 +873,9 @@ function countAmenities($amenities_string) {
                             </div>
                             <i class="fas fa-chart-line fs-3 text-muted"></i>
                         </div>
-                        <small class="text-danger"><i class="fas fa-arrow-down me-1"></i> 2% less than last
-                            month</small>
+                        <small>--</small>
+                        <!-- <small class="text-danger"><i class="fas fa-arrow-down me-1"></i> 2% less than last
+                            month</small> -->
                     </div>
                 </div>
             </div>
@@ -819,8 +895,10 @@ function countAmenities($amenities_string) {
                 </div>
             </div>
 
+
+
             <div class="dashboard-card">
-                <h5 class="card-title mb-3">Recent Bookings</h5>
+                <h5 class="card-title mb-3">Bookings from <?= $start_date ?> to <?= $end_date ?></h5>
                 <div class="table-responsive">
                     <table class="table table-borderless align-middle">
                         <thead>
@@ -828,50 +906,37 @@ function countAmenities($amenities_string) {
                                 <th>Booking ID</th>
                                 <th>Customer Name</th>
                                 <th>Room</th>
-                                <th>Check-in Date</th>
-                                <th>Check-out Date</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
                                 <th>Status</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if (count($recent_bookings) > 0): ?>
                             <?php foreach ($recent_bookings as $booking): 
-                                    $booking_id_display = 'BK' . str_pad($booking['id'], 4, '0', STR_PAD_LEFT);
-                                    $status_class = strtolower(str_replace([' ', '-'], '', $booking['status']));
-                                    $status_badge_class = "status-{$status_class}";
-                                    $numerical_id = $booking['id'];
-                                ?>
+                            $status_class = strtolower(str_replace([' ', '-'], '', $booking['status']));
+                        ?>
                             <tr>
-                                <td><span class="fw-bold"><?php echo $booking_id_display; ?></span></td>
+                                <td>BK<?php echo str_pad($booking['id'], 4, '0', STR_PAD_LEFT); ?></td>
                                 <td><?php echo htmlspecialchars($booking['customer_name']); ?></td>
                                 <td><?php echo htmlspecialchars($booking['room_name']); ?></td>
-                                <td><?php echo date('Y-m-d', strtotime($booking['checkin'])); ?></td>
-                                <td><?php echo date('Y-m-d', strtotime($booking['checkout'])); ?></td>
-                                <td>
-                                    <span class="badge rounded-pill <?php echo $status_badge_class; ?>">
-                                        <?php echo htmlspecialchars($booking['status']); ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="#" class="btn btn-sm text-muted action-button" data-bs-toggle="modal"
-                                        data-bs-target="#actionModal"
-                                        data-record-id="<?php echo $booking_id_display; ?>"
-                                        data-numerical-id="<?php echo $numerical_id; ?>" data-record-type="Booking">
-                                        <i class="fas fa-ellipsis-h"></i>
-                                    </a>
+                                <td><?php echo $booking['checkin']; ?></td>
+                                <td><?php echo $booking['checkout']; ?></td>
+                                <td><span
+                                        class="badge rounded-pill status-<?php echo $status_class; ?>"><?php echo $booking['status']; ?></span>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
                             <?php else: ?>
                             <tr>
-                                <td colspan="7" class="text-center text-muted">No recent bookings found.</td>
+                                <td colspan="6" class="text-center">No bookings found.</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
             </div>
+
         </div>
 
 
@@ -928,7 +993,55 @@ function countAmenities($amenities_string) {
 
 
 
+        <div class="modal fade" id="offlineBookingModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form action="process_offline_booking.php" method="POST">
+                        <div class="modal-header">
+                            <h5 class="modal-title">New Offline Booking - Room <span id="display_room_no"></span></h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="room_number" id="form_room_number">
 
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Check-in Date</label>
+                                    <input type="date" name="checkin_date" id="form_checkin_date" class="form-control"
+                                        required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Check-out Date</label>
+                                    <input type="date" name="checkout_date" class="form-control" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Customer Name</label>
+                                    <input type="text" name="customer_name" class="form-control"
+                                        placeholder="Enter name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Mobile Number</label>
+                                    <input type="tel" name="phone" class="form-control" placeholder="10 digit number"
+                                        required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Payment Status</label>
+                                    <select name="payment_status" class="form-select">
+                                        <option value="Paid">Paid</option>
+                                        <option value="Pending">Pending</option>
+                                        <option value="Partial">Partial</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" name="submit_offline" class="btn btn-primary">Confirm Booking</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
 
 
@@ -1235,22 +1348,31 @@ function countAmenities($amenities_string) {
 
 
         <div id="offline-bookings-section" class="content-section" style="display: none;">
+            <?php if(isset($_GET['msg']) && $_GET['msg'] == 'booked'): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>Success!</strong> Offline booking has been created successfully.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            <?php endif; ?>
+
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Offline Booking Records</h2>
+                <h2>Offline Booking Records (Walk-in)</h2>
             </div>
             <hr class="mt-0">
 
             <div class="dashboard-card">
-                <h5 class="card-title mb-4">Manual / Walk-in Bookings</h5>
+                <h5 class="card-title mb-4">All Offline Booking Details</h5>
                 <div class="table-responsive">
-                    <table class="table table-striped align-middle">
+                    <table class="table table-hover align-middle">
                         <thead class="table-dark">
                             <tr>
                                 <th>ID</th>
                                 <th>Room Number</th>
-                                <th>Check-in Date</th>
-                                <th>Booking Time</th>
-                                <th>Status</th>
+                                <th>Customer Details</th>
+                                <th>Check-in / Check-out</th>
+                                <th>Payment</th>
+                                <th>Booking Date</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1258,14 +1380,33 @@ function countAmenities($amenities_string) {
                             <?php foreach ($offline_bookings as $off): ?>
                             <tr>
                                 <td>#<?php echo $off['id']; ?></td>
-                                <td><span class="badge bg-primary fs-6">Room -
-                                        <?php echo htmlspecialchars($off['room_number']); ?></span></td>
-                                <td><?php echo date('d M, Y', strtotime($off['checkin_date'])); ?></td>
-                                <td><?php echo date('d M, Y h:i A', strtotime($off['created_at'])); ?></td>
+                                <td>
+                                    <span
+                                        class="badge bg-primary fs-6">R-<?php echo htmlspecialchars($off['room_number']); ?></span>
+                                </td>
+                                <td>
+                                    <strong><?php echo htmlspecialchars($off['customer_name']); ?></strong><br>
+                                    <small class="text-muted"><i
+                                            class="fas fa-phone-alt me-1"></i><?php echo htmlspecialchars($off['phone']); ?></small>
+                                </td>
+                                <td>
+                                    <small class="d-block"><strong>In:</strong>
+                                        <?php echo date('d M, Y', strtotime($off['checkin_date'])); ?></small>
+                                    <small class="d-block"><strong>Out:</strong>
+                                        <?php echo date('d M, Y', strtotime($off['checkout_date'])); ?></small>
+                                </td>
+                                <td>
+                                    <?php 
+                                $p_status = $off['payment_status'];
+                                $badge_color = ($p_status == 'Paid') ? 'bg-success' : (($p_status == 'Partial') ? 'bg-info text-dark' : 'bg-danger');
+                            ?>
+                                    <span class="badge <?php echo $badge_color; ?>"><?php echo $p_status; ?></span>
+                                </td>
+                                <td><?php echo date('d M, h:i A', strtotime($off['created_at'])); ?></td>
                                 <td>
                                     <a href="process_offline_checkout.php?id=<?php echo $off['id']; ?>&room=<?php echo $off['room_number']; ?>"
-                                        class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Are you sure? This room will become Available again.');">
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Are you sure you want to check out this room? The room will be freed up.');">
                                         <i class="fas fa-sign-out-alt me-1"></i> Check-out
                                     </a>
                                 </td>
@@ -1273,7 +1414,8 @@ function countAmenities($amenities_string) {
                             <?php endforeach; ?>
                             <?php else: ?>
                             <tr>
-                                <td colspan="5" class="text-center text-muted">No offline bookings found.</td>
+                                <td colspan="7" class="text-center text-muted py-4">No offline booking records found.
+                                </td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
@@ -1312,8 +1454,12 @@ function countAmenities($amenities_string) {
                         <tbody>
                             <?php foreach ($today_checkouts as $checkout): ?>
                             <tr>
-                                <td><span
+                                <td>
+                                    <span
                                         class="badge bg-dark fs-6">R-<?= htmlspecialchars($checkout['room_number']) ?></span>
+                                    <?php if($checkout['booking_type'] == 'offline'): ?>
+                                    <span class="badge bg-secondary" style="font-size: 10px;">OFFLINE</span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <strong><?= htmlspecialchars($checkout['customer_name']) ?></strong><br>
@@ -1322,14 +1468,26 @@ function countAmenities($amenities_string) {
                                 </td>
                                 <td><?= htmlspecialchars($checkout['room_name']) ?></td>
                                 <td>
+                                    <?php if($checkout['booking_type'] == 'online'): ?>
                                     <span class="badge bg-info text-dark"><?= $checkout['status'] ?></span>
+                                    <?php else: ?>
+                                    <span class="badge bg-warning text-dark">Offline - <?= $checkout['status'] ?></span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
+                                    <?php if($checkout['booking_type'] == 'online'): ?>
                                     <a href="process_booking_status.php?booking_id=<?= $checkout['id'] ?>&action=checkout"
                                         class="btn btn-sm btn-success"
-                                        onclick="return confirm('Complete checkout process for Room <?= $checkout['room_number'] ?>?')">
+                                        onclick="return confirm('ઓનલાઇન બુકિંગ ચેક-આઉટ કન્ફર્મ કરો (રૂમ <?= $checkout['room_number'] ?>)?')">
                                         Check-out Now
                                     </a>
+                                    <?php else: ?>
+                                    <a href="process_offline_checkout.php?id=<?= $checkout['id'] ?>&room=<?= $checkout['room_number'] ?>"
+                                        class="btn btn-sm btn-danger"
+                                        onclick="return confirm('ઓફલાઇન બુકિંગ ચેક-આઉટ કન્ફર્મ કરો (રૂમ <?= $checkout['room_number'] ?>)?')">
+                                        Offline Check-out
+                                    </a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -1756,7 +1914,7 @@ function countAmenities($amenities_string) {
                 document.getElementById('action-delete-link').onclick = function() {
                     if (confirm(
                             `Are you sure you want to permanently delete ${recordType} ${recordId}?`
-                            )) {
+                        )) {
                         window.location.href = `${deleteScript}?id=${numericalId}`;
                     }
                     return false;
@@ -1855,12 +2013,14 @@ function countAmenities($amenities_string) {
     });
 
     function openOfflineBooking(roomNum, checkin) {
-        if (confirm("Room " + roomNum + " is available. Do you want to book it OFFLINE for " + checkin + "?")) {
-            // Simple way to handle it: Redirect to a processing script
-            window.location.href = "process_offline_booking.php?room_number=" + roomNum + "&checkin=" + checkin;
-        } else if (recordType === 'OfflineBooking') {
-            deleteScript = 'delete_offline.php';
-        }
+        // Modal ના ફિલ્ડ્સમાં વેલ્યુ સેટ કરો
+        document.getElementById('display_room_no').innerText = roomNum;
+        document.getElementById('form_room_number').value = roomNum;
+        document.getElementById('form_checkin_date').value = checkin;
+
+        // Modal ઓપન કરો
+        var myModal = new bootstrap.Modal(document.getElementById('offlineBookingModal'));
+        myModal.show();
     }
 
     function exportToExcel() {
