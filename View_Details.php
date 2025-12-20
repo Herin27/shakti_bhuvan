@@ -50,9 +50,11 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
 <head>
     <meta charset="UTF-8">
     <title><?php echo htmlspecialchars($room['name']); ?> Details</title>
+    <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./assets/css/style.css"> 
     <link rel="stylesheet" href="./assets/css/navbar.css"> 
+    <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./assets/css/rooms.css"> <style>
         /* Specific Styles for View_Details Page */
         .details-container {

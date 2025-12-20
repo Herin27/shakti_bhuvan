@@ -8,9 +8,7 @@
 </head>
 
 <style>
-.footer-col{
-    width: 23px;
-}
+
 .footer-col a {
     color: inherit;
     text-decoration: none;
