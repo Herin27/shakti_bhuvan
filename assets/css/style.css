@@ -351,7 +351,7 @@ padding: 8px 16px;
 .amenities {
   text-align: center;
   padding: 60px 20px;
-  background: #fdfaf5;
+  background: #f1c45f;
   font-family: 'Inter', sans-serif;
 }
 
@@ -499,8 +499,8 @@ padding: 8px 16px;
 .cta {
   text-align: center;
   padding: 80px 20px;
-  background: linear-gradient(135deg, #b68b4c, #f5d179);
-  color: white;
+  background: #f1c45f;
+  color: #5a4636;
   font-family: 'Inter', sans-serif;
 }
 
@@ -513,7 +513,7 @@ padding: 8px 16px;
 .cta p {
   font-size: 1.1rem;
   margin-bottom: 30px;
-  color: #fefefe;
+  color: #5a4636;
 }
 
 .cta-buttons {

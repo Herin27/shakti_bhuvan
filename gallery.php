@@ -15,53 +15,105 @@ $categories = ['Hotel View', 'Luxury Suite', 'Deluxe Room', 'Standard Room'];
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hotel Gallery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery | Shakti Bhuvan</title>
 
     <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="./assets/css/navbar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 
     <style>
+        :root {
+            --primary-gold: #c4a36f;
+            --dark-gold: #a57e3d;
+            --bg-cream: #fdfbf6;
+            --text-dark: #2c2c2c;
+        }
+
         body {
             margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-cream);
+            color: var(--text-dark);
+        }
+
+        h1 {
             font-family: 'Playfair Display', serif;
-            background: #fdfbf6;
+            font-size: 3rem;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 40px;
         }
 
         main {
-            padding-top: 120px;
-            max-width: 1800px;
+            padding-top: 140px;
+            max-width: 1400px;
             margin: auto;
+            margin-bottom: 110px;
+            padding-left: 20px;
+            padding-right: 20px;
+            min-height: 80vh;
         }
 
-        h1, p {
-            text-align: center;
+        /* --- Category Filter Styling --- */
+        .category-wrapper {
+            position: sticky;
+            top: 80px;
+            z-index: 10;
+            background: rgba(253, 251, 246, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            margin-bottom: 40px;
         }
 
-        /* Category Buttons */
         .category-buttons {
-            text-align: center;
-            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .category-buttons button {
-            margin: 6px;
-            padding: 10px 22px;
-            border: none;
-            background: #c4a36f;
-            color: #fff;
-            font-size: 16px;
-            border-radius: 6px;
+            padding: 12px 28px;
+            border: 1px solid #ddd;
+            background: transparent;
+            color: #444;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 50px;
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .category-buttons button.active,
-        .category-buttons button:hover {
-            background: #a57e3d;
+        .category-buttons button.active {
+            background: var(--primary-gold);
+            color: #fff;
+            border-color: var(--primary-gold);
+            box-shadow: 0 4px 15px rgba(196, 163, 111, 0.3);
         }
 
-        /* Gallery Grid */
+        .category-buttons button:hover:not(.active) {
+            border-color: var(--primary-gold);
+            color: var(--primary-gold);
+        }
+
+        /* --- Gallery Grid Layout --- */
         .gallery-section {
             display: none;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .gallery-section.active {
@@ -69,88 +121,104 @@ $categories = ['Hotel View', 'Luxury Suite', 'Deluxe Room', 'Standard Room'];
         }
 
         .gallery-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-            padding: 20px;
+            columns: 3 300px; /* Masonry effect */
+            column-gap: 20px;
         }
 
         .gallery-item {
+            break-inside: avoid;
+            margin-bottom: 20px;
             position: relative;
             overflow: hidden;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+            border-radius: 15px;
+            cursor: zoom-in;
+            background: #eee;
         }
 
         .gallery-item img {
             width: 100%;
-            height: 200px;
-            object-fit: cover;
-            transition: transform 0.4s;
+            display: block;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            height: 250px;
         }
 
         .gallery-item:hover img {
-            transform: scale(1.08);
+            transform: scale(1.1);
         }
 
-        .gallery-caption {
+        /* Hover Overlay */
+        .gallery-overlay {
             position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: rgba(0,0,0,0.6);
-            color: #fff;
-            text-align: center;
-            padding: 10px;
-            font-size: 15px;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
-        /* FULLSCREEN LIGHTBOX */
+        .gallery-item:hover .gallery-overlay {
+            opacity: 1;
+        }
+
+        .overlay-text {
+            color: #fff;
+            font-size: 1.2rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* --- Lightbox --- */
         .lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.9);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-}
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
 
-.lightbox.active { display: flex; }
+        .lightbox.active { display: flex; }
 
-.lightbox img {
-    max-width: 85%;
-    max-height: 85%;
-    border-radius: 10px;
-}
+        .lightbox img {
+            max-width: 90%;
+            max-height: 80vh;
+            object-fit: contain;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            border: 3px solid rgba(255,255,255,0.1);
+        }
 
-/* CONTROLS */
-.lightbox-close {
-    position: absolute;
-    top: 25px;
-    right: 30px;
-    font-size: 36px;
-    color: #fff;
-    cursor: pointer;
-}
+        .lightbox-close {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            font-size: 40px;
+            color: #fff;
+            cursor: pointer;
+            transition: 0.3s;
+        }
 
-.lightbox-nav {
-    position: absolute;
-    top: 50%;
-    font-size: 50px;
-    color: #fff;
-    cursor: pointer;
-    padding: 15px;
-    transform: translateY(-50%);
-    user-select: none;
-}
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            font-size: 40px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            padding: 20px;
+            transform: translateY(-50%);
+            transition: 0.3s;
+        }
 
-.lightbox-prev { left: 30px; }
-.lightbox-next { right: 30px; }
+        .lightbox-nav:hover { color: var(--primary-gold); }
+        .lightbox-prev { left: 20px; }
+        .lightbox-next { right: 20px; }
 
-.lightbox-nav:hover,
-.lightbox-close:hover { color: #c4a36f; }
-
+        @media (max-width: 768px) {
+            .gallery-container { columns: 2; }
+            h1 { font-size: 2rem; }
+        }
     </style>
 </head>
 
@@ -159,42 +227,46 @@ $categories = ['Hotel View', 'Luxury Suite', 'Deluxe Room', 'Standard Room'];
 <?php include 'header.php'; ?>
 
 <main>
-    <h1>Hotel Gallery</h1>
-    <p>Explore our hotel photos by categories</p>
-
-    <!-- CATEGORY BUTTONS -->
-    <div class="category-buttons">
-        <?php foreach ($categories as $cat): ?>
-            <button onclick="showCategory('<?php echo $cat; ?>', this)">
-                <?php echo $cat; ?>
-            </button>
-        <?php endforeach; ?>
+    <div style="text-align: center;">
+        <p class="subtitle">Experience Luxury</p>
+        <h1>Our Gallery</h1>
     </div>
 
-    <!-- GALLERY -->
-    <?php foreach ($gallery as $type => $images): ?>
-<div class="gallery-section" id="<?php echo $type; ?>">
-    <div class="gallery-container">
-    <?php foreach ($images as $index => $img): ?>
-        <div class="gallery-item"
-             onclick="openLightbox('<?php echo $type; ?>', <?php echo $index; ?>)">
-            <img src="<?php echo $img['image_url']; ?>">
-            <div class="gallery-caption"><?php echo $type; ?></div>
+    <div class="category-wrapper">
+        <div class="category-buttons">
+            <?php foreach ($categories as $index => $cat): ?>
+                <button class="<?php echo $index === 0 ? 'active' : ''; ?>" onclick="showCategory('<?php echo str_replace(' ', '-', $cat); ?>', this)">
+                    <?php echo $cat; ?>
+                </button>
+            <?php endforeach; ?>
         </div>
-    <?php endforeach; ?>
     </div>
-</div>
-<?php endforeach; ?>
+
+    <?php foreach ($gallery as $type => $images): 
+        $safe_id = str_replace(' ', '-', $type);
+    ?>
+    <div class="gallery-section" id="<?php echo $safe_id; ?>">
+        <div class="gallery-container">
+            <?php foreach ($images as $index => $img): ?>
+                <div class="gallery-item" onclick="openLightbox('<?php echo $type; ?>', <?php echo $index; ?>)">
+                    <img src="<?php echo $img['image_url']; ?>" alt="<?php echo $type; ?>" loading="lazy">
+                    <div class="gallery-overlay">
+                        <div class="overlay-text"><i class="fa fa-search-plus"></i> View Image</div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php endforeach; ?>
 </main>
 
 <?php include 'footer.php'; ?>
 
-<!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox">
-<span class="lightbox-close" onclick="closeLightbox()">×</span>
-<span class="lightbox-nav lightbox-prev" onclick="prevImage()">❮</span>
-<img id="lightbox-img">
-<span class="lightbox-nav lightbox-next" onclick="nextImage()">❯</span>
+    <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+    <span class="lightbox-nav lightbox-prev" onclick="prevImage()"><i class="fa fa-chevron-left"></i></span>
+    <img id="lightbox-img">
+    <span class="lightbox-nav lightbox-next" onclick="nextImage()"><i class="fa fa-chevron-right"></i></span>
 </div>
 
 <script>
@@ -202,15 +274,21 @@ const galleryData = <?php echo json_encode($gallery); ?>;
 let currentCategory = "";
 let currentIndex = 0;
 
-function showCategory(cat, btn) {
+function showCategory(id, btn) {
     document.querySelectorAll('.gallery-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.category-buttons button').forEach(b => b.classList.remove('active'));
-    document.getElementById(cat).classList.add('active');
-    btn.classList.add('active');
+    
+    const target = document.getElementById(id);
+    if(target) {
+        target.classList.add('active');
+        btn.classList.add('active');
+    }
 }
 
+// Set default view on load
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelector(".category-buttons button")?.click();
+    const firstBtn = document.querySelector(".category-buttons button");
+    if(firstBtn) firstBtn.click();
 });
 
 function openLightbox(category, index) {
@@ -218,11 +296,16 @@ function openLightbox(category, index) {
     currentIndex = index;
     updateImage();
     document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden'; // Stop scrolling
 }
 
 function updateImage() {
-    document.getElementById('lightbox-img').src =
-        galleryData[currentCategory][currentIndex].image_url;
+    const img = document.getElementById('lightbox-img');
+    img.style.opacity = '0';
+    setTimeout(() => {
+        img.src = galleryData[currentCategory][currentIndex].image_url;
+        img.style.opacity = '1';
+    }, 150);
 }
 
 function nextImage() {
@@ -231,23 +314,21 @@ function nextImage() {
 }
 
 function prevImage() {
-    currentIndex = (currentIndex - 1 + galleryData[currentCategory].length) %
-                   galleryData[currentCategory].length;
+    currentIndex = (currentIndex - 1 + galleryData[currentCategory].length) % galleryData[currentCategory].length;
     updateImage();
 }
 
 function closeLightbox() {
     document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = 'auto';
 }
 
+// Keyboard navigation
 document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('active')) return;
     if (e.key === "ArrowRight") nextImage();
     if (e.key === "ArrowLeft") prevImage();
     if (e.key === "Escape") closeLightbox();
-});
-
-document.getElementById('lightbox').addEventListener('click', e => {
-    if (e.target.id === "lightbox") closeLightbox();
 });
 </script>
 

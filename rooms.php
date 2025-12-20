@@ -15,6 +15,19 @@ $result = mysqli_query($conn, "SELECT * FROM rooms");
   <link rel="stylesheet" href="./assets/css/navbar.css">
   <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
   <style>
+    .search-section {
+      text-align: center;
+      padding: 40px 20px 20px 20px;
+      background: #f5f0e6;
+    }
+    .rooms-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 40px;
+      max-width: 1200px;
+      margin-bottom: 150px;
+    }
     .room-slider {
       position: relative;
       width: 100%;
