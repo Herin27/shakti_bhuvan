@@ -9,11 +9,20 @@ $images = [];
 while ($row = $result->fetch_assoc()) {
     $images[] = $row['background_image'];
 }
+function getAmenityIcon($name) {
+    $name = strtolower(trim($name));
+    if (strpos($name, 'wifi') !== false) return 'fa-wifi';
+    if (strpos($name, 'ac') !== false) return 'fa-snowflake';
+    if (strpos($name, 'tv') !== false) return 'fa-tv';
+    if (strpos($name, 'service') !== false) return 'fa-concierge-bell';
+    if (strpos($name, 'parking') !== false) return 'fa-car';
+    return 'fa-check-circle'; // Default icon
+}
 
 // Fetch top 3 rooms
-// ✅ Fetch featured rooms from database
-$query = "SELECT * FROM rooms WHERE status='Available' ORDER BY id DESC LIMIT 3";
-$result = mysqli_query($conn, $query); 
+// ✅ Fetch featured rooms ordered by highest rating
+$query = "SELECT * FROM rooms WHERE status='Available' ORDER BY rating DESC LIMIT 3";
+$result = mysqli_query($conn, $query);
 ?>
 
 <!DOCTYPE html>
@@ -313,11 +322,16 @@ $result = mysqli_query($conn, $query);
                     </p>
 
                     <!-- Amenities -->
-                    <div class="features">
+                    <div class="features" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
                         <?php 
-                            $amenities = !empty($row['amenities']) ? explode(',', $row['amenities']) : [];
-                            foreach($amenities as $amenity): ?>
-                        <span class="tag"><?php echo htmlspecialchars(trim($amenity)); ?></span>
+                    $amenities = !empty($row['amenities']) ? explode(',', $row['amenities']) : [];
+                    foreach(array_slice($amenities, 0, 4) as $amenity): 
+                ?>
+                        <span class="tag"
+                            style="background: #5a4636; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; display: flex; align-items: center; gap: 5px;">
+                            <i class="fas <?php echo getAmenityIcon($amenity); ?>" style="color: #fff;"></i>
+                            <?php echo htmlspecialchars(trim($amenity)); ?>
+                        </span>
                         <?php endforeach; ?>
                     </div>
 
