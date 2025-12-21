@@ -22,6 +22,55 @@ $extra_bed_count = ($extra_bed_included == 1) ? intval($_POST['extra_bed_count']
 
 $notes = mysqli_real_escape_string($conn, trim($_POST['notes']));
 
+// --- New Availability Check Logic ---
+
+// --- Updated Availability Check Logic (Online + Offline) ---
+
+// ૧. આ રૂમ ટાઈપના કુલ કેટલા રૂમ છે તે શોધો
+$sql_total_rooms = "SELECT COUNT(*) as total FROM room_numbers WHERE room_type_id = $room_id";
+$res_total = mysqli_query($conn, $sql_total_rooms);
+$total_rooms = mysqli_fetch_assoc($res_total)['total'];
+
+// ૨. પસંદ કરેલી તારીખ વચ્ચે ONLINE કેટલા રૂમ બુક છે તે શોધો
+$sql_online_booked = "SELECT room_number FROM bookings 
+                      WHERE room_id = $room_id 
+                      AND status IN ('Confirmed', 'Checked-in') 
+                      AND room_number IS NOT NULL
+                      AND NOT (checkout <= '$checkin' OR checkin >= '$checkout')";
+$res_online = mysqli_query($conn, $sql_online_booked);
+
+$booked_room_list = [];
+while ($row = mysqli_fetch_assoc($res_online)) {
+    $booked_room_list[] = $row['room_number'];
+}
+
+// ૩. પસંદ કરેલી તારીખ વચ્ચે OFFLINE કેટલા રૂમ બુક છે તે શોધો
+// નોંધ: આપણે એ જ રૂમ નંબર્સ લેવાના જે આ ચોક્કસ $room_id ના હોય
+$sql_offline_booked = "SELECT room_number FROM offline_booking 
+                       WHERE NOT (checkout_date <= '$checkin' OR checkin_date >= '$checkout')";
+$res_offline = mysqli_query($conn, $sql_offline_booked);
+
+while ($row = mysqli_fetch_assoc($res_offline)) {
+    $off_room = $row['room_number'];
+    // ચેક કરો કે આ ઓફલાઇન રૂમ આ જ રૂમ ટાઇપ (Category) નો છે?
+    $check_type = mysqli_query($conn, "SELECT id FROM room_numbers WHERE room_number = '$off_room' AND room_type_id = $room_id");
+    if (mysqli_num_rows($check_type) > 0) {
+        $booked_room_list[] = $off_room;
+    }
+}
+
+// ૪. યુનિક રૂમ નંબર્સનું લિસ્ટ બનાવો અને ગણતરી કરો
+$total_booked_count = count(array_unique($booked_room_list));
+
+// ૫. જો બુક થયેલા રૂમ અને કુલ રૂમ સરખા હોય, તો રૂમ ખાલી નથી
+if ($total_booked_count >= $total_rooms) {
+    echo "<script>
+            alert('Sorry, this room type is fully booked (Online/Offline) for the selected dates.');
+            window.location.href = 'booking.php?room_id=$room_id';
+          </script>";
+    exit;
+}
+
 // --- 2. Price Calculation ---
 $sql_rate = "SELECT name, discount_price, extra_bed_price FROM rooms WHERE id = $room_id";
 $result_rate = mysqli_query($conn, $sql_rate);
@@ -30,6 +79,8 @@ $room_data = mysqli_fetch_assoc($result_rate);
 $room_name = $room_data['name'];
 $room_rate_per_night = (float)$room_data['discount_price'];
 $extra_bed_rate_per_night = (float)$room_data['extra_bed_price'];
+
+
 
 // Calculate Nights first
 $date1 = new DateTime($checkin);

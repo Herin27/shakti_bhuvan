@@ -59,9 +59,25 @@ if ($result_bookings) {
     }
 }
 
-// Available Rooms (Physical Room Numbers)
-$sql_available_rooms = "SELECT COUNT(*) FROM room_numbers WHERE status = 'Available'";
-$available_rooms = fetchSingleValue($conn, $sql_available_rooms);
+// --- Dynamic Available Rooms Calculation ---
+$today_date = date('Y-m-d'); // આજની તારીખ
+
+$sql_available_now = "SELECT COUNT(*) FROM room_numbers 
+                      WHERE status != 'Maintenance' 
+                      AND room_number NOT IN (
+                          /* ૧. અત્યારે ઓનલાઇન બુક હોય તેવા રૂમ */
+                          SELECT DISTINCT room_number FROM bookings 
+                          WHERE status IN ('Confirmed', 'Checked-in') 
+                          AND room_number IS NOT NULL
+                          AND NOT (checkout <= '$today_date' OR checkin >= '$today_date')
+                      )
+                      AND room_number NOT IN (
+                          /* ૨. અત્યારે ઓફલાઇન બુક હોય તેવા રૂમ */
+                          SELECT DISTINCT room_number FROM offline_booking 
+                          WHERE NOT (checkout_date <= '$today_date' OR checkin_date >= '$today_date')
+                      )";
+
+$available_rooms = fetchSingleValue($conn, $sql_available_now);
 
 // Total Physical Rooms (for Occupancy Rate calculation)
 $sql_total_rooms_physical = "SELECT COUNT(*) FROM room_numbers";
@@ -151,6 +167,7 @@ $res_rooms = mysqli_query($conn, $sql_all_rooms);
 $occupied_rooms_in_range = [];
 
 // UNION ક્વેરી: bookings અને offline_booking બંનેમાંથી રૂમ નંબર લેશે
+// UNION ક્વેરીમાં સુધારો
 $sql_booked = "
     (SELECT room_number 
      FROM bookings 
@@ -159,7 +176,7 @@ $sql_booked = "
     UNION
     (SELECT room_number 
      FROM offline_booking 
-     WHERE (checkin_date <= '$view_checkin')) 
+     WHERE NOT (checkout_date <= '$view_checkin' OR checkin_date >= '$view_checkout'))
 ";
 // નોંધ: ઓફલાઇન બુકિંગમાં જો માત્ર ચેક-ઇન તારીખ જ હોય, તો તે મુજબ ફિલ્ટર થશે.
 
@@ -322,28 +339,18 @@ $today_date = date('Y-m-d');
 $today_checkouts = [];
 
 // UNION ક્વેરી: bookings (Online) અને offline_booking બંનેમાંથી આજની ચેક-આઉટ લિસ્ટ લાવશે
+// આજની ચેક-આઉટ લિસ્ટ
 $sql_today_checkouts = "
-    (SELECT 
-        b.id, b.customer_name, b.phone, b.room_number, r.name AS room_name, b.status, 'online' AS booking_type
-    FROM 
-        bookings b
-    JOIN 
-        rooms r ON b.room_id = r.id
-    WHERE 
-        b.checkout = '$today_date' 
-        AND b.status IN ('Confirmed', 'Checked-in'))
-    
+    (SELECT b.id, b.customer_name, b.phone, b.room_number, r.name AS room_name, b.status, 'online' AS booking_type
+     FROM bookings b
+     JOIN rooms r ON b.room_id = r.id
+     WHERE b.checkout = '$today_date' 
+     AND b.status IN ('Confirmed', 'Checked-in'))
     UNION ALL
-    
-    (SELECT 
-        o.id, o.customer_name, o.phone, o.room_number, 'Offline Room' AS room_name, o.payment_status AS status, 'offline' AS booking_type
-    FROM 
-        offline_booking o
-    WHERE 
-        o.checkout_date = '$today_date')
-    
-    ORDER BY room_number ASC
-";
+    (SELECT o.id, o.customer_name, o.phone, o.room_number, 'Offline Room' AS room_name, o.payment_status AS status, 'offline' AS booking_type
+     FROM offline_booking o
+     WHERE o.checkout_date = '$today_date')
+    ORDER BY room_number ASC";
 
 $res_today = mysqli_query($conn, $sql_today_checkouts);
 if ($res_today) {
@@ -2012,13 +2019,20 @@ function countAmenities($amenities_string) {
 
     });
 
+    // admin_dashboard.php ના અંતમાં રહેલા સ્ક્રિપ્ટ ટેગમાં સુધારો
     function openOfflineBooking(roomNum, checkin) {
-        // Modal ના ફિલ્ડ્સમાં વેલ્યુ સેટ કરો
+        const checkoutInput = document.getElementsByName('checkout_date')[0];
+        const checkinDate = new Date(checkin);
+        const nextDay = new Date(checkinDate);
+        nextDay.setDate(checkinDate.getDate() + 1);
+
         document.getElementById('display_room_no').innerText = roomNum;
         document.getElementById('form_room_number').value = roomNum;
         document.getElementById('form_checkin_date').value = checkin;
 
-        // Modal ઓપન કરો
+        // બાયડિફોલ્ટ બીજા દિવસની ચેક-આઉટ તારીખ સેટ કરો
+        checkoutInput.value = nextDay.toISOString().split('T')[0];
+
         var myModal = new bootstrap.Modal(document.getElementById('offlineBookingModal'));
         myModal.show();
     }
