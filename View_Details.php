@@ -20,55 +20,35 @@ if (!$result_room || mysqli_num_rows($result_room) == 0) {
 
 $room = mysqli_fetch_assoc($result_room);
 
-// --- 2. Fetch Associated Physical Room Numbers & Availability for Today ---
-// --- 2. Fetch Associated Physical Room Numbers & Availability for Today ---
-date_default_timezone_set('Asia/Kolkata'); // સાચો સમય મેળવવા માટે
-$today = date('Y-m-d');
+// --- 2. Dynamic Availability Logic (Advanced Date Check) ---
+date_default_timezone_set('Asia/Kolkata');
 
-// ૧. આ રૂમ ટાઈપના કુલ કેટલા રૂમ છે તે મેળવો
-$sql_all_rooms = "SELECT room_number FROM room_numbers WHERE room_type_id = $room_id";
-$result_all = mysqli_query($conn, $sql_all_rooms);
-$total_physical_rooms = [];
-while ($row = mysqli_fetch_assoc($result_all)) {
-    $total_physical_rooms[] = $row['room_number'];
-}
+// URL માંથી તારીખો મેળવો, જો ન હોય તો આજની તારીખ સેટ કરો
+$checkin = $_GET['checkin'] ?? date('Y-m-d');
+$checkout = $_GET['checkout'] ?? date('Y-m-d', strtotime('+1 day'));
 
-// ૨. ONLINE બુકિંગ ચેક કરો (જે Checked-out ના હોય)
-$sql_online = "SELECT DISTINCT room_number FROM bookings 
+// ૧. આ રૂમ ટાઈપના કુલ કેટલા રૂમ છે (Maintenance સિવાયના)
+$sql_total = "SELECT COUNT(*) as total FROM room_numbers WHERE room_type_id = $room_id AND status != 'Maintenance'";
+$res_total = mysqli_query($conn, $sql_total);
+$total_physical = mysqli_fetch_assoc($res_total)['total'];
+
+// ૨. પસંદ કરેલી તારીખે કેટલા Online રૂમ બુક છે
+$sql_online = "SELECT COUNT(DISTINCT room_number) as booked FROM bookings 
                WHERE room_id = $room_id 
                AND status IN ('Confirmed', 'Checked-in') 
-               AND room_number IS NOT NULL
-               AND NOT (checkout <= '$today' OR checkin >= '$today')";
-$res_online = mysqli_query($conn, $sql_online);
-$booked_rooms = [];
-while ($row = mysqli_fetch_assoc($res_online)) {
-    $booked_rooms[] = $row['room_number'];
-}
+               AND NOT (checkout <= '$checkin' OR checkin >= '$checkout')";
+$online_booked = mysqli_fetch_assoc(mysqli_query($conn, $sql_online))['booked'];
 
-// ૩. OFFLINE બુકિંગ ચેક કરો
-$sql_offline = "SELECT room_number FROM offline_booking 
-                WHERE NOT (checkout_date <= '$today' OR checkin_date >= '$today')";
-$res_offline = mysqli_query($conn, $sql_offline);
-while ($row = mysqli_fetch_assoc($res_offline)) {
-    // જો આ રૂમ આ જ કેટેગરીનો હોય તો લિસ્ટમાં ઉમેરો
-    if (in_array($row['room_number'], $total_physical_rooms)) {
-        $booked_rooms[] = $row['room_number'];
-    }
-}
+// ૩. પસંદ કરેલી તારીખે કેટલા Offline રૂમ બુક છે
+$sql_offline = "SELECT COUNT(DISTINCT ob.room_number) as booked FROM offline_booking ob 
+                JOIN room_numbers rn ON ob.room_number = rn.room_number
+                WHERE rn.room_type_id = $room_id
+                AND NOT (ob.checkout_date <= '$checkin' OR ob.checkin_date >= '$checkout')";
+$offline_booked = mysqli_fetch_assoc(mysqli_query($conn, $sql_offline))['booked'];
 
-// ૪. યુનિક ઓક્યુપાઈડ રૂમ અને ફાઈનલ કાઉન્ટ
-$unique_booked = array_unique($booked_rooms);
-$available_rooms_list = array_diff($total_physical_rooms, $unique_booked);
-$available_count = count($available_rooms_list);
-
-// ૫. નેક્સ્ટ અવેલેબલ ડેટ (જો અત્યારે બધા રૂમ ફૂલ હોય તો)
-$next_available_date = null;
-if ($available_count === 0) {
-    $sql_next = "SELECT MIN(checkout) as next_date FROM bookings 
-                 WHERE room_id = $room_id AND status IN ('Confirmed', 'Checked-in') AND checkout > '$today'";
-    $res_next = mysqli_query($conn, $sql_next);
-    $next_available_date = mysqli_fetch_assoc($res_next)['next_date'];
-}
+// ૪. ફાઈનલ ઉપલબ્ધ રૂમની ગણતરી
+$available_count = $total_physical - ($online_booked + $offline_booked);
+if($available_count < 0) $available_count = 0;
 
 
 // Image Handling
@@ -442,43 +422,84 @@ function getIcon($text) {
                 <a href="booking.php?room_id=<?php echo $room['id']; ?>" class="book-button">Book Now</a>
             </div>
 
-            <div class="detail-box physical-rooms">
+            <!-- <div class="detail-box physical-rooms">
                 <h3>Availability Status</h3>
 
                 <?php if ($available_count > 0): ?>
                 <div class="room-count-display"
                     style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-                    <!-- <i class="fas fa-check-circle" style="font-size: 2rem; color: #28a745;"></i>  -->
-                    <div>
-                        <span style="font-size: 1.5rem; font-weight: 700; color: #5a4636;">
-                            <?php echo $available_count; ?>
-                        </span>
-                        <span style="font-size: 1rem; color: #666; margin-left: 5px;">
-                            Room<?php echo ($available_count > 1) ? 's' : ''; ?> currently available
-                        </span>
-                    </div>
-                </div>
+                    
+            <div>
+                <span style="font-size: 1.5rem; font-weight: 700; color: #5a4636;">
+                    <?php echo $available_count; ?>
+                </span>
+                <span style="font-size: 1rem; color: #666; margin-left: 5px;">
+                    Room<?php echo ($available_count > 1) ? 's' : ''; ?> currently available
+                </span>
+            </div>
+        </div>
 
-                <?php else: ?>
-                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <i class="fas fa-calendar-times" style="font-size: 2rem; color: #dc3545;"></i>
-                        <div>
-                            <span style="font-size: 1.2rem; font-weight: 700; color: #dc3545;">Fully Occupied</span>
-                            <p style="font-size: 0.9rem; color: #666; margin: 0;">No rooms available today.</p>
+        <?php else: ?>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <i class="fas fa-calendar-times" style="font-size: 2rem; color: #dc3545;"></i>
+                <div>
+                    <span style="font-size: 1.2rem; font-weight: 700; color: #dc3545;">Fully Occupied</span>
+                    <p style="font-size: 0.9rem; color: #666; margin: 0;">No rooms available today.</p>
+                </div>
+            </div>
+
+            <?php if ($next_available_date): ?>
+            <div
+                style="background: #fff5f5; border-left: 4px solid #dc3545; padding: 10px 15px; border-radius: 4px; margin-top: 5px;">
+                <p style="margin: 0; font-size: 0.95rem; color: #444;">
+                    <i class="fas fa-calendar-alt" style="color: #dc3545; margin-right: 8px;"></i>
+                    Next Expected Availability:
+                    <strong><?php echo date('d M, Y', strtotime($next_available_date)); ?></strong>
+                </p>
+            </div>
+            <?php endif; ?>
+        </div>
+        <?php endif; ?>
+
+    </div> -->
+
+            <div class="detail-box availability-card"
+                style="border-top: 5px solid <?= ($available_count > 0) ? '#28a745' : '#dc3545' ?>;">
+                <h3 style="color: #5a4636;"><i class="fas fa-calendar-alt"></i> Check Availability</h3>
+
+                <form action="View_Details.php" method="GET" class="mb-4">
+                    <input type="hidden" name="id" value="<?= $room_id ?>">
+                    <div class="row g-2">
+                        <div class="col-12 mb-2">
+                            <label class="small text-muted">Check-in</label>
+                            <input type="date" name="checkin" value="<?= $checkin ?>"
+                                class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <label class="small text-muted">Check-out</label>
+                            <input type="date" name="checkout" value="<?= $checkout ?>"
+                                class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-sm btn-outline-dark w-100">Update Availability</button>
                         </div>
                     </div>
+                </form>
 
-                    <?php if ($next_available_date): ?>
-                    <div
-                        style="background: #fff5f5; border-left: 4px solid #dc3545; padding: 10px 15px; border-radius: 4px; margin-top: 5px;">
-                        <p style="margin: 0; font-size: 0.95rem; color: #444;">
-                            <i class="fas fa-calendar-alt" style="color: #dc3545; margin-right: 8px;"></i>
-                            Next Expected Availability:
-                            <strong><?php echo date('d M, Y', strtotime($next_available_date)); ?></strong>
-                        </p>
-                    </div>
-                    <?php endif; ?>
+                <hr>
+
+                <?php if ($available_count > 0): ?>
+                <div class="text-center">
+                    <div class="badge bg-success mb-2 p-2"><?= $available_count ?> Room(s) Available</div>
+                    <p class="small text-muted">For: <?= date('d M', strtotime($checkin)) ?> to
+                        <?= date('d M', strtotime($checkout)) ?></p>
+                </div>
+                <?php else: ?>
+                <div class="text-center text-danger">
+                    <i class="fas fa-times-circle fa-2x mb-2"></i>
+                    <h5>Sold Out!</h5>
+                    <p class="small text-muted">Selected dates are fully booked. Please try different dates above.</p>
                 </div>
                 <?php endif; ?>
             </div>

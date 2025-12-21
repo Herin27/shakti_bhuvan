@@ -33,11 +33,11 @@ $result = mysqli_query($conn, $query);
 </head>
 
 <style>
-    /* Make all font-awesome icons white */
-.amenity .fas, 
-.testimonial-user .fas, 
-.cta .fas, 
-.footer-col .fas, 
+/* Make all font-awesome icons white */
+.amenity .fas,
+.testimonial-user .fas,
+.cta .fas,
+.footer-col .fas,
 .footer-col .fab {
     color: #ffffff;
     margin-top: 20px;
@@ -49,6 +49,7 @@ $result = mysqli_query($conn, $query);
     margin-bottom: 0px;
     display: block;
 }
+
 .hero-section {
     position: relative;
     height: 100vh;
@@ -62,6 +63,7 @@ $result = mysqli_query($conn, $query);
     background-position: center;
     transition: background 1s ease-in-out;
 }
+
 .footer-col a {
     color: inherit;
     text-decoration: none;
@@ -232,14 +234,16 @@ $result = mysqli_query($conn, $query);
             <form action="search.php" method="POST">
                 <div class="search-box">
                     <input type="date" name="checkin" id="checkin" required>
-
                     <input type="date" name="checkout" id="checkout" required>
 
                     <select name="guests" required>
-                        <option value="1">1 Guest</option>
-                        <option value="2">2 Guests</option>
-                        <option value="3">3 Guests</option>
-                        <option value="4">4 Guests</option>
+                        <option value="">Total Guests</option>
+                        <?php for($i=1; $i<=30; $i++) echo "<option value='$i'>$i Guest".($i>1?'s':'')."</option>"; ?>
+                    </select>
+
+                    <select name="rooms_needed" required>
+                        <option value="1">1 Room</option>
+                        <?php for($i=2; $i<=10; $i++) echo "<option value='$i'>$i Rooms</option>"; ?>
                     </select>
 
                     <button type="submit">Search Rooms</button>
@@ -336,44 +340,44 @@ $result = mysqli_query($conn, $query);
     </section>
 
     <section class="amenities">
-    <h2 class="section-title">Premium Amenities</h2>
-    <p class="section-subtitle">
-        Enjoy world-class facilities and services designed to make your stay comfortable and memorable
-    </p>
+        <h2 class="section-title">Premium Amenities</h2>
+        <p class="section-subtitle">
+            Enjoy world-class facilities and services designed to make your stay comfortable and memorable
+        </p>
 
-    <div class="amenities-container">
-        <div class="amenity">
-            <div class="icon"><i class="fas fa-wifi"></i></div>
-            <h3>Free Wi-Fi</h3>
-            <p>High-speed internet throughout</p>
+        <div class="amenities-container">
+            <div class="amenity">
+                <div class="icon"><i class="fas fa-wifi"></i></div>
+                <h3>Free Wi-Fi</h3>
+                <p>High-speed internet throughout</p>
+            </div>
+            <div class="amenity">
+                <div class="icon"><i class="fas fa-car"></i></div>
+                <h3>Free Parking</h3>
+                <p>Secure parking for guests</p>
+            </div>
+            <div class="amenity">
+                <div class="icon"><i class="fas fa-utensils"></i></div>
+                <h3>Restaurant</h3>
+                <p>In-house dining options</p>
+            </div>
+            <div class="amenity">
+                <div class="icon"><i class="fas fa-concierge-bell"></i></div>
+                <h3>Concierge</h3>
+                <p>24/7 guest services</p>
+            </div>
+            <div class="amenity">
+                <div class="icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Security</h3>
+                <p>Round-the-clock security</p>
+            </div>
+            <div class="amenity">
+                <div class="icon"><i class="fas fa-clock"></i></div>
+                <h3>24/7 Service</h3>
+                <p>Always here for you</p>
+            </div>
         </div>
-        <div class="amenity">
-            <div class="icon"><i class="fas fa-car"></i></div>
-            <h3>Free Parking</h3>
-            <p>Secure parking for guests</p>
-        </div>
-        <div class="amenity">
-            <div class="icon"><i class="fas fa-utensils"></i></div>
-            <h3>Restaurant</h3>
-            <p>In-house dining options</p>
-        </div>
-        <div class="amenity">
-            <div class="icon"><i class="fas fa-concierge-bell"></i></div>
-            <h3>Concierge</h3>
-            <p>24/7 guest services</p>
-        </div>
-        <div class="amenity">
-            <div class="icon"><i class="fas fa-shield-alt"></i></div>
-            <h3>Security</h3>
-            <p>Round-the-clock security</p>
-        </div>
-        <div class="amenity">
-            <div class="icon"><i class="fas fa-clock"></i></div>
-            <h3>24/7 Service</h3>
-            <p>Always here for you</p>
-        </div>
-    </div>
-</section>
+    </section>
     <section class="testimonials">
         <h2 class="section-title">What Our Guests Say</h2>
         <p class="section-subtitle">
