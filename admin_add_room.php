@@ -321,7 +321,7 @@ $sql_room = "INSERT INTO rooms
                     <div class="form-group">
                         <label>No. of Extra Beds Allowed</label>
                         <input type="number" name="max_extra_beds" min="0" value="0">
-                        <small>મહત્તમ કેટલા વધારાના બેડ આપી શકાય તેની સંખ્યા લખો.</small>
+                        <small>Maximum number of extra beds allowed.</small>
                     </div>
 
                     <div class="form-group">
