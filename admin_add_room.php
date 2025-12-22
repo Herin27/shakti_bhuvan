@@ -13,7 +13,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $guests = $_POST['guests'];
     $rating = $_POST['rating'];
     $reviews = $_POST['reviews'];
-    $max_extra_beds = intval($_POST['max_extra_beds']);
     
     // --- NEW FIELDS ---
     $floor = $_POST['floor'];
@@ -26,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $amenities = isset($_POST['amenities']) ? implode(',', $_POST['amenities']) : '';
     $features  = isset($_POST['features']) ? implode(',', $_POST['features']) : '';
     $policies  = isset($_POST['policies']) ? implode(',', $_POST['policies']) : '';
+    $max_extra_beds = isset($_POST['max_extra_beds']) ? (int)$_POST['max_extra_beds'] : 0;
 
     // --- Image Upload ---
     $uploaded_images = [];
@@ -71,10 +71,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $reviews = (int)$reviews;
 
     // INSERT main room type data
-    $sql_room = "INSERT INTO rooms 
-    (name, description, price, discount_price, size, bed_type, guests, rating, reviews, image, amenities, features, policies, floor, extra_bed_price, max_extra_beds, ac_status) 
+    // --- Data Collection --- (આ વિભાગમાં લાઈન ૨૨ આસપાસ ઉમેરો)
+
+// --- SQL Insertion --- (તમારી SQL ક્વેરી આ રીતે અપડેટ કરો)
+$sql_room = "INSERT INTO rooms 
+    (name, description, price, discount_price, size, bed_type, guests, rating, reviews, image, amenities, features, policies, floor, extra_bed_price, ac_status, max_extra_beds) 
     VALUES 
-    ('$name', '$description', '$price', '$discount_price', '$size', '$bed_type', '$guests', '$rating', '$reviews', '$images_str', '$amenities', '$features', '$policies', '$floor', '$extra_bed_price', '$max_extra_beds', '$ac_status')";
+    ('$name', '$description', '$price', '$discount_price', '$size', '$bed_type', '$guests', '$rating', '$reviews', '$images_str', '$amenities', '$features', '$policies', '$floor', '$extra_bed_price', '$ac_status', '$max_extra_beds')";
+    
     if (mysqli_query($conn, $sql_room)) {
         $room_id = mysqli_insert_id($conn); // Get the ID of the newly inserted room type
         $success = true;
@@ -315,9 +319,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
 
                     <div class="form-group">
-                        <label>Max Extra Beds Allowed</label>
-                        <input type="number" name="max_extra_beds" min="0" value="0" required>
-                        <small>Maximum number of extra beds a guest can request for this room type.</small>
+                        <label>No. of Extra Beds Allowed</label>
+                        <input type="number" name="max_extra_beds" min="0" value="0">
+                        <small>મહત્તમ કેટલા વધારાના બેડ આપી શકાય તેની સંખ્યા લખો.</small>
                     </div>
 
                     <div class="form-group">
@@ -336,7 +340,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <label>Rating</label>
                         <input type="number" name="rating" step="0.1" min="0" max="5">
                     </div>
-
+                    <div class="form-group">
+                        <label>Reviews</label>
+                        <input type="number" name="reviews" min="0">
+                    </div>
                 </div>
 
                 <div class="form-group" style="grid-column: 1 / -1;">
@@ -371,17 +378,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label><input type="checkbox" name="amenities[]" value="AC"> AC</label>
                     <label><input type="checkbox" name="amenities[]" value="Room Service"> Room Service</label>
                     <label><input type="checkbox" name="amenities[]" value="TV"> TV</label>
-                    <!-- <label><input type="checkbox" name="amenities[]" value="Mini Bar"> Mini Bar</label> -->
+                    <label><input type="checkbox" name="amenities[]" value="Mini Bar"> Mini Bar</label>
                     <label><input type="checkbox" name="amenities[]" value="Parking"> Parking</label>
-                    <!-- <label><input type="checkbox" name="amenities[]" value="Swimming Pool"> Swimming Pool</label> -->
-                    <!-- <label><input type="checkbox" name="amenities[]" value="Gym"> Gym</label> -->
+                    <label><input type="checkbox" name="amenities[]" value="Swimming Pool"> Swimming Pool</label>
+                    <label><input type="checkbox" name="amenities[]" value="Gym"> Gym</label>
                 </div>
 
                 <h3>Features</h3>
                 <div class="checkbox-group">
-                    <label><input type="checkbox" name="features[]" value="Sea View"> Mountain View</label>
+                    <label><input type="checkbox" name="features[]" value="Sea View"> Sea View</label>
                     <label><input type="checkbox" name="features[]" value="Balcony"> Balcony</label>
-                    <!-- <label><input type="checkbox" name="features[]" value="Jacuzzi"> Jacuzzi</label> -->
+                    <label><input type="checkbox" name="features[]" value="Jacuzzi"> Jacuzzi</label>
                     <label><input type="checkbox" name="features[]" value="Smart TV"> Smart TV</label>
                     <label><input type="checkbox" name="features[]" value="Work Desk"> Work Desk</label>
                 </div>
@@ -391,7 +398,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label><input type="checkbox" name="policies[]" value="No Smoking"> No Smoking</label>
                     <label><input type="checkbox" name="policies[]" value="Pet Friendly"> Pet Friendly</label>
                     <label><input type="checkbox" name="policies[]" value="Free Cancellation"> Free Cancellation</label>
-
+                    <label><input type="checkbox" name="policies[]" value="Check-in after 12 PM"> Check-in after 12
+                        PM</label>
+                    <label><input type="checkbox" name="policies[]" value="Check-out before 11 AM"> Check-out before 11
+                        AM</label>
                 </div>
 
                 <button type="submit" class="submit-btn">➕ Add Room Type & Physical Rooms</button>
@@ -402,39 +412,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <?php
 include 'footer.php';
 ?>
-    <script>
-    document.querySelector('form').addEventListener('submit', function(e) {
-        e.preventDefault(); // પેજ રીલોડ થતું અટકાવશે
 
-        const formData = new FormData(this);
-        const submitBtn = document.querySelector('.submit-btn');
-
-        // બટન ડિસેબલ કરો જેથી વારંવાર ક્લિક ના થાય
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Processing...";
-
-        fetch('backend_add_room.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert(data.message);
-                    window.location.href = 'admin_dashboard.php';
-                } else {
-                    alert("Error: " + data.message);
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "➕ Add Room Type & Physical Rooms";
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Something went wrong!");
-                submitBtn.disabled = false;
-            });
-    });
-    </script>
 </body>
 
 </html>

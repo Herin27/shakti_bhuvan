@@ -306,9 +306,18 @@ if (!$room) {
                     <div class="form-group" id="extra_bed_count_wrapper">
                         <label for="extra_bed_count">How many Extra Beds?</label>
                         <select id="extra_bed_count" name="extra_bed_count" onchange="calculatePrice()">
-                            <option value="1">1 Bed</option>
-                            <option value="2">2 Beds</option>
-                            <option value="3">3 Beds</option>
+                            <?php 
+        // Admin એ સેટ કરેલી મર્યાદા મેળવો (જો ડેટાબેઝમાં ન હોય તો 0 ગણશે)
+        $max_beds = isset($room['max_extra_beds']) ? intval($room['max_extra_beds']) : 0;
+        
+        if ($max_beds > 0) {
+            for ($i = 1; $i <= $max_beds; $i++) {
+                echo "<option value='{$i}'>{$i} Bed" . ($i > 1 ? "s" : "") . "</option>";
+            }
+        } else {
+            echo "<option value='0'>No Extra Beds Allowed</option>";
+        }
+        ?>
                         </select>
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1;">
@@ -352,7 +361,8 @@ if (!$room) {
                 .then(data => {
                     if (data.available <= 0) {
                         alert(
-                            "⚠️ અફસોસ! આ તારીખે આ રૂમ ટાઈપમાં કોઈ રૂમ ખાલી નથી. કૃપા કરીને બીજી તારીખ અથવા રૂમ પસંદ કરો.");
+                            "⚠️ અફસોસ! આ તારીખે આ રૂમ ટાઈપમાં કોઈ રૂમ ખાલી નથી. કૃપા કરીને બીજી તારીખ અથવા રૂમ પસંદ કરો."
+                        );
                         checkinInput.value = '';
                         checkoutInput.value = '';
                         calculatePrice(); // કિંમત ફરીથી 0 કરવા માટે
@@ -385,8 +395,18 @@ if (!$room) {
     });
 
     function toggleExtraBedCount() {
+        // PHP માંથી આવતી વેલ્યુને એકવાર console માં ચેક કરો
+        const maxBedsAllowed = parseInt(<?php echo isset($room['max_extra_beds']) ? $room['max_extra_beds'] : 0; ?>);
+        console.log("Max Extra Beds Allowed for this room:", maxBedsAllowed);
+
         if (extraBedSelect.value === "1") {
-            extraBedWrapper.style.display = "flex";
+            if (maxBedsAllowed > 0) {
+                extraBedWrapper.style.display = "flex";
+            } else {
+                alert("Sorry, extra beds are not available for this room type. (Limit: " + maxBedsAllowed + ")");
+                extraBedSelect.value = "0";
+                extraBedWrapper.style.display = "none";
+            }
         } else {
             extraBedWrapper.style.display = "none";
             extraBedCountSelect.value = "1";
