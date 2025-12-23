@@ -2104,16 +2104,44 @@ function countAmenities($amenities_string) {
     // admin_dashboard.php ના અંતમાં રહેલા સ્ક્રિપ્ટ ટેગમાં સુધારો
     function openOfflineBooking(roomNum, checkin) {
         const checkoutInput = document.getElementsByName('checkout_date')[0];
-        const checkinDate = new Date(checkin);
-        const nextDay = new Date(checkinDate);
-        nextDay.setDate(checkinDate.getDate() + 1);
+        const checkinInput = document.getElementById('form_checkin_date');
+        const submitBtn = document.querySelector('button[name="submit_offline"]');
 
         document.getElementById('display_room_no').innerText = roomNum;
         document.getElementById('form_room_number').value = roomNum;
-        document.getElementById('form_checkin_date').value = checkin;
+        checkinInput.value = checkin;
 
-        // બાયડિફોલ્ટ બીજા દિવસની ચેક-આઉટ તારીખ સેટ કરો
+        // Default checkout next day
+        let nextDay = new Date(checkin);
+        nextDay.setDate(nextDay.getDate() + 1);
         checkoutInput.value = nextDay.toISOString().split('T')[0];
+
+        // Ajax ફંક્શન જે ચેક કરશે કે રૂમ ખાલી છે કે નહિ
+        const checkAvailability = () => {
+            let room = roomNum;
+            let start = checkinInput.value;
+            let end = checkoutInput.value;
+
+            if (!start || !end) return;
+
+            // એક નાની PHP ફાઈલ બનાવીશું 'check_room_conflict.php'
+            fetch(`check_room_status_api.php?room=${room}&start=${start}&end=${end}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_booked) {
+                        alert(`ચેતવણી: રૂમ નંબર ${room} આ તારીખો વચ્ચે પહેલેથી ઓનલાઇન બુક છે!`);
+                        submitBtn.disabled = true; // બટન બંધ કરી દેશે
+                        submitBtn.innerText = "રૂમ ઉપલબ્ધ નથી";
+                    } else {
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = "Confirm Booking";
+                    }
+                });
+        };
+
+        // જ્યારે પણ તારીખ બદલાય ત્યારે ચેક કરો
+        checkinInput.onchange = checkAvailability;
+        checkoutInput.onchange = checkAvailability;
 
         var myModal = new bootstrap.Modal(document.getElementById('offlineBookingModal'));
         myModal.show();
