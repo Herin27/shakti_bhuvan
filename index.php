@@ -38,6 +38,7 @@ $result = mysqli_query($conn, $query);
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 </head>
 
@@ -127,9 +128,13 @@ $result = mysqli_query($conn, $query);
 
 .hero-section {
     position: relative;
-    height: 80vh;
+    /* height: 80vh; */
     color: #fff;
     overflow: hidden;
+    height: 70vh;
+    /* Mobile ma height thodi ochi rakhvi sari */
+    background-position: center center;
+    background-size: cover;
 }
 
 .hero-slider {
@@ -180,6 +185,50 @@ $result = mysqli_query($conn, $query);
     display: flex;
     justify-content: center;
     gap: 15px;
+}
+
+@media (max-width: 768px) {
+    .search-box {
+        padding: 20px;
+        /* Mobile mate padding ochu karyu */
+        flex-direction: column;
+        width: 90%;
+        /* Screen ni bahar na jay */
+        margin: 20px auto;
+    }
+
+    .search-box input,
+    .search-box select,
+    .search-box button {
+        width: 100%;
+        /* Badha elements full width thai jase */
+        min-width: unset;
+    }
+
+    .hero-section h1 {
+        font-size: 32px;
+        /* Title nanu karyu */
+        margin-top: 100px;
+    }
+
+    .hero-section p {
+        margin-left: 0;
+        /* Left margin kadhi nakhyo */
+        padding: 0 15px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .rooms-container {
+        gap: 15px;
+    }
+
+    .room-card {
+        margin: 10px 0;
+        width: 100%;
+        /* Mobile ma card full width rahese */
+    }
 }
 </style>
 

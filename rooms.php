@@ -81,6 +81,21 @@ function getAmenityIcon($name) {
     .slider-btn.next {
         right: 8px;
     }
+
+    @media (max-width: 768px) {
+        .search-box {
+            flex-direction: column;
+            padding: 20px;
+            gap: 15px;
+        }
+
+        .search-box input,
+        .search-box select,
+        .search-box button {
+            width: 100% !important;
+            min-width: unset;
+        }
+    }
     </style>
 </head>
 
@@ -119,14 +134,16 @@ function getAmenityIcon($name) {
         <form action="search.php" method="POST">
             <div class="search-box">
                 <input type="date" name="checkin" id="checkin" required>
-
                 <input type="date" name="checkout" id="checkout" required>
 
                 <select name="guests" required>
-                    <option value="1">1 Guest</option>
-                    <option value="2">2 Guests</option>
-                    <option value="3">3 Guests</option>
-                    <option value="4">4 Guests</option>
+                    <option value="">Total Guests</option>
+                    <?php for($i=1; $i<=30; $i++) echo "<option value='$i'>$i Guest".($i>1?'s':'')."</option>"; ?>
+                </select>
+
+                <select name="rooms_needed" required>
+                    <option value="1">1 Room</option>
+                    <?php for($i=2; $i<=10; $i++) echo "<option value='$i'>$i Rooms</option>"; ?>
                 </select>
 
                 <button type="submit">Search Rooms</button>

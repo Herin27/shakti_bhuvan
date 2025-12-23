@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,6 @@
 </head>
 
 <style>
-
 .footer-col a {
     color: inherit;
     text-decoration: none;
@@ -17,7 +17,15 @@
 .footer-col a:hover {
     text-decoration: none;
 }
+
+.footer-col ul li i {
+    color: #fff;
+    margin-right: 10px;
+    font-size: 0.8rem;
+
+}
 </style>
+
 <body>
     <!-- Footer -->
     <footer class="footer">
@@ -39,42 +47,43 @@
                     amenities.
                 </p>
                 <div class="social-icons">
-    <a href="#"><i class="fas fa-globe"></i></a>
-    <a href="#"><i class="fab fa-facebook-f"></i></a>
-    <a href="#"><i class="fab fa-twitter"></i></a>
-    <a href="#"><i class="fab fa-instagram"></i></a>
-</div>
+                    <a href="#"><i class="fas fa-globe"></i></a>
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
             </div>
 
             <!-- Quick Links -->
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><a href="index.php">Home</a></li>
-                    <li><a href="rooms.php">Our Rooms</a></li>
-                    <li><a href="contact.php">Contact Us</a></li>
+                    <li><i class="fa-solid fa-minus"></i><a href="index.php">Home</a></li>
+                    <li><i class="fa-solid fa-minus"></i><a href="rooms.php">Our Rooms</a></li>
+                    <li><i class="fa-solid fa-minus"></i><a href="contact.php">Contact Us</a></li>
                 </ul>
             </div>
 
             <!-- Contact Info -->
             <div class="footer-col">
-    <h4>Contact Info</h4>
-    <ul>
-        <li><i class="fas fa-map-marker-alt"></i> Shakti bhuvan, GJ SH 56, Ambaji, Gujarat 385110</li>
-        <li><i class="fas fa-phone"></i> <a href="tel:+919265900219">+91 92659 00219</a></li>
-        <li><i class="fas fa-envelope"></i> <a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a></li>
-    </ul>
-</div>
+                <h4>Contact Info</h4>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> Shakti bhuvan, GJ SH 56, Ambaji, Gujarat 385110</li>
+                    <li><i class="fas fa-phone"></i> <a href="tel:+919265900219">+91 92659 00219</a></li>
+                    <li><i class="fas fa-envelope"></i> <a
+                            href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a></li>
+                </ul>
+            </div>
 
             <!-- Services -->
             <div class="footer-col">
                 <h4>Services</h4>
                 <ul>
-                    <li>24/7 Room Service</li>
-                    <li>Free Wi-Fi</li>
-                    <li>Airport Pickup</li>
-                    <li>Laundry Service</li>
-                    <li>Concierge</li>
+                    <li><i class="fa-solid fa-minus"></i>24/7 Room Service</li>
+                    <li><i class="fa-solid fa-minus"></i>Free Wi-Fi</li>
+                    <li><i class="fa-solid fa-minus"></i>Airport Pickup</li>
+                    <li><i class="fa-solid fa-minus"></i>Laundry Service</li>
+                    <li><i class="fa-solid fa-minus"></i>Concierge</li>
                 </ul>
             </div>
 
@@ -82,7 +91,8 @@
 
         <!-- Bottom -->
         <div class="footer-bottom">
-            <p>© 2025 Shakti Bhuvan Powerd By <span><a style="text-decoration: none;" href="https://www.veloxgroup.co.in/">Velox Group</a></span>. All rights reserved.</p>
+            <p>© 2025 Shakti Bhuvan Powerd By <span><a style="text-decoration: none;"
+                        href="https://www.veloxgroup.co.in/">Velox Group</a></span>. All rights reserved.</p>
             <div>
                 <a href="#">Privacy Policy</a> |
                 <a href="#">Terms of Service</a>
@@ -90,4 +100,5 @@
         </div>
     </footer>
 </body>
+
 </html>

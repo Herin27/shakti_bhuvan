@@ -768,6 +768,88 @@ function countAmenities($amenities_string) {
         background: #fafbfc;
         text-align: center;
     }
+
+    /* ===========================
+   MOBILE RESPONSIVE UPDATES
+=========================== */
+
+    @media (max-width: 991px) {
+
+        /* Sidebar ne hide karo */
+        .sidebar {
+            width: 100%;
+            height: auto;
+            position: relative;
+            display: none;
+            /* JS thi toggle thase */
+            border-right: none;
+            border-bottom: 1px solid #ddd;
+            z-index: 1001;
+        }
+
+        .sidebar.show {
+            display: block;
+        }
+
+        .main-content {
+            margin-left: 0;
+            /* Full width content */
+            padding: 15px;
+        }
+
+        /* Mobile Header/Toggle Button */
+        .mobile-nav-toggle {
+            display: block;
+            background: var(--sidebar-color);
+            padding: 10px 15px;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* Dashboard Cards smaller on mobile */
+        .dashboard-card {
+            margin-bottom: 15px;
+        }
+
+        .card-value {
+            font-size: 1.5rem;
+        }
+
+        /* Table responsive fixes */
+        .table-responsive {
+            border: 0;
+        }
+
+        /* Room Dashboard Boxes smaller */
+        .room-box {
+            width: 50px;
+            height: 50px;
+            font-size: 0.8rem;
+        }
+
+        /* Charts height adjustment */
+        canvas {
+            height: 250px !important;
+        }
+
+        /* Sidebar Logout adjustment */
+        .logout {
+            position: relative;
+            bottom: 0;
+            left: 20px;
+            margin-top: 20px;
+            display: block;
+            padding-bottom: 20px;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .mobile-nav-toggle {
+            display: none;
+        }
+    }
     </style>
 </head>
 

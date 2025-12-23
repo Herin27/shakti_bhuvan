@@ -66,6 +66,7 @@ if (!$room) {
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
         display: grid;
         grid-template-columns: 3fr 2fr;
+        /* Desktop mate 2 columns */
         gap: 40px;
     }
 
@@ -207,6 +208,74 @@ if (!$room) {
     /* New Styles for Extra Bed Section */
     #extra_bed_count_wrapper {
         display: none;
+    }
+
+    /* Existing styles ma niche no code umero athwa badlav karo */
+
+
+    /* ===========================
+   Responsive Design (Mobile)
+=========================== */
+
+    @media (max-width: 992px) {
+        .booking-container {
+            grid-template-columns: 1fr;
+            /* Tablet/Mobile ma single column */
+            margin: 20px;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        /* Summary card ne top par lavva mate order change kari sakay */
+        .summary-card {
+            order: 1;
+            /* Price summary pehla dekhay */
+        }
+
+        .booking-form {
+            order: 2;
+            /* Form niche dekhay */
+        }
+    }
+
+    @media (max-width: 600px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+            /* Form inputs ek ni niche ek aave */
+        }
+
+        .booking-form h2 {
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .submit-btn-summary {
+            padding: 12px;
+            font-size: 1rem;
+        }
+
+        .calculation-table {
+            font-size: 0.9rem;
+        }
+
+        .total-row td {
+            font-size: 1.2rem;
+        }
+    }
+
+    /* Form Groups fix for mobile */
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        /* Full width for touch devices */
+        -webkit-appearance: none;
+        /* Mobile browsers styling fix */
+    }
+
+    /* Extra Bed Count Wrapper fix */
+    #extra_bed_count_wrapper {
+        flex-direction: column;
     }
     </style>
 </head>

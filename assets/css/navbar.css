@@ -109,6 +109,64 @@
 .social-icons a:hover {
   text-decoration: none;
 }
+/* Desktop par toggle button hide rakho */
+.menu-toggle {
+    display: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #8b6c4a;
+}
+
+.mobile-contact-info {
+    display: none;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 15px 20px;
+        position: relative;
+        flex-direction: row !important; /* Logo ane Button baju baju ma rahe */
+        justify-content: space-between;
+    }
+
+    .menu-toggle {
+        display: block; /* Mobile ma button dekhase */
+    }
+
+    .nav-links {
+        display: none; /* Pehla menu hide rahese */
+        flex-direction: column;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background-color: #fdfbf6;
+        padding: 20px;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        text-align: center;
+    }
+
+    .nav-links.active {
+        display: flex; /* Toggle click karta menu dekhase */
+    }
+
+    .desktop-only {
+        display: none; /* Mobile ma extra info hide karo */
+    }
+
+    .mobile-contact-info {
+        display: block;
+        margin-top: 15px;
+    }
+    
+    .nav-links a {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+        width: 100%;
+    }
+}
 
 /* ===========================
    Responsive Design

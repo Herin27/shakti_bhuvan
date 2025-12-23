@@ -68,8 +68,10 @@ h2 {
     position: relative;
     z-index: 2;
     margin-top: 50px;
-    max-width: 755px;
+    max-width: 950px;
     margin: auto;
+    flex-wrap: wrap; /* Aa line umero jethi tablets ma line break thai shake */
+    justify-content: center;
 }
 
 .search-box input,
@@ -303,6 +305,40 @@ padding: 8px 16px;
 /* ===========================
    Responsive Design
 =========================== */
+
+/* rooms.css ma niche no code update karo */
+
+@media (max-width: 768px) {
+  /* Class name sudharyu: .search-bar -> .search-box */
+  .search-box {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px;
+    gap: 15px; /* Thodi vadhari jagya */
+    width: 90%; /* Mobile screen mujab */
+    max-width: 100%;
+    margin: 20px auto;
+  }
+
+  /* Input fields ne full width karo */
+  .search-box input,
+  .search-box select,
+  .search-box button {
+    width: 100% !important;
+    min-width: unset !important; /* Fixed width kadhi nakhi */
+  }
+
+  /* Rooms container fix */
+  .rooms-container {
+    padding: 10px;
+    gap: 15px;
+  }
+
+  .room-card {
+    max-width: 100%;
+    margin: 10px 0;
+  }
+}
 
 /* Tablets (max-width: 992px) */
 @media (max-width: 992px) {
