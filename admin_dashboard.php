@@ -27,29 +27,45 @@ function fetchSingleValue($conn, $sql) {
 
 // બાયડિફોલ્ટ આજની તારીખ સેટ કરો
 $start_date = $_GET['start_date'] ?? date('Y-m-d');
-$end_date   = $_GET['end_date']   ?? date('Y-m-d');
+$end_date   = $_GET['end_date']   ?? date('Y-m-d', strtotime('+1 day'));
+// $view_checkout = $_GET['dash_checkout'] ?? date('Y-m-d', strtotime('+1 day'));
 
-// ૧. Total Bookings (Checked-out સિવાયના અને તારીખ મુજબ)
+// // ૧. Total Bookings (Checked-out સિવાયના અને તારીખ મુજબ)
+// $sql_total_bookings = "SELECT COUNT(*) FROM bookings 
+//                        WHERE status != 'Checked-out' 
+//                        AND (checkin BETWEEN '$start_date' AND '$end_date')";
+// $total_bookings = fetchSingleValue($conn, $sql_total_bookings);
+
+// ૧. Total Active Bookings (પસંદ કરેલી તારીખના ગાળામાં જેઓ રૂમમાં છે)
 $sql_total_bookings = "SELECT COUNT(*) FROM bookings 
-                       WHERE status != 'Checked-out' 
-                       AND (checkin BETWEEN '$start_date' AND '$end_date')";
+                       WHERE status NOT IN ('Checked-out', 'Cancelled') 
+                       AND NOT (checkout <= '$start_date' OR checkin >= '$end_date')";
 $total_bookings = fetchSingleValue($conn, $sql_total_bookings);
 
-// ૨. Revenue (તારીખ મુજબ)
+// // ૨. Revenue (તારીખ મુજબ)
+// $sql_month_revenue = "SELECT SUM(total_price) FROM bookings 
+//                       WHERE (status = 'Confirmed' OR status = 'Checked-in') 
+//                       AND payment_status = 'Paid'
+//                       AND (checkin BETWEEN '$start_date' AND '$end_date')";
+// $revenue_filtered = fetchSingleValue($conn, $sql_month_revenue) ?: 0.00;
+
+// ૨. Revenue (તારીખ મુજબ - Overlap Logic)
 $sql_month_revenue = "SELECT SUM(total_price) FROM bookings 
                       WHERE (status = 'Confirmed' OR status = 'Checked-in') 
                       AND payment_status = 'Paid'
-                      AND (checkin BETWEEN '$start_date' AND '$end_date')";
+                      AND NOT (checkout <= '$start_date' OR checkin >= '$end_date')";
 $revenue_filtered = fetchSingleValue($conn, $sql_month_revenue) ?: 0.00;
 
 // ૩. Recent Bookings Table (માત્ર પસંદ કરેલી તારીખના જ)
 $recent_bookings = [];
+// ૩. Bookings Table (Active residents during filter range)
 $sql_recent_bookings = "
     SELECT b.id, b.customer_name, b.checkin, b.checkout, b.status, r.name AS room_name
     FROM bookings b
     JOIN rooms r ON b.room_id = r.id
-    WHERE (b.checkin BETWEEN '$start_date' AND '$end_date')
-    ORDER BY b.created_at DESC
+    WHERE b.status NOT IN ('Cancelled')
+    AND NOT (b.checkout <= '$start_date' OR b.checkin >= '$end_date')
+    ORDER BY b.checkin ASC
 ";
 
 $result_bookings = mysqli_query($conn, $sql_recent_bookings);
