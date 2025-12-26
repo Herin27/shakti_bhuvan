@@ -418,7 +418,7 @@ if ($result_hero_images) {
 // Placeholder for site settings, assuming site_settings table exists
 $site_settings = [
     'phone_number' => '+91 92659 00219',
-    'email_address' => 'info@shaktibhuvan.com',
+    'email_address' => 'shaktibhuvanambaji@gmail.com',
     'physical_address' => 'Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110'
 ];
 

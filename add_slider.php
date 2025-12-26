@@ -114,7 +114,7 @@ $result = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
 
         <div class="contact-info">
             <span><i class="fas fa-phone"></i> +91 92659 00219</span>
-            <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
+            <span><i class="fas fa-envelope"></i> shaktibhuvanambaji@gmail.com</span>
             <a href="rooms.php" class="book-btn">Book Now</a>
         </div>
     </header> -->

@@ -163,7 +163,7 @@
         <div class="contact-info desktop-only">
             <span><i class="fas fa-phone"></i> <a href="tel:+919265900219">+91 92659 00219</a></span>
             <span><i class="fas fa-envelope"></i> <a
-                    href="mailto:shaktibhuvanambaji@gmail.com">info@shaktibhuvan.com</a></span>
+                    href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a></span>
             <a href="rooms.php" class="book-btn">Book Now</a>
         </div>
     </header>

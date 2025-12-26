@@ -243,7 +243,7 @@ CREATE TABLE `site_settings` (
 --
 
 INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
-('email_address', 'info@shaktibhuvan.com'),
+('email_address', 'shaktibhuvanambaji@gmail.com'),
 ('phone_number', '+91 98765 43210'),
 ('physical_address', 'Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110');
 

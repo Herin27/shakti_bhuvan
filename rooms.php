@@ -121,7 +121,7 @@ function getAmenityIcon($name) {
 
   <div class="contact-info">
       <span><i class="fas fa-phone"></i> +91 92659 00219</span>
-      <span><i class="fas fa-envelope"></i> info@shaktibhuvan.com</span>
+      <span><i class="fas fa-envelope"></i> shaktibhuvanambaji@gmail.com</span>
       <a href="rooms.php" class="book-btn">Book Now</a>
   </div>
 </header> -->
@@ -242,7 +242,7 @@ function getAmenityIcon($name) {
       <ul>
         <li>📍 Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</li>
         <li>📞 +91 92659 00219</li>
-        <li>✉️ info@shaktibhuvan.com</li>
+        <li>✉️ shaktibhuvanambaji@gmail.com</li>
       </ul>
     </div>
     <div class="footer-col">
