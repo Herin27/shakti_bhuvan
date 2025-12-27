@@ -97,9 +97,17 @@ if (mysqli_num_rows($result_assign) > 0) {
                    WHERE id = $booking_id";
     $upd_book = mysqli_query($conn, $sql_update);
 
-    // સુધારેલી કન્ડિશન:
-if ($upd_book) { // $upd_room કાઢી નાખ્યું છે
-    mysqli_commit($conn);
+    // ૨. પેમેન્ટ ટેબલમાં ડેટા સ્ટોર કરો (નવી ફંક્શનલિટી)
+    $final_amount = $_SESSION['booking']['total_price']; // સેસનમાંથી ટોટલ પ્રાઈસ લીધી
+    $current_date = date('Y-m-d');
+    
+    $sql_payment = "INSERT INTO payments (booking_id, amount, payment_date) 
+                    VALUES ('$booking_id', '$final_amount', '$current_date')";
+    $ins_payment = mysqli_query($conn, $sql_payment);
+
+// ચેક કરો કે બંને ક્વેરી સફળ રહી કે નહીં
+    if ($upd_book && $ins_payment) { 
+        mysqli_commit($conn);
         $response['status'] = 'success';
         $response['booking_id'] = $booking_id;
         unset($_SESSION['booking']); 

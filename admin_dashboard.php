@@ -383,6 +383,9 @@ if ($result_all_customers) {
 // =========================================================
 //          PAYMENTS DATA FETCHING
 // =========================================================
+
+$pay_start = $_GET['pay_start'] ?? date('Y-m-d'); // ડિફોલ્ટ આજની તારીખ
+$pay_end   = $_GET['pay_end']   ?? date('Y-m-d');
 $all_payments = [];
 $sql_all_payments = "
     SELECT 
@@ -392,8 +395,8 @@ $sql_all_payments = "
         payments p
     LEFT JOIN 
         bookings b ON p.booking_id = b.id 
-    ORDER BY 
-        p.payment_date DESC
+    WHERE p.payment_date BETWEEN '$pay_start' AND '$pay_end'
+    ORDER BY p.payment_date DESC
 ";
 
 $result_all_payments = mysqli_query($conn, $sql_all_payments);
@@ -875,6 +878,8 @@ function countAmenities($amenities_string) {
                 Numbers</a>
 
             <a class="nav-link" data-target="customers-section"><i class="fas fa-users me-2"></i>Customers</a>
+            <a class="nav-link" data-target="payments-section"><i class="fas fa-credit-card me-2"></i>Payments
+                History</a>
 
             <a class="nav-link" data-target="gallery-section"><i class="fas fa-images me-2"></i>Gallery</a>
             <a class="nav-link" data-target="settings-section"><i class="fas fa-cog me-2"></i>Settings</a>
@@ -1449,6 +1454,8 @@ function countAmenities($amenities_string) {
             </div>
             <hr class="mt-0">
 
+            <!-- offline bookings table -->
+
             <div class="dashboard-card">
                 <h5 class="card-title mb-4">All Offline Booking Details</h5>
                 <div class="table-responsive">
@@ -1666,53 +1673,70 @@ function countAmenities($amenities_string) {
         <div id="payments-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Payment History</h2>
-                <a href="#" class="btn btn-primary"><i class="fas fa-plus me-2"></i>Add Payment</a>
+
+                <form method="GET" class="d-flex gap-2 align-items-end">
+                    <input type="hidden" name="section" value="payments-section">
+                    <div>
+                        <label class="small fw-bold">From:</label>
+                        <input type="date" name="pay_start" class="form-control form-control-sm"
+                            value="<?= $pay_start ?>">
+                    </div>
+                    <div>
+                        <label class="small fw-bold">To:</label>
+                        <input type="date" name="pay_end" class="form-control form-control-sm" value="<?= $pay_end ?>">
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                    <a href="admin_dashboard.php?section=payments-section"
+                        class="btn btn-sm btn-outline-secondary">Reset</a>
+                </form>
+
+                <button class="btn btn-success" onclick="exportPaymentsToExcel()">
+                    <i class="fas fa-file-excel me-2"></i>Export
+                </button>
             </div>
 
+            <p class="text-muted">Showing payments from <strong><?= date('d M, Y', strtotime($pay_start)) ?></strong> to
+                <strong><?= date('d M, Y', strtotime($pay_end)) ?></strong>
+            </p>
             <hr class="mt-0">
 
             <div class="dashboard-card">
-                <h5 class="card-title mb-4">All Payment Records (Total: <?php echo count($all_payments); ?>)</h5>
+                <h5 class="card-title mb-4">Payment Records</h5>
                 <div class="table-responsive">
                     <table class="table table-striped align-middle">
                         <thead>
                             <tr>
-                                <th>Payment ID</th>
+                                <th>ID</th>
                                 <th>Booking Ref</th>
                                 <th>Customer</th>
                                 <th>Amount</th>
                                 <th>Date</th>
-                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if (count($all_payments) > 0): ?>
-                            <?php foreach ($all_payments as $payment): 
-                                    $payment_id_display = 'PM' . str_pad($payment['id'], 3, '0', STR_PAD_LEFT);
-                                    $booking_ref_display = !empty($payment['booking_id']) ? 'BK' . str_pad($payment['booking_id'], 4, '0', STR_PAD_LEFT) : 'N/A';
-                                    $customer_display = htmlspecialchars($payment['customer_name'] ?? 'N/A');
-                                    
-                                    $numerical_id = $payment['id']; 
-                                ?>
+                            <?php 
+                    $total_sum = 0;
+                    if (count($all_payments) > 0): 
+                        foreach ($all_payments as $payment): 
+                            $total_sum += $payment['amount'];
+                    ?>
                             <tr>
-                                <td><span class="fw-bold"><?php echo $payment_id_display; ?></span></td>
-                                <td><?php echo $booking_ref_display; ?></td>
-                                <td><?php echo $customer_display; ?></td>
-                                <td>₹<?php echo number_format($payment['amount'], 2); ?></td>
-                                <td><?php echo date('Y-m-d', strtotime($payment['payment_date'])); ?></td>
-                                <td>
-                                    <a href="#" class="btn btn-sm text-muted action-button" data-bs-toggle="modal"
-                                        data-bs-target="#actionModal"
-                                        data-record-id="<?php echo $payment_id_display; ?>"
-                                        data-numerical-id="<?php echo $numerical_id; ?>" data-record-type="Payment">
-                                        <i class="fas fa-ellipsis-h"></i>
-                                    </a>
+                                <td>PM-<?= $payment['id'] ?></td>
+                                <td>BK-<?= $payment['booking_id'] ?></td>
+                                <td><?= htmlspecialchars($payment['customer_name'] ?? 'Guest') ?></td>
+                                <td><strong class="text-success">₹<?= number_format($payment['amount'], 0) ?></strong>
                                 </td>
+                                <td><?= date('d M, Y', strtotime($payment['payment_date'])) ?></td>
                             </tr>
                             <?php endforeach; ?>
+                            <tr class="table-light">
+                                <td colspan="3" class="text-end"><strong>Total Revenue in Range:</strong></td>
+                                <td colspan="2"><strong class="text-primary"
+                                        style="font-size: 1.2rem;">₹<?= number_format($total_sum, 0) ?></strong></td>
+                            </tr>
                             <?php else: ?>
                             <tr>
-                                <td colspan="6" class="text-center text-muted">No payment records found.</td>
+                                <td colspan="5" class="text-center">No payments found for selected dates.</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
@@ -1720,6 +1744,7 @@ function countAmenities($amenities_string) {
                 </div>
             </div>
         </div>
+
 
         <div id="gallery-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -2145,6 +2170,16 @@ function countAmenities($amenities_string) {
 
         var myModal = new bootstrap.Modal(document.getElementById('offlineBookingModal'));
         myModal.show();
+    }
+
+    function exportPaymentsToExcel() {
+        const table = document.querySelector("#payments-section table");
+        let html = table.outerHTML;
+        const url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+        const link = document.createElement("a");
+        link.download = "Shakti_Bhuvan_Payments.xls";
+        link.href = url;
+        link.click();
     }
 
     function exportToExcel() {
