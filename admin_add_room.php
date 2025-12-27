@@ -297,10 +297,10 @@ $sql_room = "INSERT INTO rooms
                         <select name="floor" required>
                             <option value="">Select Floor</option>
                             <option value="Ground Floor">Ground Floor</option>
-                            <option value="First Floor">First Floor</option>
-                            <option value="Second Floor">Second Floor</option>
-                            <option value="Third Floor">Third Floor</option>
-                            <option value="Fourth Floor">Fourth Floor</option>
+                            <option value="1st Floor">1st floor</option>
+                            <option value="2nd Floor">2nd floor</option>
+                            <option value="3rd Floor">3rd floor</option>
+                            <option value="4th Floor">4th floor</option>
                         </select>
                     </div>
 

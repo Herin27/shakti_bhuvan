@@ -354,7 +354,7 @@ if (!$room) {
                     </div>
                     <div class="form-group">
                         <label for="email">Email *</label>
-                        <input type="email" id="email" name="email">
+                        <input type="email" id="email" name="email" required placeholder="you@example.com">
                     </div>
                     <!-- <div class="form-group">
                     <label for="guests">Number of Guests *</label>
