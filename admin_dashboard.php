@@ -62,27 +62,31 @@ if ($result_bookings) {
 // --- Dynamic Available Rooms Calculation ---
 $today_date = date('Y-m-d'); // આજની તારીખ
 
-$sql_available_now = "SELECT COUNT(*) FROM room_numbers 
-                      WHERE status != 'Maintenance' 
-                      AND room_number NOT IN (
-                          /* ૧. અત્યારે ઓનલાઇન બુક હોય તેવા રૂમ */
-                          SELECT DISTINCT room_number FROM bookings 
-                          WHERE status IN ('Confirmed', 'Checked-in') 
-                          AND room_number IS NOT NULL
-                          AND NOT (checkout <= '$today_date' OR checkin >= '$today_date')
-                      )
-                      AND room_number NOT IN (
-                          /* ૨. અત્યારે ઓફલાઇન બુક હોય તેવા રૂમ */
-                          SELECT DISTINCT room_number FROM offline_booking 
-                          WHERE NOT (checkout_date <= '$today_date' OR checkin_date >= '$today_date')
-                      )";
+// --- Dynamic Available Rooms Calculation (Using Room Dashboard Logic) ---
+// આ તે રૂમ શોધશે જે પસંદ કરેલી તારીખ વચ્ચે ઓનલાઇન કે ઓફલાઇન બુક નથી
+$sql_available_in_range = "SELECT COUNT(*) FROM room_numbers 
+                          WHERE status != 'Maintenance' 
+                          AND room_number NOT IN (
+                              /* ૧. ઓનલાઇન બુકિંગ ચેક કરો */
+                              SELECT DISTINCT room_number FROM bookings 
+                              WHERE status IN ('Confirmed', 'Checked-in') 
+                              AND room_number IS NOT NULL
+                              AND NOT (checkout <= '$start_date' OR checkin >= '$end_date')
+                          )
+                          AND room_number NOT IN (
+                              /* ૨. ઓફલાઇન બુકિંગ ચેક કરો */
+                              SELECT DISTINCT room_number FROM offline_booking 
+                              WHERE NOT (checkout_date <= '$start_date' OR checkin_date >= '$end_date')
+                          )";
 
-$available_rooms = fetchSingleValue($conn, $sql_available_now);
+$available_rooms = fetchSingleValue($conn, $sql_available_in_range);
 
-// Total Physical Rooms (for Occupancy Rate calculation)
+// Total Physical Rooms
 $sql_total_rooms_physical = "SELECT COUNT(*) FROM room_numbers";
 $total_rooms_physical = fetchSingleValue($conn, $sql_total_rooms_physical);
-$occupied_rooms_stats = $total_rooms_physical - $available_rooms; // Approximation
+
+// Occupancy Rate (પસંદ કરેલી તારીખો મુજબ)
+$occupied_rooms_stats = $total_rooms_physical - $available_rooms; 
 $occupancy_rate = ($total_rooms_physical > 0) ? round(($occupied_rooms_stats / $total_rooms_physical) * 100, 2) : 0;
 
 // Revenue This Month
@@ -937,12 +941,12 @@ function countAmenities($amenities_string) {
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <p class="card-title-text mb-1">Available Rooms</p>
+                                <p class="card-title-text mb-1">Available in Range</p>
                                 <h3 class="card-value"><?php echo number_format($available_rooms); ?></h3>
                             </div>
                             <i class="fas fa-bed fs-3 text-muted"></i>
                         </div>
-                        <small class="text-muted">Out of <?php echo $total_rooms_physical; ?> total rooms</small>
+                        <small class="text-muted">For selected dates</small>
                     </div>
                 </div>
                 <div class="col-md-3">

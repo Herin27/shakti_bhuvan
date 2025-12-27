@@ -343,11 +343,14 @@ if (!$room) {
                     </div>
                     <div class="form-group">
                         <label for="customer_name">Full Name *</label>
-                        <input type="text" id="customer_name" name="customer_name" required>
+                        <input type="text" id="customer_name" name="customer_name" required placeholder="Your Full Name"
+                            minlength="3">
                     </div>
                     <div class="form-group">
                         <label for="phone">Phone Number *</label>
-                        <input type="tel" id="phone" name="phone" required>
+                        <input type="tel" id="phone" name="phone" required maxlength="10"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, '');" placeholder="98XXXXXXXX">
+                        <!-- <span id="phone-error" class="error-msg">સાચો ૧૦ આંકડાનો નંબર લખો.</span> -->
                     </div>
                     <div class="form-group">
                         <label for="email">Email *</label>
@@ -430,7 +433,7 @@ if (!$room) {
                 .then(data => {
                     if (data.available <= 0) {
                         alert(
-                            "⚠️ અફસોસ! આ તારીખે આ રૂમ ટાઈપમાં કોઈ રૂમ ખાલી નથી. કૃપા કરીને બીજી તારીખ અથવા રૂમ પસંદ કરો."
+                            "⚠️ This room type is fully booked for these dates! Please choose different dates."
                         );
                         checkinInput.value = '';
                         checkoutInput.value = '';
@@ -527,6 +530,60 @@ if (!$room) {
         taxValue.textContent = formatCurrency(taxes) + " (" + (currentTaxRate * 100) + "%)";
         totalPayableValue.textContent = formatCurrency(totalPayable);
     }
+
+    // ફોર્મ સબમિટ થાય ત્યારે વેલિડેશન ચેક કરો
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        let errorMessage = "";
+
+        const name = document.getElementById('customer_name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const checkin = checkinInput.value;
+        const checkout = checkoutInput.value;
+
+        // 1. નામનું વેલિડેશન (ખાલી ન હોવું જોઈએ)
+        if (name.length < 3) {
+            errorMessage += "- Please enter your full name (minimum 3 characters).\n";
+            isValid = false;
+        }
+
+        // 2. મોબાઈલ નંબર વેલિડેશન (ભારતીય ૧૦ આંકડાનો નંબર)
+        const phonePattern = /^[6-9]\d{9}$/;
+
+        if (phone.length !== 10) {
+            showError(phoneInput, 'phone-error', 'Please enter a 10-digit mobile number.');
+            hasError = true;
+        } else if (!phonePattern.test(phone)) {
+            showError(phoneInput, 'phone-error',
+                'Please enter a valid Indian mobile number starting with 6-9.');
+            hasError = true;
+        }
+
+        // 3. ઈમેલ વેલિડેશન (જો ઈમેલ લખ્યો હોય તો જ)
+        if (email !== "") {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                errorMessage += "- Please enter a valid email address.\n";
+                isValid = false;
+            }
+        }
+
+        // 4. તારીખનું વેલિડેશન
+        if (!checkin || !checkout) {
+            errorMessage += "- Please select check-in and check-out dates.\n";
+            isValid = false;
+        } else if (checkin >= checkout) {
+            errorMessage += "- Check-out date must be after check-in date.\n";
+            isValid = false;
+        }
+
+        // જો કોઈ ભૂલ હોય તો ફોર્મ સબમિટ થતું અટકાવો
+        if (!isValid) {
+            alert("⚠️ Mistake found:\n\n" + errorMessage);
+            e.preventDefault(); // ફોર્મ સબમિટ થતું રોકશે
+        }
+    });
 
     document.addEventListener('DOMContentLoaded', function() {
         const today = new Date().toISOString().split('T')[0];
