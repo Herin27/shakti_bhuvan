@@ -94,7 +94,7 @@ $booking = mysqli_fetch_assoc($result);
 
             <hr class="my-4">
 
-            <p>If you have any questions, please contact us.</p>
+            <p>If you have any questions, please Contact.</p>
 
             <div class="mt-4">
                 <a href="index.php" class="btn-home">

@@ -19,7 +19,7 @@ function getAmenityIcon($name) {
 
 <head>
     <meta charset="UTF-8">
-    <title>Our Rooms & Suites</title>
+    <title>Rooms & Suites</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./assets/css/rooms.css">
     <link rel="stylesheet" href="./assets/css/navbar.css">
@@ -129,7 +129,7 @@ function getAmenityIcon($name) {
 
     <!-- ===== Search Bar Section ===== -->
     <section class="search-section">
-        <h2>Our Rooms & Suites</h2>
+        <h2>Rooms & Suites</h2>
         <p>Choose from our selection of comfortable and luxurious accommodations</p>
         <form action="search.php" method="POST">
             <div class="search-box">
@@ -212,7 +212,7 @@ function getAmenityIcon($name) {
                 </div>
 
                 <div class="room-footer">
-                    <span class="price">₹<?php echo (int)$row['discount_price']; ?><small>/night</small></span>
+                    <span class="price">₹<?php echo (int)$row['discount_price']; ?><small> Per Night</small></span>
                     <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="view_btn">View Details</a>
                 </div>
             </div>
@@ -233,8 +233,8 @@ function getAmenityIcon($name) {
       <h4>Quick Links</h4>
       <ul>
         <li><a href="index.php">Home</a></li>
-        <li><a href="rooms.php">Our Rooms</a></li>
-        <li><a href="contact.php">Contact Us</a></li>
+        <li><a href="rooms.php">Rooms</a></li>
+        <li><a href="contact.php">Contact</a></li>
       </ul>
     </div>
     <div class="footer-col">

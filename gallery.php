@@ -228,7 +228,7 @@ $categories = ['Hotel View', 'Luxury Suite', 'Deluxe Room', 'Standard Room'];
 
 <main>
     <div style="text-align: center;">
-        <p class="subtitle">Experience Luxury</p>
+        <!-- <p class="subtitle">Experience Luxury</p> -->
         <h1>Our Gallery</h1>
     </div>
 

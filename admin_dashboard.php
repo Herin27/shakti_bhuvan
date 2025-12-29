@@ -21,6 +21,10 @@ function fetchSingleValue($conn, $sql) {
 //             DASHBOARD DATA FETCHING
 // =========================================================
 
+// =========================================================
+//         DATE FILTER LOGIC FOR DASHBOARD
+// =========================================================
+
 // બાયડિફોલ્ટ આજની તારીખ સેટ કરો
 $start_date = $_GET['start_date'] ?? date('Y-m-d');
 $end_date   = $_GET['end_date']   ?? date('Y-m-d', strtotime('+1 day'));

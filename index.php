@@ -249,7 +249,7 @@ $result = mysqli_query($conn, $query);
             <a href="index.php" class="active">Home</a>
             <a href="rooms.php">Rooms</a>
             <a href="gallery.php">Gallery</a>
-            <a href="contact.php">Contact Us</a>
+            <a href="contact.php">Contact</a>
             <a href="admin.php">Admin</a>
         </nav>
 
@@ -284,7 +284,7 @@ $result = mysqli_query($conn, $query);
                     <a href="rooms.php" style="color: #fff; text-decoration: none;">Explore Rooms</a>
                 </button>
                 <button class="contact-btn">
-                    <a href="contact.php" style="color: #fff; text-decoration: none;">Contact Us</a>
+                    <a href="contact.php" style="color: #fff; text-decoration: none;">Contact</a>
                 </button>
             </div>
 
@@ -444,7 +444,7 @@ $result = mysqli_query($conn, $query);
     <section class="testimonials">
         <h2 class="section-title">What Our Guests Say</h2>
         <p class="section-subtitle">
-            Read testimonials from our valued guests who have experienced the Shakti Bhuvan hospitality
+            Read testimonials for our valued guests who have experienced the Shakti Bhuvan hospitality
         </p>
 
         <div class="testimonials-container">
@@ -452,7 +452,7 @@ $result = mysqli_query($conn, $query);
             <!-- Testimonial Card 1 -->
             <div class="testimonial-card">
                 <div class="testimonial-header">
-                    <span class="quote">❝</span>
+                    <!-- <span class="quote">❝</span> -->
                     <span class="stars">★★★★★</span>
                 </div>
                 <p class="testimonial-text">
@@ -470,7 +470,7 @@ $result = mysqli_query($conn, $query);
             <!-- Testimonial Card 2 -->
             <div class="testimonial-card">
                 <div class="testimonial-header">
-                    <span class="quote">❝</span>
+                    <!-- <span class="quote">❝</span> -->
                     <span class="stars">★★★★★</span>
                 </div>
                 <p class="testimonial-text">
@@ -488,7 +488,7 @@ $result = mysqli_query($conn, $query);
             <!-- Testimonial Card 3 -->
             <div class="testimonial-card">
                 <div class="testimonial-header">
-                    <span class="quote">❝</span>
+                    <!-- <span class="quote">❝</span> -->
                     <span class="stars">★★★★☆</span>
                 </div>
                 <p class="testimonial-text">
@@ -548,8 +548,8 @@ $result = mysqli_query($conn, $query);
                 <h4>Quick Links</h4>
                 <ul>
                     <li><a href="index.php">Home</a></li>
-                    <li><a href="rooms.php">Our Rooms</a></li>
-                    <li><a href="contact.php">Contact Us</a></li>
+                    <li><a href="rooms.php">Rooms</a></li>
+                    <li><a href="contact.php">Contact</a></li>
                 </ul>
             </div>
 

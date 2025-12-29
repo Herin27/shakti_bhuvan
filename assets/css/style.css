@@ -531,12 +531,14 @@ padding: 8px 16px;
 }
 
 .btn.book {
-  background: #f5d179;
+  background: #f5d179b0;
   color: #5a4636;
 }
 
 .btn.book:hover {
   background: #e0b95f;
+  color: white;
+  border: solid #f5d179b0;
 }
 
 .btn.call {
@@ -547,6 +549,7 @@ padding: 8px 16px;
 
 .btn.call:hover {
   background: #f8f8f8;
+  border: solid #f5d179b0;
 }
 
 /* Footer */

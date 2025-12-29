@@ -115,14 +115,36 @@ p,a, .hero-section p {
 /* ==========================
    Contact Section Styling
 ========================== */
+/* Contact Wrapper layout */
 .contact-wrapper {
-  max-width: 1200px;
-  margin: 50px auto;
-  padding: 0 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  }
+    max-width: 1200px; /* વધુ પહોળાઈ માટે */
+    margin: 50px auto;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* બે કોલમ */
+    gap: 30px;
+}
+
+/* Map box ને આખી પહોળાઈ આપવા માટે */
+.map-box-full {
+    grid-column: 1 / span 2; /* બંને કોલમ રોકે */
+    width: 100%;
+}
+
+.left-col, .right-col {
+    display: flex;
+    flex-direction: column;
+}
+
+/* મોબાઈલ માટે રિસ્પોન્સિવ */
+@media (max-width: 768px) {
+    .contact-wrapper {
+        grid-template-columns: 1fr; /* મોબાઈલમાં બધું એક લાઈનમાં */
+    }
+    .map-box-full {
+        grid-column: 1;
+    }
+}
   /* LEFT COLUMN */
 .left-col {
   display: flex;
@@ -174,8 +196,13 @@ p,a, .hero-section p {
   color: #777;
   }
   /* MAP */
+
+  .map-box{
+    width: 1200px;
+  }
+
 .map-box iframe {
-  width: 100%;
+  width: 1200px;
   height: 350px;
   border: 0;
   border-radius: 12px;
@@ -239,6 +266,10 @@ BOTTOM FORM
   border-radius: 10px;
   font-size: 16px;
   }
+  .btn-send:hover {
+    background:  #c37912;
+    
+}
 /* Quick Actions */
 .quick-actions {
   background: #fff;

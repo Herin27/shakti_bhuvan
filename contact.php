@@ -9,7 +9,7 @@
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <title>Contact Us Section</title>
+    <title>Contact Section</title>
     <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
     <style>
     body {
@@ -178,76 +178,53 @@
     </script>
 
     <section class="contact-section">
-        <h2>Contact Us</h2>
+        <h2>Contact</h2>
         <p>We're here to help make your stay exceptional. Reach out to us for reservations, inquiries, or any assistance
             you may need.</p>
     </section>
 
     <section class="contact-wrapper">
-
-        <div class="left-col">
-            <!-- Reception Hours -->
-            <div class="info-card">
-                <div class="icon">🕒</div>
-                <div>
-                    <h4>Reception Hours</h4>
-                    <p>24/7 Front Desk <br> Check-in: 2:00 PM | Check-out: 12:00 PM</p>
-                    <span>Always here to assist you</span>
-                </div>
-            </div>
-            <!-- Map -->
-            <div class="map-box" style="width: 100%; max-width: 800px; margin: auto;">
-                <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3667.7317323561217!2d72.845482!3d24.3265648!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395d23fbbb6196cf%3A0xfc61656acb2d27fe!2sShakti%20bhawan!5e0!3m2!1sen!2sin!4v1694422945369!5m2!1sen!2sin"
-                    width="100%" height="400" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy"
-                    referrerpolicy="no-referrer-when-downgrade">
-                </iframe>
+    <div class="left-col">
+        <div class="info-card">
+            <div class="icon">🕒</div>
+            <div>
+                <h4>Reception Hours</h4>
+                <p>24/7 Front Desk <br> Check-in: 2:00 PM | Check-out: 12:00 PM</p>
+                <span>Always here to assist you</span>
             </div>
         </div>
-
-        <div class="right-col">
-            <!-- Get in Touch -->
-            <div class="contact-info-box">
-                <!-- Phone -->
-                <div class="info-card">
-                    <div class="icon">📱</div>
-                    <div>
-                        <h4>Phone</h4>
-                        <p>
-                            <a href="tel:+919265900219">+91 92659 00219</a><br>
-                            <!-- <a href="tel:+919876543211">+91 98765 43211</a> -->
-                        </p>
-                        <span>Available 24/7 for reservations</span>
-                    </div>
-                </div>
-                <!-- Email -->
-                <div class="info-card">
-                    <div class="icon">✉️</div>
-                    <div>
-                        <h4>Email</h4>
-                        <p>
-                            <a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a><br>
-
-                        </p>
-                        <span>We’ll respond within some time</span>
-                    </div>
-                </div>
-                <!-- Address -->
-                <div class="info-card">
-                    <div class="icon">📍</div>
-                    <div>
-                        <h4>Address</h4>
-                        <p>Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110</p>
-                        <span>Prime location in the city center</span>
-                    </div>
-                </div>
+        <div class="info-card">
+            <div class="icon">✉️</div>
+            <div>
+                <h4>Email</h4>
+                <p><a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a></p>
+                <span>We’ll respond within some time</span>
             </div>
+        </div>
+    </div>
 
-    </section>
+    <div class="right-col">
+        <div class="info-card">
+            <div class="icon">📱</div>
+            <div>
+                <h4>Phone</h4>
+                <p><a href="tel:+919265900219">+91 92659 00219</a></p>
+                <span>Available 24/7 for reservations</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="map-box-full">
+        <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3635.8329615598925!2d72.8447!3d24.3364!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDIwJzExLjAiTiA3MsKwNTAnNDAuOSJF!5e0!3m2!1sen!2sin!4v1700000000000"
+            width="100%" height="400" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy">
+        </iframe>
+    </div>
+</section>
 
     <section class="bottom-form">
         <div class="contact-form">
-            <h3>📩 Send us a Message</h3>
+            <h3>📩 Get The Conversation Started</h3>
             <form action="save_message.php" method="POST" onsubmit="return validateForm()">
                 <div class="form-row">
                     <div class="form-group">

@@ -135,6 +135,53 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
         border-color: #f1c45f;
     }
 
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .image-modal img {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 12px;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 20px;
+        right: 35px;
+        font-size: 40px;
+        color: white;
+        cursor: pointer;
+    }
+
+    .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 60px;
+        color: white;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .prev-btn {
+        left: 30px;
+    }
+
+    .next-btn {
+        right: 30px;
+    }
+
+
     .detail-box {
         background: #fff;
         border: 1px solid #f5e6cc;
@@ -390,7 +437,7 @@ function getIcon($text) {
             </div>
 
             <div class="detail-box">
-                <h3>Hotel & Room Policies</h3>
+                <h3>Hotel & Room Policy</h3>
                 <?php if (!empty($policies[0])): ?>
                 <ul class="detail-list">
                     <?php foreach($policies as $policy): 
@@ -409,9 +456,9 @@ function getIcon($text) {
             <div class="detail-box price-section">
                 <p class="original-price">Total Price: ₹<?php echo htmlspecialchars(number_format($room['price'] )); ?>
                 </p>
-                <p>From only</p>
+
                 <p class="current-price">₹<?php echo htmlspecialchars(number_format($room['discount_price'])); ?></p>
-                <small>/ per night</small>
+                <small><b style="color:gray;">Per Night</b></small>
 
                 <hr style="margin: 15px 0;">
                 <p style="font-size: 1rem; color: #5a4636;">
@@ -473,14 +520,16 @@ function getIcon($text) {
                     <div class="row g-2">
                         <div class="col-12 mb-2">
                             <label class="small text-muted">Check-in</label>
-                            <input type="date" name="checkin" value="<?= $checkin ?>"
+                            <input type="date" id="checkin" name="checkin" value="<?= $checkin ?>"
                                 class="form-control form-control-sm" required>
                         </div>
+
                         <div class="col-12 mb-2">
                             <label class="small text-muted">Check-out</label>
-                            <input type="date" name="checkout" value="<?= $checkout ?>"
+                            <input type="date" id="checkout" name="checkout" value="<?= $checkout ?>"
                                 class="form-control form-control-sm" required>
                         </div>
+
                         <div class="col-12">
                             <button type="submit" class="btn btn-sm btn-outline-dark w-100">Update Availability</button>
                         </div>
@@ -507,7 +556,30 @@ function getIcon($text) {
         </div>
     </div>
 
+    <div id="imageModal" class="image-modal">
+        <span class="close-btn">&times;</span>
+        <span class="nav-btn prev-btn">&#10094;</span>
+        <img id="modalImage">
+        <span class="nav-btn next-btn">&#10095;</span>
+    </div>
+
     <?php include 'footer.php'; ?>
+
+    <script>
+    document.getElementById("checkin").addEventListener("change", function() {
+        const checkinDate = new Date(this.value);
+
+        // add 1 day
+        checkinDate.setDate(checkinDate.getDate() + 1);
+
+        const minCheckout = checkinDate.toISOString().split('T')[0];
+
+        const checkoutInput = document.getElementById("checkout");
+        checkoutInput.min = minCheckout; // disable previous dates
+        checkoutInput.value = minCheckout; // auto set next day
+    });
+    </script>
+
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -528,6 +600,48 @@ function getIcon($text) {
         });
     });
     </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const galleryImages = document.querySelectorAll("#main-room-image, .thumbnail-images img");
+        const modal = document.getElementById("imageModal");
+        const modalImg = document.getElementById("modalImage");
+        const closeBtn = document.querySelector(".close-btn");
+        const nextBtn = document.querySelector(".next-btn");
+        const prevBtn = document.querySelector(".prev-btn");
+
+        let images = [];
+        galleryImages.forEach(img => images.push(img.src));
+
+        let currentIndex = 0;
+
+        galleryImages.forEach((img, index) => {
+            img.addEventListener("click", () => {
+                currentIndex = index;
+                modal.style.display = "flex";
+                modalImg.src = images[currentIndex];
+            });
+        });
+
+        closeBtn.onclick = () => modal.style.display = "none";
+        nextBtn.onclick = () => changeImage(1);
+        prevBtn.onclick = () => changeImage(-1);
+
+        function changeImage(step) {
+            currentIndex = (currentIndex + step + images.length) % images.length;
+            modalImg.src = images[currentIndex];
+        }
+
+        document.addEventListener("keydown", function(e) {
+            if (modal.style.display === "flex") {
+                if (e.key === "Escape") modal.style.display = "none";
+                if (e.key === "ArrowRight") changeImage(1);
+                if (e.key === "ArrowLeft") changeImage(-1);
+            }
+        });
+    });
+    </script>
+
 
 </body>
 

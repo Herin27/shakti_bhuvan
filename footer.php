@@ -59,8 +59,8 @@
                 <h4>Quick Links</h4>
                 <ul>
                     <li><i class="fa-solid fa-minus"></i><a href="index.php">Home</a></li>
-                    <li><i class="fa-solid fa-minus"></i><a href="rooms.php">Our Rooms</a></li>
-                    <li><i class="fa-solid fa-minus"></i><a href="contact.php">Contact Us</a></li>
+                    <li><i class="fa-solid fa-minus"></i><a href="rooms.php">Rooms</a></li>
+                    <li><i class="fa-solid fa-minus"></i><a href="contact.php">Contact</a></li>
                 </ul>
             </div>
 
