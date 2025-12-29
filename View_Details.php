@@ -62,8 +62,35 @@ $features = !empty($room['features']) ? explode(',', $room['features']) : [];
 $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
 
 
+// --- આ ફંક્શનને PHP બ્લોકની અંદર જ રાખવું ---
+function renderStars($rating) {
+    $rating = floatval($rating);
+    $fullStars = floor($rating); 
+    $halfStar = ($rating - $fullStars >= 0.5) ? true : false; 
+    $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0); 
 
+    $output = '<span style="color: #f1c45f; font-size: 1.2rem; letter-spacing: 2px;">';
+
+    // Full Stars
+    for ($i = 0; $i < $fullStars; $i++) {
+        $output .= '★';
+    }
+
+    // Half Star
+    if ($halfStar) {
+        $output .= '⯪'; // અડધો સ્ટાર (યુનિકોડ)
+    }
+
+    // Empty Stars
+    for ($i = 0; $i < $emptyStars; $i++) {
+        $output .= '☆';
+    }
+
+    $output .= '</span>';
+    return $output;
+}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -276,6 +303,18 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
         font-weight: 600;
     }
 
+    .tag i {
+        margin-right: 5px;
+        color: #b58900;
+        /* આઇકોનનો કલર ગોલ્ડન જેવો રાખવા માટે */
+    }
+
+    .detail-list li i {
+        width: 25px;
+        /* લિસ્ટમાં આઇકોન એક લાઈનમાં રહે તે માટે */
+        color: #b58900;
+    }
+
     /* Physical Rooms Display */
     .physical-rooms h4 {
         margin-top: 0;
@@ -336,7 +375,15 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
         <div class="main-content">
             <h1 class="room-title"><?php echo htmlspecialchars($room['name']); ?></h1>
             <div class="rating">
-                ⭐ <?php echo htmlspecialchars($room['rating'] ?? 'N/A'); ?> </div>
+                <?php 
+    if (isset($room['rating']) && $room['rating'] > 0) {
+        echo renderStars($room['rating']); 
+        echo " <span style='font-weight:bold; color:#5a4636; margin-left:5px;'>" . htmlspecialchars($room['rating']) . " </span>";
+    } else {
+        echo "<span>No rating available</span>";
+    }
+    ?>
+            </div>
 
             <div class="image-gallery">
                 <img id="main-room-image" src="uploads/<?php echo htmlspecialchars($first_image); ?>"
@@ -380,27 +427,29 @@ $policies = !empty($room['policies']) ? explode(',', $room['policies']) : [];
 function getIcon($text) {
     $text = strtolower(trim($text));
     
-    // Icon Mapping for Amenities & Features
-    if (str_contains($text, 'wifi')) return '📶';
-    if (str_contains($text, 'ac') || str_contains($text, 'air')) return '❄️';
-    if (str_contains($text, 'tv') || str_contains($text, 'television')) return '📺';
-    if (str_contains($text, 'water')) return '🚰';
-    if (str_contains($text, 'parking')) return '🅿️';
-    if (str_contains($text, 'breakfast') || str_contains($text, 'food')) return '☕';
-    if (str_contains($text, 'bed')) return '🛏️';
-    if (str_contains($text, 'bath') || str_contains($text, 'shower')) return '🚿';
-    if (str_contains($text, 'service')) return '🛎️';
+    // Icon Mapping for Amenities & Features (Font Awesome Classes)
+    if (str_contains($text, 'wifi')) return '<i class="fas fa-wifi"></i>';
+    if (str_contains($text, 'ac') || str_contains($text, 'air')) return '<i class="fas fa-snowflake"></i>';
+    if (str_contains($text, 'tv') || str_contains($text, 'television')) return '<i class="fas fa-tv"></i>';
+    if (str_contains($text, 'water')) return '<i class="fas fa-faucet-drip"></i>';
+    if (str_contains($text, 'parking')) return '<i class="fas fa-parking"></i>';
+    if (str_contains($text, 'breakfast') || str_contains($text, 'food')) return '<i class="fas fa-coffee"></i>';
+    if (str_contains($text, 'bed')) return '<i class="fas fa-bed"></i>';
+    if (str_contains($text, 'bath') || str_contains($text, 'shower')) return '<i class="fas fa-shower"></i>';
+    if (str_contains($text, 'service')) return '<i class="fas fa-concierge-bell"></i>';
+    if (str_contains($text, 'gym')) return '<i class="fas fa-dumbbell"></i>';
+    if (str_contains($text, 'pool')) return '<i class="fas fa-swimmer"></i>';
     
     // Icon Mapping for Policies
-    if (str_contains($text, 'check-in')) return '🔑';
-    if (str_contains($text, 'check-out')) return '🚪';
-    if (str_contains($text, 'smoke') || str_contains($text, 'smoking')) return '🚭';
-    if (str_contains($text, 'pet')) return '🐾';
-    if (str_contains($text, 'id') || str_contains($text, 'proof')) return '🪪';
-    if (str_contains($text, 'cancel')) return '📅';
+    if (str_contains($text, 'check-in')) return '<i class="fas fa-key"></i>';
+    if (str_contains($text, 'check-out')) return '<i class="fas fa-door-open"></i>';
+    if (str_contains($text, 'smoke') || str_contains($text, 'smoking')) return '<i class="fas fa-nosmoking"></i>';
+    if (str_contains($text, 'pet')) return '<i class="fas fa-paw"></i>';
+    if (str_contains($text, 'id') || str_contains($text, 'proof')) return '<i class="fas fa-id-card"></i>';
+    if (str_contains($text, 'cancel')) return '<i class="fas fa-calendar-times"></i>';
 
-    // Default icon if no match found
-    return '🔹'; 
+    // Default icon
+    return '<i class="fas fa-circle-check"></i>'; 
 }
 ?>
 
@@ -409,10 +458,11 @@ function getIcon($text) {
                 <?php if (!empty($amenities[0])): ?>
                 <div class="tag-list">
                     <?php foreach($amenities as $amenity): 
-                    $clean_amenity = trim($amenity);
-                ?>
-                    <span class="tag"><?php echo getIcon($clean_amenity); ?>
-                        <?php echo htmlspecialchars($clean_amenity); ?></span>
+        $clean_amenity = trim($amenity);
+    ?>
+                    <span class="tag">
+                        <?php echo getIcon($clean_amenity); ?> &nbsp;<?php echo htmlspecialchars($clean_amenity); ?>
+                    </span>
                     <?php endforeach; ?>
                 </div>
                 <?php else: ?>
