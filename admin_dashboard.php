@@ -1037,7 +1037,7 @@ function countAmenities($amenities_string) {
                                 <td><?php echo $booking['checkin']; ?></td>
                                 <td><?php echo $booking['checkout']; ?></td>
                                 <td><span
-                                        class="badge rounded-pill status-<?php echo $status_class; ?>"><?php echo $booking['status']; ?></span>
+                                        class="badge rounded-pill status-<?php echo $status_class; ?> "><?php echo $booking['status']; ?></span>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -1671,7 +1671,8 @@ function countAmenities($amenities_string) {
                                 <td><?php echo htmlspecialchars($customer['bookings']); ?></td>
                                 <td> <?php echo number_format($customer['total_spent'], 2); ?></td>
                                 <td>
-                                    <span class="badge rounded-pill status-<?php echo $status_class; ?>">
+                                    <span style="color: #008000;"
+                                        class="badge rounded-pill status-<?php echo $status_class; ?>">
                                         <?php echo htmlspecialchars($customer['status']); ?>
                                     </span>
                                 </td>
