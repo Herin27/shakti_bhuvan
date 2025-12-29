@@ -464,6 +464,31 @@ if ($result_gallery) {
         $gallery_images[] = $row;
     }
 }
+// ... બધો જૂનો Fetching કોડ ...
+
+// ૧. નવો Reports ડેટા ફેચિંગ કોડ અહીં ઉમેરો
+$rep_start = $_GET['rep_start'] ?? date('Y-m-01');
+$rep_end   = $_GET['rep_end']   ?? date('Y-m-d');
+
+// રિપોર્ટ માટે દરેક બુકિંગની વિગતવાર ક્વેરી
+$report_detailed_bookings = [];
+$sql_detailed = "SELECT b.id, b.customer_name, b.room_number, r.name as room_type, b.checkin, b.checkout, b.total_price, b.status, b.payment_status
+                 FROM bookings b
+                 JOIN rooms r ON b.room_id = r.id
+                 WHERE b.checkin BETWEEN '$rep_start' AND '$rep_end'
+                 ORDER BY b.checkin DESC";
+
+$res_detailed = mysqli_query($conn, $sql_detailed);
+if($res_detailed) {
+    while($row = mysqli_fetch_assoc($res_detailed)) {
+        $report_detailed_bookings[] = $row;
+    }
+}
+
+$total_rep_revenue = fetchSingleValue($conn, "SELECT SUM(total_price) FROM bookings WHERE checkin BETWEEN '$rep_start' AND '$rep_end' AND payment_status='Paid'");
+$total_rep_bookings = fetchSingleValue($conn, "SELECT COUNT(*) FROM bookings WHERE checkin BETWEEN '$rep_start' AND '$rep_end'");
+
+// ૨. હવે છેલ્લે કનેક્શન બંધ કરો (આ લાઈન બધા fetching પછી હોવી જોઈએ)
 
 
 // Close the MySQLi connection
@@ -480,6 +505,7 @@ function getRoomTypeAndCount($name) {
         return 'Standard';
     }
 }
+
 function countAmenities($amenities_string) {
     if (empty($amenities_string)) return 0;
     return count(explode(',', $amenities_string));
@@ -1700,6 +1726,100 @@ function countAmenities($amenities_string) {
             </div>
         </div>
 
+        <div id="reports-section" class="content-section" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-chart-bar me-2"></i> Detailed Business Report</h2>
+                <form method="GET" class="d-flex gap-2">
+                    <input type="hidden" name="section" value="reports-section">
+                    <input type="date" name="rep_start" class="form-control" value="<?= $rep_start ?>">
+                    <input type="date" name="rep_end" class="form-control" value="<?= $rep_end ?>">
+                    <button type="submit" class="btn btn-dark">Generate Report</button>
+                    <button type="button" class="btn btn-success" onclick="exportDetailedReport()">
+                        <i class="fas fa-file-excel me-1"></i> Full Export
+                    </button>
+                </form>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="dashboard-card text-center shadow-sm">
+                        <h6 class="text-muted">Total Revenue</h6>
+                        <h4 class="text-primary">₹ <?= number_format($total_rep_revenue, 2) ?></h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-card text-center shadow-sm">
+                        <h6 class="text-muted">Total Bookings</h6>
+                        <h4><?= $total_rep_bookings ?></h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-card text-center shadow-sm">
+                        <h6 class="text-muted">Active Rooms</h6>
+                        <h4 class="text-success">
+                            <?= count(array_unique(array_column($report_detailed_bookings, 'room_number'))) ?></h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="dashboard-card text-center shadow-sm">
+                        <h6 class="text-muted">Report Period</h6>
+                        <small class="fw-bold"><?= date('d M', strtotime($rep_start)) ?> -
+                            <?= date('d M', strtotime($rep_end)) ?></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card shadow-sm border-0">
+                <h5 class="mb-4 text-secondary"><i class="fas fa-list me-2"></i> Individual Booking Details</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="detailedReportTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Room No.</th>
+                                <th>Room Type</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if(count($report_detailed_bookings) > 0): ?>
+                            <?php foreach ($report_detailed_bookings as $rep): ?>
+                            <tr>
+                                <td>BK-<?= $rep['id'] ?></td>
+                                <td><strong><?= htmlspecialchars($rep['customer_name']) ?></strong></td>
+                                <td><span class="badge bg-light text-dark border"><?= $rep['room_number'] ?></span></td>
+                                <td><?= $rep['room_type'] ?></td>
+                                <td><?= date('d-m-Y', strtotime($rep['checkin'])) ?></td>
+                                <td><?= date('d-m-Y', strtotime($rep['checkout'])) ?></td>
+                                <td class="fw-bold">₹<?= number_format($rep['total_price'], 2) ?></td>
+                                <td><span
+                                        class="badge rounded-pill status-<?= strtolower(str_replace(' ', '', $rep['status'])) ?>"><?= $rep['status'] ?></span>
+                                </td>
+                                <td>
+                                    <span class="text-<?= ($rep['payment_status'] == 'Paid') ? 'success' : 'danger' ?>">
+                                        <i
+                                            class="fas <?= ($rep['payment_status'] == 'Paid') ? 'fa-check-circle' : 'fa-times-circle' ?> me-1"></i>
+                                        <?= $rep['payment_status'] ?>
+                                    </span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php else: ?>
+                            <tr>
+                                <td colspan="9" class="text-center py-4">No records found for this period.</td>
+                            </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div id="payments-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Payment History</h2>
@@ -2002,6 +2122,24 @@ function countAmenities($amenities_string) {
         const sidebarLinks = document.querySelectorAll('.sidebar .nav-link');
         const contentSections = document.querySelectorAll('.content-section');
         const actionModal = document.getElementById('actionModal');
+
+        function exportDetailedReport() {
+            const table = document.getElementById("detailedReportTable");
+            let html = `
+        <h2 style="text-align:center;">Shakti Bhuvan - Detailed Booking Report</h2>
+        <p><b>Report Period:</b> ${document.getElementsByName('rep_start')[0].value} to ${document.getElementsByName('rep_end')[0].value}</p>
+        ${table.outerHTML}
+    `;
+
+            const blob = new Blob([html], {
+                type: 'application/vnd.ms-excel'
+            });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `Detailed_Report_${new Date().toLocaleDateString()}.xls`;
+            link.click();
+        }
 
         // --- 1. Section Switching Logic ---
         function switchSection(targetId) {
