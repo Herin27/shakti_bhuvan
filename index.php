@@ -462,7 +462,7 @@ $result = mysqli_query($conn, $query);
                     <div class="user-icon">♡</div>
                     <div>
                         <h4>Priya Sharma</h4>
-                        <span class="location">📍 ahmedabad</span>
+                        <span class="location"><i class="fa-solid fa-location-dot"></i> Ahmedabad</span>
                     </div>
                 </div>
             </div>
@@ -480,7 +480,7 @@ $result = mysqli_query($conn, $query);
                     <div class="user-icon">♡</div>
                     <div>
                         <h4>Rajesh Kumar</h4>
-                        <span class="location">📍 mahesana</span>
+                        <span class="location"><i class="fa-solid fa-location-dot"></i> Mahesana</span>
                     </div>
                 </div>
             </div>
@@ -498,7 +498,7 @@ $result = mysqli_query($conn, $query);
                     <div class="user-icon">♡</div>
                     <div>
                         <h4>Anita Patel</h4>
-                        <span class="location">📍 porbandar</span>
+                        <span class="location"><i class="fa-solid fa-location-dot"></i> Porbandar</span>
                     </div>
                 </div>
             </div>

@@ -19,9 +19,9 @@
 }
 
 .footer-col ul li i {
-    color: #fff;
+    color: #ffffff;
     margin-right: 10px;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
 
 }
 </style>
@@ -58,9 +58,9 @@
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul>
-                    <li><i class="fa-solid fa-minus"></i><a href="index.php">Home</a></li>
-                    <li><i class="fa-solid fa-minus"></i><a href="rooms.php">Rooms</a></li>
-                    <li><i class="fa-solid fa-minus"></i><a href="contact.php">Contact</a></li>
+                    <li><i class="fa-solid fa-circle"></i><a href="index.php">Home</a></li>
+                    <li><i class="fa-solid fa-circle"></i><a href="rooms.php">Rooms</a></li>
+                    <li><i class="fa-solid fa-circle"></i><a href="contact.php">Contact</a></li>
                 </ul>
             </div>
 
@@ -79,11 +79,11 @@
             <div class="footer-col">
                 <h4>Services</h4>
                 <ul>
-                    <li><i class="fa-solid fa-minus"></i>24/7 Room Service</li>
-                    <li><i class="fa-solid fa-minus"></i>Free Wi-Fi</li>
-                    <li><i class="fa-solid fa-minus"></i>Airport Pickup</li>
-                    <li><i class="fa-solid fa-minus"></i>Laundry Service</li>
-                    <li><i class="fa-solid fa-minus"></i>Concierge</li>
+                    <li><i class="fa-solid fa-circle"></i>24/7 Room Service</li>
+                    <li><i class="fa-solid fa-circle"></i>Free Wi-Fi</li>
+                    <li><i class="fa-solid fa-circle"></i>Airport Pickup</li>
+                    <li><i class="fa-solid fa-circle"></i>Laundry Service</li>
+                    <li><i class="fa-solid fa-circle"></i>Concierge</li>
                 </ul>
             </div>
 

@@ -309,8 +309,8 @@ if ($result_room_numbers_inventory) {
 // =========================================================
 //           BOOKINGS DATA FETCHING (DATE-FILTER UPDATED)
 // =========================================================
-$filter_checkin = $_GET['book_checkin'] ?? '';
-$filter_checkout = $_GET['book_checkout'] ?? '';
+$filter_checkin = $_GET['book_checkin'] ?? date('Y-m-d');
+$filter_checkout = $_GET['book_checkout'] ?? date('Y-m-d', strtotime('+1 day'));
 
 $all_bookings = [];
 $sql_all_bookings = "
@@ -942,9 +942,9 @@ function countAmenities($amenities_string) {
                 History</a>
 
             <a class="nav-link" data-target="gallery-section"><i class="fas fa-images me-2"></i>Gallery</a>
-            <a class="nav-link" data-target="settings-section"><i class="fas fa-cog me-2"></i>Settings</a>
-
             <a class="nav-link" data-target="reports-section"><i class="fas fa-file-invoice me-2"></i>Reports</a>
+            <a class="nav-link" data-target="settings-section"><i class="fas fa-cog me-2"></i>Slider & Settings</a>
+
         </nav>
         <div class="mt-auto p-3">
         </div>
@@ -2153,7 +2153,26 @@ function countAmenities($amenities_string) {
         const actionModal = document.getElementById('actionModal');
 
 
+        window.onload = function() {
+            // જો URL માં તારીખના પેરામીટર હોય અને યુઝરે પેજ રીલોડ કર્યું હોય
+            if (window.performance && window.performance.navigation.type === window.performance.navigation
+                .TYPE_RELOAD) {
 
+                // બુકિંગ સેક્શનના ઇનપુટ આઈડી (તમારે HTML માં id="book_checkin" આપવું પડશે)
+                if (document.getElementById('book_checkin')) document.getElementById('book_checkin').value =
+                    "";
+                if (document.getElementById('book_checkout')) document.getElementById('book_checkout')
+                    .value = "";
+
+                // URL માંથી ફિલ્ટર દૂર કરીને ચોખ્ખી URL બનાવવી (વિના રીલોડ)
+                const clean_url = window.location.protocol + "//" + window.location.host + window.location
+                    .pathname;
+                window.history.replaceState({}, document.title, clean_url);
+
+                // પેજને ફિલ્ટર વગર લોડ કરવા માટે રીડાયરેક્ટ (જો જરૂર હોય તો)
+                // window.location.href = "admin_dashboard.php"; 
+            }
+        }
         // --- 1. Section Switching Logic ---
         function switchSection(targetId) {
             contentSections.forEach(section => {
