@@ -1,137 +1,162 @@
 <?php
 include 'db.php';
 
-if (isset($_GET['id'])) {
-    $id = intval($_GET['id']);
+$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-    // ✅ Fetch existing booking details
-    $sql = "SELECT * FROM bookings WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+// જૂની વિગતો મેળવો
+$sql = "SELECT * FROM bookings WHERE id = $id";
+$result = mysqli_query($conn, $sql);
+$booking = mysqli_fetch_assoc($result);
 
-    if ($result->num_rows === 0) {
-        die("Booking not found!");
-    }
+if (!$booking) {
+    die("Booking not found!");
+}
 
-    $row = $result->fetch_assoc();
-
-    // ✅ Calculate existing per-day price
-    $days = (strtotime($row['checkout']) - strtotime($row['checkin'])) / (60 * 60 * 24);
-    $days = $days > 0 ? $days : 1; 
-    $per_day = ($row['total_price'] - 500) / $days;
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $name     = $_POST['name'];
-        $phone    = $_POST['phone'];
-        $checkin  = $_POST['checkin'];
-        $checkout = $_POST['checkout'];
-
-        // ✅ Recalculate price
-        $days = (strtotime($checkout) - strtotime($checkin)) / (60 * 60 * 24);
-        $days = $days > 0 ? $days : 1;
-        $price = ($per_day * $days) + 500;
-
-        // ✅ Update booking
-        $update = "UPDATE bookings 
-                   SET customer_name = ?, phone = ?, checkin = ?, checkout = ?, total_price = ? 
-                   WHERE id = ?";
-        $stmt = $conn->prepare($update);
-        $stmt->bind_param("ssssdi", $name, $phone, $checkin, $checkout, $price, $id);
-
-        if ($stmt->execute()) {
-            header("Location: admin_dashboard.php?success=Booking updated successfully");
-            exit;
-        } else {
-            echo "Error updating record: " . $conn->error;
-        }
-    }
+// રૂમ લિસ્ટ મેળવો (જો રૂમ બદલવો હોય તો)
+$rooms_sql = "SELECT id, name FROM rooms";
+$rooms_result = mysqli_query($conn, $rooms_sql);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Edit Booking - Shakti Bhuvan</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/css/view_details.css"> <!-- same CSS as view page -->
-</head>
-<body>
-
-<?php include 'header.php'; ?>
-
-<div class="container">
-  <div class="booking-box" style="width:100%; max-width:600px; margin:auto;">
-      <h3>Edit Booking</h3>
-      <form method="POST" id="bookingForm">
-          <div class="date-box">
-              <label>Name</label>
-              <input type="text" class="date-input" name="name" 
-                     value="<?= htmlspecialchars($row['customer_name']) ?>" required>
-          </div>
-
-          <div class="date-box">
-              <label>Phone</label>
-              <input type="text" class="date-input" name="phone" 
-                     value="<?= htmlspecialchars($row['phone']) ?>" required>
-          </div>
-
-          <div class="date-box">
-              <label>Check-in</label>
-              <input type="date" class="date-input" name="checkin" id="checkin" 
-                     value="<?= $row['checkin'] ?>" required>
-          </div>
-
-          <div class="date-box">
-              <label>Check-out</label>
-              <input type="date" class="date-input" name="checkout" id="checkout" 
-                     value="<?= $row['checkout'] ?>" required>
-          </div>
-
-          <div class="price-details">
-              <div class="row total">
-                  <span>Total Price</span>
-                  <strong>₹<span id="totalPrice"><?= $row['total_price'] ?></span></strong>
-              </div>
-          </div>
-
-          <input type="hidden" step="0.01" name="total_price" id="hidden_total_price" 
-                 value="<?= $row['total_price'] ?>">
-
-          <button type="submit" class="book-btn">Update Booking</button>
-      </form>
-  </div>
-</div>
-<?php include 'footer.php'; ?>
-
-<script>
-    const checkinInput = document.getElementById('checkin');
-    const checkoutInput = document.getElementById('checkout');
-    const totalPriceDisplay = document.getElementById('totalPrice');
-    const hiddenTotalPrice = document.getElementById('hidden_total_price');
-
-    const perDay = <?= $per_day ?>;
-
-    function updatePrice() {
-        const checkin = new Date(checkinInput.value);
-        const checkout = new Date(checkoutInput.value);
-
-        if (checkin && checkout && checkout > checkin) {
-            const days = (checkout - checkin) / (1000 * 60 * 60 * 24);
-            const newPrice = (perDay * days) + 500;
-            totalPriceDisplay.textContent = newPrice.toFixed(2);
-            hiddenTotalPrice.value = newPrice.toFixed(2);
-        }
+    <meta charset="UTF-8">
+    <title>Edit Booking #<?= $id ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+    body {
+        background-color: #fffaf0;
+        padding-top: 50px;
     }
 
-    checkinInput.addEventListener('change', updatePrice);
-    checkoutInput.addEventListener('change', updatePrice);
-</script>
+    .edit-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        border: none;
+    }
+
+    .btn-update {
+        background-color: #a0522d;
+        color: white;
+        border: none;
+    }
+
+    .btn-update:hover {
+        background-color: #8b4513;
+        color: white;
+    }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="edit-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4><i class="fas fa-edit me-2"></i>Edit Booking #<?= $id ?></h4>
+                        <a href="admin_dashboard.php?id=<?= $id ?>" class="btn btn-sm btn-outline-secondary">Cancel</a>
+                    </div>
+
+                    <form action="update_booking_process.php" method="POST">
+                        <input type="hidden" name="booking_id" value="<?= $id ?>">
+
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Customer Name</label>
+                                <input type="text" name="customer_name" class="form-control"
+                                    value="<?= htmlspecialchars($booking['customer_name']) ?>" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Phone</label>
+                                <input type="text" name="phone" class="form-control"
+                                    value="<?= htmlspecialchars($booking['phone']) ?>" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Email</label>
+                                <input type="email" name="email" class="form-control"
+                                    value="<?= htmlspecialchars($booking['email']) ?>">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Room Type</label>
+                                <select name="room_id" class="form-select">
+                                    <?php while($row = mysqli_fetch_assoc($rooms_result)): ?>
+                                    <option value="<?= $row['id'] ?>"
+                                        <?= ($row['id'] == $booking['room_id']) ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($row['name']) ?>
+                                    </option>
+                                    <?php endwhile; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Room Number</label>
+                                <input type="text" name="room_number" class="form-control"
+                                    value="<?= htmlspecialchars($booking['room_number']) ?>">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Check-in Date</label>
+                                <input type="date" name="checkin" class="form-control"
+                                    value="<?= $booking['checkin'] ?>" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Check-out Date</label>
+                                <input type="date" name="checkout" class="form-control"
+                                    value="<?= $booking['checkout'] ?>" required>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Total Price (₹)</label>
+                                <input type="number" name="total_price" class="form-control"
+                                    value="<?= $booking['total_price'] ?>" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Booking Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="Confirmed"
+                                        <?= ($booking['status'] == 'Confirmed') ? 'selected' : '' ?>>Confirmed</option>
+                                    <option value="Checked-in"
+                                        <?= ($booking['status'] == 'Checked-in') ? 'selected' : '' ?>>Checked-in
+                                    </option>
+                                    <option value="Checked-out"
+                                        <?= ($booking['status'] == 'Checked-out') ? 'selected' : '' ?>>Checked-out
+                                    </option>
+                                    <option value="Cancelled"
+                                        <?= ($booking['status'] == 'Cancelled') ? 'selected' : '' ?>>Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Payment Status</label>
+                                <select name="payment_status" class="form-select">
+                                    <option value="Paid"
+                                        <?= ($booking['payment_status'] == 'Paid') ? 'selected' : '' ?>>Paid</option>
+                                    <option value="Pending"
+                                        <?= ($booking['payment_status'] == 'Pending') ? 'selected' : '' ?>>Pending
+                                    </option>
+                                    <option value="Partial"
+                                        <?= ($booking['payment_status'] == 'Partial') ? 'selected' : '' ?>>Partial
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 mt-4 text-center">
+                                <button type="submit" name="update_booking" class="btn btn-update px-5 py-2">
+                                    <i class="fas fa-save me-2"></i>Update Booking Details
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
+
 </html>
-<?php
-} else {
-    echo "Invalid Request!";
-}
-?>

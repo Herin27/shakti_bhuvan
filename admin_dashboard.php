@@ -970,7 +970,7 @@ function countAmenities($amenities_string) {
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="card-title-text mb-1">Revenue </p>
-                                <h3 class="card-value">₹<?php echo number_format($revenue_filtered, 2); ?></h3>
+                                <h3 class="card-value"> <?php echo number_format($revenue_filtered, 2); ?></h3>
                             </div>
                             <i class="fas fa-money-bill-wave fs-3 text-muted"></i>
                         </div>
@@ -1231,7 +1231,7 @@ function countAmenities($amenities_string) {
                                 <td><span class="fw-bold"><?php echo $room_id_display; ?></span></td>
                                 <td><?php echo htmlspecialchars($room['name']); ?></td>
                                 <td><?php echo htmlspecialchars($room_type); ?></td>
-                                <td>₹<?php echo number_format($room['discount_price'], 2); ?></td>
+                                <td> <?php echo number_format($room['discount_price'], 2); ?></td>
                                 <td><?php echo htmlspecialchars($room['guests']); ?> guests</td>
                                 <td>
                                     <i class="fas fa-wifi text-muted me-1"></i>
@@ -1375,7 +1375,7 @@ function countAmenities($amenities_string) {
                     <table class="table table-striped align-middle">
                         <thead>
                             <tr>
-                                <th>ID</th>
+                                <th>Booking ID</th>
                                 <th>Customer</th>
                                 <th>Email</th>
                                 <th>Room Type</th>
@@ -1412,7 +1412,7 @@ function countAmenities($amenities_string) {
                                 <td><?php echo date('Y-m-d', strtotime($booking['checkin'])); ?></td>
                                 <td><?php echo date('Y-m-d', strtotime($booking['checkout'])); ?></td>
                                 <td><?php echo htmlspecialchars($booking['booking_guests']) . $extra_bed_icon; ?></td>
-                                <td>₹<?php echo number_format($booking['total_price'], 2); ?></td>
+                                <td> <?php echo number_format($booking['total_price'], 2); ?></td>
                                 <td>
                                     <span class="badge rounded-pill status-<?php echo $status_class; ?>">
                                         <?php echo htmlspecialchars($booking['status']); ?>
@@ -1433,11 +1433,18 @@ function countAmenities($amenities_string) {
                                         </a>
                                         <?php endif; ?>
 
+                                        <?php if ($booking['status'] === 'Checked-out'): ?>
                                         <a href="process_booking_status.php?booking_id=<?php echo $numerical_id; ?>&action=available"
                                             class="btn btn-sm btn-outline-success"
                                             onclick="return confirm('Mark room as Available for new guests?')">
                                             <i class="fas fa-check me-1"></i> Available
                                         </a>
+                                        <?php else: ?>
+                                        <button class="btn btn-sm btn-outline-secondary" disabled
+                                            title="પહેલા ચેક-આઉટ કરો">
+                                            <i class="fas fa-check me-1"></i> Available
+                                        </button>
+                                        <?php endif; ?>
 
                                         <a href="#" class="btn btn-sm text-muted action-button" data-bs-toggle="modal"
                                             data-bs-target="#actionModal"
@@ -1662,7 +1669,7 @@ function countAmenities($amenities_string) {
                                 <td><?php echo htmlspecialchars($customer['phone']); ?></td>
                                 <td><?php echo date('Y-m-d', strtotime($customer['member_since'])); ?></td>
                                 <td><?php echo htmlspecialchars($customer['bookings']); ?></td>
-                                <td>₹<?php echo number_format($customer['total_spent'], 2); ?></td>
+                                <td> <?php echo number_format($customer['total_spent'], 2); ?></td>
                                 <td>
                                     <span class="badge rounded-pill status-<?php echo $status_class; ?>">
                                         <?php echo htmlspecialchars($customer['status']); ?>
@@ -1744,15 +1751,15 @@ function countAmenities($amenities_string) {
                                 <td>PM-<?= $payment['id'] ?></td>
                                 <td>BK-<?= $payment['booking_id'] ?></td>
                                 <td><?= htmlspecialchars($payment['customer_name'] ?? 'Guest') ?></td>
-                                <td><strong class="text-success">₹<?= number_format($payment['amount'], 0) ?></strong>
+                                <td><strong class="text-success"> <?= number_format($payment['amount'], 0) ?></strong>
                                 </td>
                                 <td><?= date('d M, Y', strtotime($payment['payment_date'])) ?></td>
                             </tr>
                             <?php endforeach; ?>
                             <tr class="table-light">
                                 <td colspan="3" class="text-end"><strong>Total Revenue in Range:</strong></td>
-                                <td colspan="2"><strong class="text-primary"
-                                        style="font-size: 1.2rem;">₹<?= number_format($total_sum, 0) ?></strong></td>
+                                <td colspan="2"><strong class="text-primary" style="font-size: 1.2rem;">
+                                        <?= number_format($total_sum, 0) ?></strong></td>
                             </tr>
                             <?php else: ?>
                             <tr>
@@ -1948,8 +1955,9 @@ function countAmenities($amenities_string) {
                         <i class="fas fa-edit me-2"></i> Edit Record
                     </a>
 
-                    <a href="#" class="btn btn-outline-danger" id="action-delete-link">
-                        <i class="fas fa-trash-alt me-2"></i> Delete Record
+                    <a href="delete_booking.php?id=<?= $booking['id'] ?>" class="btn btn-danger btn-sm"
+                        onclick="return (confirm('શું તમે ડિલીટ કરવા માંગો છો?') && confirm('છેલ્લી વાર પૂછું છું, શું તમે ખરેખર ચોક્કસ છો?'));">
+                        <i class="fas fa-trash me-1"></i> Delete
                     </a>
                 </div>
             </div>
@@ -2023,12 +2031,12 @@ function countAmenities($amenities_string) {
                 let viewEditId = numericalId; // Default to numerical ID
 
                 if (recordType === 'Customer') {
-                    // viewScript = 'view_customer.php';
+                    viewScript = 'view_customer.php';
                     editScript = 'edit_customer.php';
                     deleteScript = 'delete_customer.php';
                     viewEditId = recordId; // Use full string customer_id
                 } else if (recordType === 'Booking') {
-                    // viewScript = 'view_booking.php';
+                    viewScript = 'view_booking.php';
                     editScript = 'edit_booking.php';
                     deleteScript = 'delete_booking.php';
                 } else if (recordType === 'Room') {
@@ -2045,13 +2053,28 @@ function countAmenities($amenities_string) {
                 document.getElementById('action-edit-link').href = `${editScript}?id=${viewEditId}`;
 
                 // Delete Link uses the numerical ID
-                document.getElementById('action-delete-link').onclick = function() {
-                    if (confirm(
-                            `Are you sure you want to permanently delete ${recordType} ${recordId}?`
-                        )) {
-                        window.location.href = `${deleteScript}?id=${numericalId}`;
+                // મોડલની અંદર ડિલીટ લિંક સેટ કરવાનું લોજિક શોધો અને આ મુજબ બદલો
+                document.getElementById('action-delete-link').onclick = function(e) {
+                    e.preventDefault(); // લિંકને સીધી ખુલતા અટકાવો
+
+                    const recordId = document.getElementById('modal-record-id').textContent;
+                    const numericalId = this.getAttribute('href').split('=')[1]; // ID મેળવો
+
+                    // પહેલું વેરિફિકેશન
+                    const firstCheck = confirm(
+                        `Are you sure you want to delete ${recordType} ${recordId}?`);
+
+                    if (firstCheck) {
+                        // બીજું વેરિફિકેશન
+                        const secondCheck = confirm(
+                            "Alert: This action cannot be undone. Do you really want to proceed?"
+                        );
+
+                        if (secondCheck) {
+                            // જો બંને વાર 'OK' આપે તો જ પેજ રીડાયરેક્ટ થશે
+                            window.location.href = `delete_booking.php?id=${numericalId}`;
+                        }
                     }
-                    return false;
                 };
             });
         }
@@ -2065,7 +2088,7 @@ function countAmenities($amenities_string) {
             data: {
                 labels: <?php echo $month_labels_json; ?>,
                 datasets: [{
-                    label: 'Revenue (₹)',
+                    label: 'Revenue ( )',
                     data: <?php echo $monthly_data_json; ?>,
                     backgroundColor: 'rgba(160, 82, 45, 0.6)',
                     borderColor: 'rgba(160, 82, 45, 1)',
@@ -2146,6 +2169,19 @@ function countAmenities($amenities_string) {
 
     });
 
+    function confirmDelete(bookingId, displayId) {
+        // પ્રથમ વેરિફિકેશન
+        if (confirm("Are you sure you want to delete booking " + displayId + "?")) {
+
+            // બીજું વેરિફિકેશન (Double Check)
+            if (confirm("Are you absolutely sure? This action cannot be undone.")) {
+
+                // જો બંને વાર OK આપે તો જ ફાઈલ પર મોકલો
+                window.location.href = "delete_booking.php?id=" + bookingId;
+            }
+        }
+        return false; // જો Cancel આપે તો કાંઈ નહીં થાય
+    }
     // admin_dashboard.php ના અંતમાં રહેલા સ્ક્રિપ્ટ ટેગમાં સુધારો
     function openOfflineBooking(roomNum, checkin) {
         const checkoutInput = document.getElementsByName('checkout_date')[0];
@@ -2174,9 +2210,11 @@ function countAmenities($amenities_string) {
                 .then(response => response.json())
                 .then(data => {
                     if (data.is_booked) {
-                        alert(`ચેતવણી: રૂમ નંબર ${room} આ તારીખો વચ્ચે પહેલેથી ઓનલાઇન બુક છે!`);
+                        alert(
+                            `Alert: Room ${room} is already booked between ${start} and ${end}. Please choose different dates.`
+                        );
                         submitBtn.disabled = true; // બટન બંધ કરી દેશે
-                        submitBtn.innerText = "રૂમ ઉપલબ્ધ નથી";
+                        submitBtn.innerText = "room Unavailable";
                     } else {
                         submitBtn.disabled = false;
                         submitBtn.innerText = "Confirm Booking";
