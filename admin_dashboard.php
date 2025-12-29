@@ -903,6 +903,8 @@ function countAmenities($amenities_string) {
 
             <a class="nav-link" data-target="gallery-section"><i class="fas fa-images me-2"></i>Gallery</a>
             <a class="nav-link" data-target="settings-section"><i class="fas fa-cog me-2"></i>Settings</a>
+
+            <a class="nav-link" data-target="reports-section"><i class="fas fa-file-invoice me-2"></i>Reports</a>
         </nav>
         <div class="mt-auto p-3">
         </div>
@@ -1930,6 +1932,33 @@ function countAmenities($amenities_string) {
                                 </div>
                             </div>
                         </form>
+                    </div>
+                    <div class="col-12 mt-4">
+                        <div class="dashboard-card">
+                            <h5 class="card-title mb-4"><i class="fas fa-lock me-2 text-danger"></i> Change Admin
+                                Password</h5>
+                            <form method="POST" action="update_password.php">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Current Password</label>
+                                        <input type="password" name="current_password" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">New Password</label>
+                                        <input type="password" name="new_password" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Confirm New Password</label>
+                                        <input type="password" name="confirm_password" class="form-control" required>
+                                    </div>
+                                    <div class="col-12 text-end">
+                                        <button type="submit" name="change_password" class="btn btn-danger">
+                                            <i class="fas fa-save me-2"></i> Update Password
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
 
