@@ -1744,6 +1744,10 @@ function countAmenities($amenities_string) {
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fas fa-file-invoice-dollar me-2"></i> Custom Reports</h2>
 
+                <button class="btn btn-sm btn-success" onclick="exportReportToExcel()">
+                    <i class="fas fa-file-excel me-2"></i> Export Report
+                </button>
+
                 <form method="GET" class="d-flex gap-2 align-items-end">
                     <input type="hidden" name="section" value="reports-section">
 
@@ -1770,8 +1774,7 @@ function countAmenities($amenities_string) {
                     </div>
 
                     <button type="submit" class="btn btn-sm btn-dark">Generate</button>
-                    <button type="button" class="btn btn-sm btn-success"
-                        onclick="exportDetailedReport()">Export</button>
+
                 </form>
             </div>
 
@@ -1779,7 +1782,7 @@ function countAmenities($amenities_string) {
                 <div class="col-md-4">
                     <div class="dashboard-card border-top border-primary border-4 shadow-sm">
                         <span class="text-muted small uppercase">Selected Revenue</span>
-                        <h3 class="mb-0 text-primary">₹ <?= number_format($total_period_revenue, 2) ?></h3>
+                        <h3 class="mb-0 text-primary"> <?= number_format($total_period_revenue, 2) ?></h3>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -1822,7 +1825,7 @@ function countAmenities($amenities_string) {
                                     <small>In: <?= date('d/m/y', strtotime($rep['checkin'])) ?></small><br>
                                     <small>Out: <?= date('d/m/y', strtotime($rep['checkout'])) ?></small>
                                 </td>
-                                <td class="fw-bold">₹<?= number_format($rep['total_price'], 0) ?></td>
+                                <td class="fw-bold"> <?= number_format($rep['total_price'], 0) ?></td>
                                 <td>
                                     <span
                                         class="badge <?= ($rep['payment_status'] == 'Paid') ? 'bg-success' : 'bg-danger' ?>">
@@ -2149,23 +2152,7 @@ function countAmenities($amenities_string) {
         const contentSections = document.querySelectorAll('.content-section');
         const actionModal = document.getElementById('actionModal');
 
-        function exportDetailedReport() {
-            const table = document.getElementById("detailedReportTable");
-            let html = `
-        <h2 style="text-align:center;">Shakti Bhuvan - Detailed Booking Report</h2>
-        <p><b>Report Period:</b> ${document.getElementsByName('rep_start')[0].value} to ${document.getElementsByName('rep_end')[0].value}</p>
-        ${table.outerHTML}
-    `;
 
-            const blob = new Blob([html], {
-                type: 'application/vnd.ms-excel'
-            });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = `Detailed_Report_${new Date().toLocaleDateString()}.xls`;
-            link.click();
-        }
 
         // --- 1. Section Switching Logic ---
         function switchSection(targetId) {
@@ -2375,6 +2362,35 @@ function countAmenities($amenities_string) {
             }
         }
         return false; // જો Cancel આપે તો કાંઈ નહીં થાય
+    }
+
+    function exportReportToExcel() {
+        // રિપોર્ટ ટેબલ મેળવો
+        const table = document.getElementById("detailedReportTable");
+
+        // જો ડેટા ન હોય તો એલર્ટ આપો
+        if (!table || table.rows.length <= 1 || table.innerText.includes("No history found")) {
+            alert("નિકાસ (Export) કરવા માટે કોઈ ડેટા ઉપલબ્ધ નથી.");
+            return;
+        }
+
+        // તારીખની વિગત મેળવો (ફાઇલના નામ માટે)
+        const startDate = document.getElementsByName("rep_start")[0].value;
+        const endDate = document.getElementsByName("rep_end")[0].value;
+        const roomNo = document.getElementsByName("rep_room")[0].value || "All";
+
+        let html = table.outerHTML;
+
+        // Excel ફાઇલ ડાઉનલોડ કરવા માટે લોજિક
+        const fileName = `Report_${roomNo}_${startDate}_to_${endDate}.xls`;
+        const url = 'data:application/vnd.ms-excel,' + encodeURIComponent(html);
+        const link = document.createElement("a");
+        link.download = fileName;
+        link.href = url;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
     // admin_dashboard.php ના અંતમાં રહેલા સ્ક્રિપ્ટ ટેગમાં સુધારો
     function openOfflineBooking(roomNum, checkin) {
