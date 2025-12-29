@@ -464,30 +464,44 @@ if ($result_gallery) {
         $gallery_images[] = $row;
     }
 }
-// ... બધો જૂનો Fetching કોડ ...
-
-// ૧. નવો Reports ડેટા ફેચિંગ કોડ અહીં ઉમેરો
+// =========================================================
+//            ADVANCED REPORTS WITH ROOM FILTER
+// =========================================================
 $rep_start = $_GET['rep_start'] ?? date('Y-m-01');
 $rep_end   = $_GET['rep_end']   ?? date('Y-m-d');
+$filter_room = $_GET['rep_room'] ?? ''; // રૂમ ફિલ્ટર માટે
 
-// રિપોર્ટ માટે દરેક બુકિંગની વિગતવાર ક્વેરી
-$report_detailed_bookings = [];
+// ૧. રૂમ લિસ્ટ મેળવો (ડ્રોપડાઉન માટે)
+$all_physical_rooms = [];
+$res_rooms_list = mysqli_query($conn, "SELECT DISTINCT room_number FROM room_numbers ORDER BY room_number ASC");
+while($row = mysqli_fetch_assoc($res_rooms_list)) {
+    $all_physical_rooms[] = $row['room_number'];
+}
+
+// ૨. Detailed ક્વેરી - જો રૂમ પસંદ કર્યો હોય તો તે મુજબ ફિલ્ટર થશે
 $sql_detailed = "SELECT b.id, b.customer_name, b.room_number, r.name as room_type, b.checkin, b.checkout, b.total_price, b.status, b.payment_status
                  FROM bookings b
                  JOIN rooms r ON b.room_id = r.id
-                 WHERE b.checkin BETWEEN '$rep_start' AND '$rep_end'
-                 ORDER BY b.checkin DESC";
+                 WHERE b.checkin BETWEEN '$rep_start' AND '$rep_end'";
 
+if ($filter_room != '') {
+    $sql_detailed .= " AND b.room_number = '$filter_room'";
+}
+
+$sql_detailed .= " ORDER BY b.checkin DESC";
 $res_detailed = mysqli_query($conn, $sql_detailed);
+$report_detailed_bookings = [];
+$total_period_revenue = 0;
+
 if($res_detailed) {
     while($row = mysqli_fetch_assoc($res_detailed)) {
         $report_detailed_bookings[] = $row;
+        if($row['payment_status'] == 'Paid') {
+            $total_period_revenue += $row['total_price'];
+        }
     }
 }
-
-$total_rep_revenue = fetchSingleValue($conn, "SELECT SUM(total_price) FROM bookings WHERE checkin BETWEEN '$rep_start' AND '$rep_end' AND payment_status='Paid'");
-$total_rep_bookings = fetchSingleValue($conn, "SELECT COUNT(*) FROM bookings WHERE checkin BETWEEN '$rep_start' AND '$rep_end'");
-
+$total_period_bookings = count($report_detailed_bookings);
 // ૨. હવે છેલ્લે કનેક્શન બંધ કરો (આ લાઈન બધા fetching પછી હોવી જોઈએ)
 
 
@@ -1728,90 +1742,102 @@ function countAmenities($amenities_string) {
 
         <div id="reports-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="fas fa-chart-bar me-2"></i> Detailed Business Report</h2>
-                <form method="GET" class="d-flex gap-2">
+                <h2><i class="fas fa-file-invoice-dollar me-2"></i> Custom Reports</h2>
+
+                <form method="GET" class="d-flex gap-2 align-items-end">
                     <input type="hidden" name="section" value="reports-section">
-                    <input type="date" name="rep_start" class="form-control" value="<?= $rep_start ?>">
-                    <input type="date" name="rep_end" class="form-control" value="<?= $rep_end ?>">
-                    <button type="submit" class="btn btn-dark">Generate Report</button>
-                    <button type="button" class="btn btn-success" onclick="exportDetailedReport()">
-                        <i class="fas fa-file-excel me-1"></i> Full Export
-                    </button>
+
+                    <div>
+                        <label class="small fw-bold">Room No:</label>
+                        <select name="rep_room" class="form-select form-select-sm">
+                            <option value="">All Rooms</option>
+                            <?php foreach($all_physical_rooms as $rn): ?>
+                            <option value="<?= $rn ?>" <?= ($filter_room == $rn) ? 'selected' : '' ?>>Room <?= $rn ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="small fw-bold">From:</label>
+                        <input type="date" name="rep_start" class="form-control form-control-sm"
+                            value="<?= $rep_start ?>">
+                    </div>
+
+                    <div>
+                        <label class="small fw-bold">To:</label>
+                        <input type="date" name="rep_end" class="form-control form-control-sm" value="<?= $rep_end ?>">
+                    </div>
+
+                    <button type="submit" class="btn btn-sm btn-dark">Generate</button>
+                    <button type="button" class="btn btn-sm btn-success"
+                        onclick="exportDetailedReport()">Export</button>
                 </form>
             </div>
 
-            <div class="row g-4 mb-4">
-                <div class="col-md-3">
-                    <div class="dashboard-card text-center shadow-sm">
-                        <h6 class="text-muted">Total Revenue</h6>
-                        <h4 class="text-primary">₹ <?= number_format($total_rep_revenue, 2) ?></h4>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="dashboard-card border-top border-primary border-4 shadow-sm">
+                        <span class="text-muted small uppercase">Selected Revenue</span>
+                        <h3 class="mb-0 text-primary">₹ <?= number_format($total_period_revenue, 2) ?></h3>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="dashboard-card text-center shadow-sm">
-                        <h6 class="text-muted">Total Bookings</h6>
-                        <h4><?= $total_rep_bookings ?></h4>
+                <div class="col-md-4">
+                    <div class="dashboard-card border-top border-success border-4 shadow-sm">
+                        <span class="text-muted small">Total Bookings</span>
+                        <h3 class="mb-0 text-success"><?= $total_period_bookings ?></h3>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="dashboard-card text-center shadow-sm">
-                        <h6 class="text-muted">Active Rooms</h6>
-                        <h4 class="text-success">
-                            <?= count(array_unique(array_column($report_detailed_bookings, 'room_number'))) ?></h4>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="dashboard-card text-center shadow-sm">
-                        <h6 class="text-muted">Report Period</h6>
-                        <small class="fw-bold"><?= date('d M', strtotime($rep_start)) ?> -
-                            <?= date('d M', strtotime($rep_end)) ?></small>
+                <div class="col-md-4">
+                    <div class="dashboard-card border-top border-info border-4 shadow-sm">
+                        <span class="text-muted small">Room Focus</span>
+                        <h3 class="mb-0 text-info"><?= ($filter_room != '') ? 'Room ' . $filter_room : 'All Rooms' ?>
+                        </h3>
                     </div>
                 </div>
             </div>
 
             <div class="dashboard-card shadow-sm border-0">
-                <h5 class="mb-4 text-secondary"><i class="fas fa-list me-2"></i> Individual Booking Details</h5>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle" id="detailedReportTable">
-                        <thead class="table-dark">
+                    <table class="table table-hover" id="detailedReportTable">
+                        <thead class="table-light">
                             <tr>
-                                <th>ID</th>
+                                <th>Booking ID</th>
                                 <th>Customer</th>
                                 <th>Room No.</th>
-                                <th>Room Type</th>
-                                <th>Check-in</th>
-                                <th>Check-out</th>
+                                <th>In/Out Date</th>
                                 <th>Amount</th>
-                                <th>Status</th>
                                 <th>Payment</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <?php if(count($report_detailed_bookings) > 0): ?>
+                            <?php if(!empty($report_detailed_bookings)): ?>
                             <?php foreach ($report_detailed_bookings as $rep): ?>
                             <tr>
-                                <td>BK-<?= $rep['id'] ?></td>
+                                <td>#<?= $rep['id'] ?></td>
                                 <td><strong><?= htmlspecialchars($rep['customer_name']) ?></strong></td>
-                                <td><span class="badge bg-light text-dark border"><?= $rep['room_number'] ?></span></td>
-                                <td><?= $rep['room_type'] ?></td>
-                                <td><?= date('d-m-Y', strtotime($rep['checkin'])) ?></td>
-                                <td><?= date('d-m-Y', strtotime($rep['checkout'])) ?></td>
-                                <td class="fw-bold">₹<?= number_format($rep['total_price'], 2) ?></td>
-                                <td><span
-                                        class="badge rounded-pill status-<?= strtolower(str_replace(' ', '', $rep['status'])) ?>"><?= $rep['status'] ?></span>
-                                </td>
+                                <td><span class="badge bg-secondary">R-<?= $rep['room_number'] ?></span></td>
                                 <td>
-                                    <span class="text-<?= ($rep['payment_status'] == 'Paid') ? 'success' : 'danger' ?>">
-                                        <i
-                                            class="fas <?= ($rep['payment_status'] == 'Paid') ? 'fa-check-circle' : 'fa-times-circle' ?> me-1"></i>
+                                    <small>In: <?= date('d/m/y', strtotime($rep['checkin'])) ?></small><br>
+                                    <small>Out: <?= date('d/m/y', strtotime($rep['checkout'])) ?></small>
+                                </td>
+                                <td class="fw-bold">₹<?= number_format($rep['total_price'], 0) ?></td>
+                                <td>
+                                    <span
+                                        class="badge <?= ($rep['payment_status'] == 'Paid') ? 'bg-success' : 'bg-danger' ?>">
                                         <?= $rep['payment_status'] ?>
                                     </span>
+                                </td>
+                                <td><span
+                                        class="badge rounded-pill status-<?= strtolower(str_replace(' ', '', $rep['status'])) ?>"><?= $rep['status'] ?></span>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
                             <?php else: ?>
                             <tr>
-                                <td colspan="9" class="text-center py-4">No records found for this period.</td>
+                                <td colspan="7" class="text-center text-muted py-5">No history found for this selection.
+                                </td>
                             </tr>
                             <?php endif; ?>
                         </tbody>

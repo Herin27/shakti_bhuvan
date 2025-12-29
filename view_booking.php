@@ -86,7 +86,7 @@ if (!$booking) {
 
                 <div class="detail-card">
                     <div class="detail-header d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0">Booking Details #BK-<?php echo str_pad($booking_id, 4, '0', STR_PAD_LEFT); ?>
+                        <h4 class="mb-0">Booking Details #BK0<?php echo str_pad($booking_id, 4, '0', STR_PAD_LEFT); ?>
                         </h4>
                         <span class="status-badge bg-white text-dark"><?php echo $booking['status']; ?></span>
                     </div>
