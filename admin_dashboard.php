@@ -1713,7 +1713,7 @@ function countAmenities($amenities_string) {
                                 <td><?php echo htmlspecialchars($customer['bookings']); ?></td>
                                 <td> <?php echo number_format($customer['total_spent'], 2); ?></td>
                                 <td>
-                                    <span style="color: #008000;"
+                                    <span style="background-color: #E6FFE6; color: #008000;"
                                         class="badge rounded-pill status-<?php echo $status_class; ?>">
                                         <?php echo htmlspecialchars($customer['status']); ?>
                                     </span>
@@ -1900,8 +1900,8 @@ function countAmenities($amenities_string) {
                             $total_sum += $payment['amount'];
                     ?>
                             <tr>
-                                <td>PM-<?= $payment['id'] ?></td>
-                                <td>BK-<?= $payment['booking_id'] ?></td>
+                                <td>PM0<?= $payment['id'] ?></td>
+                                <td>BK0<?= $payment['booking_id'] ?></td>
                                 <td><?= htmlspecialchars($payment['customer_name'] ?? 'Guest') ?></td>
                                 <td><strong class="text-success"> <?= number_format($payment['amount'], 0) ?></strong>
                                 </td>

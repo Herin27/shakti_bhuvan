@@ -114,19 +114,52 @@ $_SESSION['temp_tax_rate'] = $tax_rate;
 $_SESSION['temp_tax_pct'] = $display_tax_pct;
 
 // --- 3. User Management (No changes needed here) ---
+// --- 3. User Management (Updated Based on your SQL Schema) ---
 $customer_id = null;
-$sql_check_user = "SELECT customer_id FROM users WHERE phone = '$phone'";
+
+// ફોન નંબર દ્વારા યુઝર પહેલેથી છે કે નહીં તે ચેક કરો
+$sql_check_user = "SELECT customer_id FROM users WHERE phone = '$phone' LIMIT 1";
 $result_check_user = mysqli_query($conn, $sql_check_user);
 
-if (mysqli_num_rows($result_check_user) > 0) {
+if ($result_check_user && mysqli_num_rows($result_check_user) > 0) {
+    // કસ્ટમર પહેલેથી છે - તેનો ડેટા અપડેટ કરો
     $user = mysqli_fetch_assoc($result_check_user);
     $customer_id = $user['customer_id'];
-    mysqli_query($conn, "UPDATE users SET bookings = bookings + 1, total_spent = total_spent + $total_price WHERE customer_id = '$customer_id'");
+    
+    $update_user = "UPDATE users SET 
+                    bookings = bookings + 1, 
+                    total_spent = total_spent + $total_price 
+                    WHERE customer_id = '$customer_id'";
+    mysqli_query($conn, $update_user);
 } else {
-    $new_customer_id = 'CUST' . mt_rand(1000, 9999);
-    $insert_email = empty($email) ? "NULL" : "'$email'";
-    mysqli_query($conn, "INSERT INTO users (customer_id, name, email, phone, member_since, bookings, total_spent) VALUES ('$new_customer_id', '$customer_name', $insert_email, '$phone', CURDATE(), 1, $total_price)");
-    $customer_id = $new_customer_id;
+    // નવો કસ્ટમર છે - પણ પહેલા ઈમેલ ચેક કરવો જરૂરી છે કારણ કે તે UNIQUE છે
+    $check_email = mysqli_query($conn, "SELECT customer_id FROM users WHERE email = '$email' LIMIT 1");
+    
+    if ($check_email && mysqli_num_rows($check_email) > 0) {
+        // જો ઈમેલ મેચ થઈ જાય પણ ફોન અલગ હોય, તો તે જ કસ્ટમર આઈડી વાપરો (Error રોકવા માટે)
+        $user_by_email = mysqli_fetch_assoc($check_email);
+        $customer_id = $user_by_email['customer_id'];
+        
+        $update_user = "UPDATE users SET 
+                        bookings = bookings + 1, 
+                        total_spent = total_spent + $total_price 
+                        WHERE customer_id = '$customer_id'";
+        mysqli_query($conn, $update_user);
+    } else {
+        // ફોન અને ઈમેલ બંને નવા છે - હવે INSERT કરો
+        $new_customer_id = 'CUST' . mt_rand(1000, 9999);
+        $customer_id = $new_customer_id;
+        
+        // જો ઈમેલ ખાલી હોય તો ડેટાબેઝમાં એરર આવી શકે (કારણ કે તે NOT NULL હોઈ શકે)
+        $val_email = empty($email) ? "temp_".mt_rand()."@shaktibhuvan.com" : "$email";
+        
+        $insert_user = "INSERT INTO users (customer_id, name, email, phone, member_since, bookings, total_spent, status) 
+                        VALUES ('$customer_id', '$customer_name', '$val_email', '$phone', CURDATE(), 1, $total_price, 'ACTIVE')";
+        
+        if (!mysqli_query($conn, $insert_user)) {
+            // ટેસ્ટિંગ માટે એરર જોવા: die(mysqli_error($conn));
+        }
+    }
 }
 
 // --- 4. Insert Booking ---
