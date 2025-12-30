@@ -386,7 +386,7 @@ $result = mysqli_query($conn, $query);
 
                     <!-- Price + Button -->
                     <div class="room-footer">
-                        <span class="price">₹<?php echo (int)$row['discount_price']; ?><small>/night</small></span>
+                        <span class="price">₹<?php echo (int)$row['discount_price']; ?><small> Per Night</small></span>
                         <a href="View_Details.php?id=<?php echo $row['id']; ?>" class="view_btn">View Details</a>
                     </div>
                 </div>

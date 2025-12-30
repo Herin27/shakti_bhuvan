@@ -401,15 +401,17 @@ if ($result_all_customers) {
 }
 
 // =========================================================
-//          PAYMENTS DATA FETCHING
+//           PAYMENTS DATA FETCHING (UPDATED)
 // =========================================================
 
-$pay_start = $_GET['pay_start'] ?? date('Y-m-d'); // ડિફોલ્ટ આજની તારીખ
+$pay_start = $_GET['pay_start'] ?? date('Y-m-d'); 
 $pay_end   = $_GET['pay_end']   ?? date('Y-m-d');
 $all_payments = [];
+
+// ક્વેરીમાં p.razorpay_payment_id ઉમેર્યો છે
 $sql_all_payments = "
     SELECT 
-        p.id, p.booking_id, p.amount, p.payment_date,
+        p.id, p.booking_id, p.amount, p.payment_date, p.razorpay_payment_id,
         b.customer_name 
     FROM 
         payments p
@@ -1888,6 +1890,7 @@ function countAmenities($amenities_string) {
                                 <th>ID</th>
                                 <th>Booking Ref</th>
                                 <th>Customer</th>
+                                <th>Reference ID</th>
                                 <th>Amount</th>
                                 <th>Date</th>
                             </tr>
@@ -1903,19 +1906,27 @@ function countAmenities($amenities_string) {
                                 <td>PM0<?= $payment['id'] ?></td>
                                 <td>BK0<?= $payment['booking_id'] ?></td>
                                 <td><?= htmlspecialchars($payment['customer_name'] ?? 'Guest') ?></td>
+
+                                <td>
+                                    <small class="text-muted fw-bold" style="font-family: monospace;">
+                                        <?= $payment['razorpay_payment_id'] ?: '<span class="text-warning">Offline/Manual</span>' ?>
+                                    </small>
+                                </td>
+
                                 <td><strong class="text-success"> <?= number_format($payment['amount'], 0) ?></strong>
                                 </td>
                                 <td><?= date('d M, Y', strtotime($payment['payment_date'])) ?></td>
                             </tr>
                             <?php endforeach; ?>
+
                             <tr class="table-light">
-                                <td colspan="3" class="text-end"><strong>Total Revenue in Range:</strong></td>
+                                <td colspan="4" class="text-end"><strong>Total Revenue in Range:</strong></td>
                                 <td colspan="2"><strong class="text-primary" style="font-size: 1.2rem;">
                                         <?= number_format($total_sum, 0) ?></strong></td>
                             </tr>
                             <?php else: ?>
                             <tr>
-                                <td colspan="5" class="text-center">No payments found for selected dates.</td>
+                                <td colspan="6" class="text-center">No payments found for selected dates.</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>

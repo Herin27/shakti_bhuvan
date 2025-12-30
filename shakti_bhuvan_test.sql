@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 16, 2025 at 11:45 AM
+-- Generation Time: Dec 30, 2025 at 12:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,6 +24,27 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `admin`
+--
+
+CREATE TABLE `admin` (
+  `id` int(11) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `otp` varchar(10) DEFAULT NULL,
+  `otp_expiry` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `admin`
+--
+
+INSERT INTO `admin` (`id`, `email`, `password`, `otp`, `otp_expiry`) VALUES
+(1, 'admin123@gmail.com', '11', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `bookings`
 --
 
@@ -38,23 +59,26 @@ CREATE TABLE `bookings` (
   `checkin` date DEFAULT NULL,
   `checkout` date DEFAULT NULL,
   `total_price` decimal(10,2) DEFAULT NULL,
-  `extra_bed_included` tinyint(1) DEFAULT 0,
+  `extra_bed_included` int(11) DEFAULT 0,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `status` enum('Confirmed','Pending','Checked-in','Checked-out','Cancelled') DEFAULT 'Pending',
   `payment_status` enum('Paid','Partial','Pending') DEFAULT 'Pending',
   `razorpay_id` varchar(50) DEFAULT NULL,
-  `notes` text DEFAULT NULL
+  `bank_rrn` varchar(100) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `auto_checkout_done` tinyint(1) DEFAULT 0,
+  `num_rooms` int(11) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `bookings`
 --
 
-INSERT INTO `bookings` (`id`, `customer_name`, `phone`, `email`, `guests`, `room_id`, `room_number`, `checkin`, `checkout`, `total_price`, `extra_bed_included`, `created_at`, `status`, `payment_status`, `razorpay_id`, `notes`) VALUES
-(2, 'Herin Alkeshkumar Patel', '09023897448', 'herin7151@gmail.com', 2, 21, '2', '2025-12-16', '2025-12-17', 4935.00, 1, '2025-12-16 09:23:36', 'Pending', 'Pending', NULL, ''),
-(3, 'Herin Patel', '452467', '', 1, 21, '3', '2025-12-19', '2025-12-20', 4725.00, 0, '2025-12-19 09:43:20', 'Pending', 'Pending', NULL, ''),
-(4, 'Herin Alkeshkumar Patel', '09023897448', '', 1, 21, '4', '2025-12-17', '2025-12-18', 4935.00, 1, '2025-12-17 09:49:59', 'Pending', 'Pending', NULL, ''),
-(5, 'Herin Alkeshkumar Patel', '09023897448', 'herin7151@gmail.com', 1, 21, '5', '2025-12-16', '2025-12-17', 4935.00, 1, '2025-12-16 10:11:14', 'Pending', 'Pending', NULL, '');
+INSERT INTO `bookings` (`id`, `customer_name`, `phone`, `email`, `guests`, `room_id`, `room_number`, `checkin`, `checkout`, `total_price`, `extra_bed_included`, `created_at`, `status`, `payment_status`, `razorpay_id`, `bank_rrn`, `notes`, `auto_checkout_done`, `num_rooms`) VALUES
+(152, 'Herin Alkeshkumar Patel', '9023897448', 'herin7151@gmail.com', 0, 39, '115', '2025-12-29', '2025-12-30', 900.00, 0, '2025-12-29 12:17:59', 'Confirmed', 'Paid', 'pay_RxQNTJQrkQq8qf', NULL, '', 0, 1),
+(153, 'yash', '9023897448', 'ya01111976@gmail.com', 0, 39, '115', '2025-12-30', '2025-12-31', 900.00, 0, '2025-12-30 04:03:53', 'Confirmed', 'Paid', 'pay_RxgUplHlSxAYrc', NULL, '', 0, 1),
+(154, 'yash', '1234567890', 'ya01111976@gmail.com', 0, 39, '116', '2025-12-30', '2025-12-31', 900.00, 0, '2025-12-30 04:13:29', 'Confirmed', 'Paid', 'pay_Rxgev9GjKwHPyc', NULL, '', 0, 1),
+(157, 'Herin Alkeshkumar Patel', '9023897448', 'herin7151@gmail.com', 0, 42, '1', '2025-12-30', '2025-12-31', 1.00, 0, '2025-12-30 10:57:54', 'Confirmed', 'Paid', 'pay_RxnY9GRViISL96', 'N/A', '', 0, 1);
 
 -- --------------------------------------------------------
 
@@ -79,7 +103,9 @@ CREATE TABLE `contact_messages` (
 --
 
 INSERT INTO `contact_messages` (`id`, `fullname`, `email`, `phone`, `subject`, `checkin`, `checkout`, `message`, `created_at`) VALUES
-(1, 'Herin Patel', 'herin7151@gmail.com', '452467', 'contect', '2025-08-19', '2025-08-19', 'i need room', '2025-08-19 11:17:38');
+(1, 'Herin Patel', 'herin7151@gmail.com', '452467', 'contect', '2025-08-19', '2025-08-19', 'i need room', '2025-08-19 11:17:38'),
+(2, 'fsdfsd', 'fsdf#@fsdfsf', '', '', '0000-00-00', '0000-00-00', 'dfsdfsd', '2025-12-17 06:15:01'),
+(3, 'Herin Patel', 'herin7151@gmail.com', '452467', '', '0000-00-00', '0000-00-00', 'adsfgsd', '2025-12-19 03:45:44');
 
 -- --------------------------------------------------------
 
@@ -114,11 +140,19 @@ CREATE TABLE `gallery` (
 --
 
 INSERT INTO `gallery` (`id`, `image_url`, `image_type`, `created_at`) VALUES
-(2, 'uploads/1758427814_WhatsApp Image 2025-09-20 at 18.57.58_b7a89080.jpg', 'Hotel View', '2025-09-21 04:10:14'),
-(3, 'uploads/1758427814_WhatsApp Image 2025-09-20 at 18.57.59_23e0ed2d.jpg', 'Hotel View', '2025-09-21 04:10:14'),
-(4, 'uploads/1758427814_DSC06359.JPG', 'Hotel View', '2025-09-21 04:10:14'),
-(7, 'uploads/1765083424_69350920a8b73.JPG', 'Luxury Suite', '2025-12-07 04:57:04'),
-(9, 'uploads/1765083424_69350920ad626.JPG', 'Luxury Suite', '2025-12-07 04:57:04');
+(10, 'uploads/1766406437_6949392510698.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(11, 'uploads/1766406437_6949392511e1e.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(12, 'uploads/1766406437_69493925126a6.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(13, 'uploads/1766406437_6949392512eab.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(14, 'uploads/1766406437_6949392513751.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(15, 'uploads/1766406437_6949392513fc9.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(16, 'uploads/1766406437_694939251473a.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(17, 'uploads/1766406437_6949392515045.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(18, 'uploads/1766406437_694939251573c.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(19, 'uploads/1766406437_6949392515ecf.JPG', 'Hotel View', '2025-12-22 12:27:17'),
+(20, 'uploads/1766406437_6949392516cd6.jpg', 'Hotel View', '2025-12-22 12:27:17'),
+(21, 'uploads/1766406437_6949392517336.jpg', 'Hotel View', '2025-12-22 12:27:17'),
+(22, 'uploads/1766406437_6949392517b52.JPG', 'Hotel View', '2025-12-22 12:27:17');
 
 -- --------------------------------------------------------
 
@@ -136,9 +170,28 @@ CREATE TABLE `hero_section` (
 --
 
 INSERT INTO `hero_section` (`id`, `background_image`) VALUES
-(4, 'uploads/WhatsApp Image 2025-09-20 at 18.57.59_23e0ed2d.jpg'),
-(5, 'uploads/DSC06366.JPG'),
-(6, 'uploads/1765082060_693503cc9dc32.JPG');
+(7, 'uploads/1766399715_69491ee3b0038.jpg'),
+(8, 'uploads/1766399736_69491ef8efe30.JPG'),
+(9, 'uploads/1766399747_69491f03486b7.JPG'),
+(10, 'uploads/1766466588_694a241c3f956.JPG');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `offline_booking`
+--
+
+CREATE TABLE `offline_booking` (
+  `id` int(11) NOT NULL,
+  `room_number` varchar(10) NOT NULL,
+  `checkin_date` date NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `customer_name` varchar(255) DEFAULT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `checkout_date` date DEFAULT NULL,
+  `payment_status` enum('Paid','Pending','Partial') DEFAULT 'Pending',
+  `status` varchar(20) DEFAULT 'Checked-in'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -150,6 +203,8 @@ CREATE TABLE `payments` (
   `id` int(11) NOT NULL,
   `booking_id` varchar(20) DEFAULT NULL,
   `amount` decimal(10,2) DEFAULT NULL,
+  `razorpay_payment_id` varchar(100) DEFAULT NULL,
+  `bank_rrn` varchar(100) DEFAULT NULL,
   `payment_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -157,10 +212,16 @@ CREATE TABLE `payments` (
 -- Dumping data for table `payments`
 --
 
-INSERT INTO `payments` (`id`, `booking_id`, `amount`, `payment_date`) VALUES
-(1, 'BK001', 25000.00, '2024-08-15'),
-(2, 'BK002', 12000.00, '2024-08-16'),
-(3, 'BK003', 40000.00, '2024-08-17');
+INSERT INTO `payments` (`id`, `booking_id`, `amount`, `razorpay_payment_id`, `bank_rrn`, `payment_date`) VALUES
+(5, '147', 1155.00, NULL, NULL, '2025-12-26'),
+(6, '149', 900.00, NULL, NULL, '2025-12-29'),
+(7, '150', 3465.00, NULL, NULL, '2025-12-29'),
+(8, '151', 900.00, NULL, NULL, '2025-12-29'),
+(9, '152', 900.00, NULL, NULL, '2025-12-29'),
+(10, '153', 900.00, NULL, NULL, '2025-12-30'),
+(11, '154', 900.00, NULL, NULL, '2025-12-30'),
+(13, '156', 1.00, 'pay_Rxn8g9wyLQ2hdf', NULL, '2025-12-30'),
+(14, '157', 1.00, 'pay_RxnY9GRViISL96', 'N/A', '2025-12-30');
 
 -- --------------------------------------------------------
 
@@ -175,6 +236,7 @@ CREATE TABLE `rooms` (
   `price` decimal(10,2) DEFAULT NULL,
   `discount_price` decimal(10,2) DEFAULT NULL,
   `extra_bed_price` decimal(10,2) DEFAULT 0.00,
+  `max_extra_beds` int(11) DEFAULT 0,
   `size` varchar(50) DEFAULT NULL,
   `bed_type` varchar(100) DEFAULT NULL,
   `guests` varchar(50) DEFAULT NULL,
@@ -187,16 +249,16 @@ CREATE TABLE `rooms` (
   `features` text DEFAULT NULL,
   `policies` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `status` enum('Available','Occupied') DEFAULT 'Available'
+  `status` enum('Available','Occupied','Cleaning') DEFAULT 'Available'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `rooms`
 --
 
-INSERT INTO `rooms` (`id`, `name`, `description`, `price`, `discount_price`, `extra_bed_price`, `size`, `bed_type`, `guests`, `floor`, `rating`, `reviews`, `image`, `ac_status`, `amenities`, `features`, `policies`, `created_at`, `status`) VALUES
-(19, 'Luxury Suite', 'A well-organized room ideal for two guests, featuring ample space, clean beds, cupboards, and a peaceful atmosphere for a comfortable long stay.', 7000.00, 6000.00, 0.00, '350sq', '2', '2', 'Ground Floor', 4.9, 299, '1765083695_DSC06391.JPG,1765083695_DSC06390.JPG', 'AC', 'Free Wi-Fi,AC,Room Service,TV', 'Smart TV,Work Desk', 'No Smoking,Pet Friendly,Free Cancellation', '2025-12-07 05:01:35', 'Available'),
-(21, 'Luxury Suite', 'best room', 5000.00, 4500.00, 200.00, '350 sq ft', '2', '2', 'Ground Floor', 4.9, 124, '1765876899_0_DSC06391.JPG,1765876899_1_DSC06390.JPG', 'AC', 'Free Wi-Fi,AC,Room Service,TV', 'Balcony', 'No Smoking,Pet Friendly,Free Cancellation', '2025-12-16 09:21:39', 'Available');
+INSERT INTO `rooms` (`id`, `name`, `description`, `price`, `discount_price`, `extra_bed_price`, `max_extra_beds`, `size`, `bed_type`, `guests`, `floor`, `rating`, `reviews`, `image`, `ac_status`, `amenities`, `features`, `policies`, `created_at`, `status`) VALUES
+(39, 'Standard Non-AC', 'Standard Non-AC Room offers a comfortable stay with basic amenities, ideal for budget-friendly travelers. The room is well-maintained and provides a peaceful environment for a pleasant stay.', 1080.00, 900.00, 200.00, 1, '350', 'Double Bed', '2', 'First Floor', 5.0, 119, '1766399476_0_DSC06392.JPG,1766399476_1_DSC06383.JPG,1766399476_2_DSC06380.JPG,1766399476_3_DSC06378.JPG,1766399476_4_DSC06376.JPG', 'Non-AC', 'Free Wi-Fi,Room Service,TV', 'Sea View,Smart TV', 'Free Cancellation', '2025-12-22 10:31:16', 'Available'),
+(42, 'demo', 'test mode', 1.00, 1.00, 1.00, 0, '100', '1', '1', 'Ground Floor', 5.0, 119, '1767090161_0_DSC06392.JPG', 'Non-AC', 'Free Wi-Fi,TV', 'Balcony', '', '2025-12-30 10:22:41', 'Available');
 
 -- --------------------------------------------------------
 
@@ -209,7 +271,7 @@ CREATE TABLE `room_numbers` (
   `room_type_id` int(11) NOT NULL,
   `floor` varchar(50) NOT NULL,
   `room_number` varchar(10) NOT NULL,
-  `status` enum('Available','Occupied','Maintenance') DEFAULT 'Available'
+  `status` enum('Available','Occupied','Maintenance','Cleaning') DEFAULT 'Available'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -217,13 +279,15 @@ CREATE TABLE `room_numbers` (
 --
 
 INSERT INTO `room_numbers` (`id`, `room_type_id`, `floor`, `room_number`, `status`) VALUES
-(2, 21, 'Ground Floor', '2', 'Occupied'),
-(3, 21, 'Ground Floor', '3', 'Occupied'),
-(4, 21, 'Ground Floor', '4', 'Occupied'),
-(5, 21, 'Ground Floor', '5', 'Occupied'),
-(6, 21, 'Ground Floor', '6', 'Available'),
-(7, 21, 'Ground Floor', '7', 'Available'),
-(8, 21, 'Ground Floor', '8', 'Available');
+(47, 39, 'First Floor', '115', 'Available'),
+(48, 39, 'First Floor', '116', 'Available'),
+(49, 39, 'First Floor', '117', 'Available'),
+(50, 39, 'First Floor', '118', 'Available'),
+(51, 39, 'First Floor', '119', 'Available'),
+(52, 39, 'First Floor', '120', 'Available'),
+(53, 39, 'First Floor', '121', 'Available'),
+(54, 39, 'First Floor', '122', 'Available'),
+(58, 42, 'Ground Floor', '1', 'Available');
 
 -- --------------------------------------------------------
 
@@ -241,7 +305,7 @@ CREATE TABLE `site_settings` (
 --
 
 INSERT INTO `site_settings` (`setting_key`, `setting_value`) VALUES
-('email_address', 'shaktibhuvanambaji@gmail.com'),
+('email_address', 'info@shaktibhuvan.com'),
 ('phone_number', '+91 98765 43210'),
 ('physical_address', 'Shakti bhuvan, GJ SH 56, Shaktidhara Society, Ambaji, Gujarat 385110');
 
@@ -270,12 +334,18 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`customer_id`, `name`, `email`, `phone`, `location`, `member_since`, `bookings`, `total_spent`, `rating`, `status`, `created_at`) VALUES
-('CUST1322', 'Herin Patel', '', '452467', NULL, '2025-12-19', 1, 4725.00, NULL, 'ACTIVE', '2025-12-19 09:43:20'),
-('CUST8151', 'Herin Alkeshkumar Patel', 'herin7151@gmail.com', '09023897448', NULL, '2025-12-16', 3, 14805.00, NULL, 'ACTIVE', '2025-12-16 09:23:36');
+('CUST1265', 'yash', 'ya01111976@gmail.com', '1234567890', NULL, '2025-12-30', 1, 900.00, NULL, 'ACTIVE', '2025-12-30 04:13:29'),
+('CUST6429', 'Herin Alkeshkumar Patel', 'herin7151@gmail.com', '9023897448', NULL, '2025-12-29', 5, 2702.00, NULL, 'ACTIVE', '2025-12-29 12:17:59');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `admin`
+--
+ALTER TABLE `admin`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `bookings`
@@ -300,6 +370,12 @@ ALTER TABLE `gallery`
 -- Indexes for table `hero_section`
 --
 ALTER TABLE `hero_section`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `offline_booking`
+--
+ALTER TABLE `offline_booking`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -342,46 +418,58 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT for table `admin`
+--
+ALTER TABLE `admin`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `bookings`
 --
 ALTER TABLE `bookings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=158;
 
 --
 -- AUTO_INCREMENT for table `contact_messages`
 --
 ALTER TABLE `contact_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `gallery`
 --
 ALTER TABLE `gallery`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `hero_section`
 --
 ALTER TABLE `hero_section`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+
+--
+-- AUTO_INCREMENT for table `offline_booking`
+--
+ALTER TABLE `offline_booking`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `room_numbers`
 --
 ALTER TABLE `room_numbers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- Constraints for dumped tables
@@ -391,7 +479,7 @@ ALTER TABLE `room_numbers`
 -- Constraints for table `bookings`
 --
 ALTER TABLE `bookings`
-  ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`);
+  ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `room_numbers`

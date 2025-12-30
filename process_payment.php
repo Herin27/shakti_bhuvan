@@ -3,8 +3,8 @@ session_start();
 error_reporting(0); 
 include 'db.php'; 
 
-$keyId = "rzp_test_RqeUyvsrea1Qdx"; 
-$keySecret = "DypnwCtjMOpiwBcJmZKkeYbd"; 
+$keyId = "rzp_live_Rxmk9kcaosHgx5";   
+$keySecret = "7t7U9HQb5ri6uSm9U219FGKY";
 
 require('razorpay-php-master/Razorpay.php');
 use Razorpay\Api\Api;
@@ -82,39 +82,39 @@ if (mysqli_num_rows($result_assign) > 0) {
 
     $api->utility->verifyPaymentSignature($attributes);
     
-    // --- STEP 3: રૂમ અસાઇન કરો અને બુકિંગ કન્ફર્મ કરો ---
-    mysqli_begin_transaction($conn);
+// --- STEP 3: રૂમ અસાઇન કરો અને બુકિંગ કન્ફર્મ કરો ---
+mysqli_begin_transaction($conn);
 
-    // રૂમનું સ્ટેટસ બદલો
-    // $upd_room = mysqli_query($conn, "UPDATE room_numbers SET status = 'Occupied' WHERE room_number = '$assigned_room'");
-    // સુધારેલી કન્ડિશન:
+// ૧. બુકિંગ ટેબલમાં પેમેન્ટ વિગતો, રેફરન્સ આઈડી અને રૂમ નંબર અપડેટ કરો
+// $payment_id એ Razorpay તરફથી મળેલો 'razorpay_payment_id' છે
+$sql_update = "UPDATE bookings SET 
+               status = 'Confirmed', 
+               payment_status = 'Paid', 
+               razorpay_id = '$payment_id', 
+               room_number = '$assigned_room' 
+               WHERE id = $booking_id";
 
-    $sql_update = "UPDATE bookings SET 
-                   status = 'Confirmed', 
-                   payment_status = 'Paid', 
-                   razorpay_id = '$payment_id', 
-                   room_number = '$assigned_room' 
-                   WHERE id = $booking_id";
-    $upd_book = mysqli_query($conn, $sql_update);
+$upd_book = mysqli_query($conn, $sql_update);
 
-    // ૨. પેમેન્ટ ટેબલમાં ડેટા સ્ટોર કરો (નવી ફંક્શનલિટી)
-    $final_amount = $_SESSION['booking']['total_price']; // સેસનમાંથી ટોટલ પ્રાઈસ લીધી
-    $current_date = date('Y-m-d');
-    
-    $sql_payment = "INSERT INTO payments (booking_id, amount, payment_date) 
-                    VALUES ('$booking_id', '$final_amount', '$current_date')";
-    $ins_payment = mysqli_query($conn, $sql_payment);
+// ૨. પેમેન્ટ ટેબલમાં ટ્રાન્ઝેક્શન લોગ કરો (હવે રેફરન્સ આઈડી સાથે)
+$final_amount = $_SESSION['booking']['total_price']; 
+$current_date = date('Y-m-d');
 
-// ચેક કરો કે બંને ક્વેરી સફળ રહી કે નહીં
-    if ($upd_book && $ins_payment) { 
-        mysqli_commit($conn);
-        $response['status'] = 'success';
-        $response['booking_id'] = $booking_id;
-        unset($_SESSION['booking']); 
-    } else {
-        mysqli_rollback($conn);
-        $response['error'] = "Payment verified but database update failed.";
-    }
+// $payment_id એ Razorpay તરફથી મળેલો આઈડી છે
+$sql_payment = "INSERT INTO payments (booking_id, amount, razorpay_payment_id, payment_date) 
+                VALUES ('$booking_id', '$final_amount', '$payment_id', '$current_date')";
+$ins_payment = mysqli_query($conn, $sql_payment);
+
+if ($upd_book && $ins_payment) { 
+    mysqli_commit($conn);
+    $response['status'] = 'success';
+    $response['booking_id'] = $booking_id;
+    // સેસન ખાલી કરો જેથી ફરી પેમેન્ટ ન થાય
+    unset($_SESSION['booking']);
+} else {
+    mysqli_rollback($conn);
+    $response['error'] = "Database update failed: " . mysqli_error($conn);
+}
 
 } catch(SignatureVerificationError $e) {
     $response['error'] = "Signature verification failed.";

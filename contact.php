@@ -184,43 +184,44 @@
     </section>
 
     <section class="contact-wrapper">
-    <div class="left-col">
-        <div class="info-card">
-            <div class="icon">🕒</div>
-            <div>
-                <h4>Reception Hours</h4>
-                <p>24/7 Front Desk <br> Check-in: 2:00 PM | Check-out: 12:00 PM</p>
-                <span>Always here to assist you</span>
+        <div class="left-col">
+            <div class="info-card">
+                <div class="icon">🕒</div>
+                <div>
+                    <h4>Reception Hours</h4>
+                    <p>24/7 Front Desk <br> Check-in: 12:00 PM | Check-out: 10:30 AM</p>
+                    <span>Always here to assist you</span>
+                </div>
+            </div>
+            <div class="info-card">
+                <div class="icon">✉️</div>
+                <div>
+                    <h4>Email</h4>
+                    <p><a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a></p>
+                    <span>We’ll respond within some time</span>
+                </div>
             </div>
         </div>
-        <div class="info-card">
-            <div class="icon">✉️</div>
-            <div>
-                <h4>Email</h4>
-                <p><a href="mailto:shaktibhuvanambaji@gmail.com">shaktibhuvanambaji@gmail.com</a></p>
-                <span>We’ll respond within some time</span>
-            </div>
-        </div>
-    </div>
 
-    <div class="right-col">
-        <div class="info-card">
-            <div class="icon">📱</div>
-            <div>
-                <h4>Phone</h4>
-                <p><a href="tel:+919265900219">+91 92659 00219</a></p>
-                <span>Available 24/7 for reservations</span>
+        <div class="right-col">
+            <div class="info-card">
+                <div class="icon">📱</div>
+                <div>
+                    <h4>Phone</h4>
+                    <p><a href="tel:+919265900219">+91 92659 00219</a></p>
+                    <span>Available 24/7 for reservations</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="map-box-full">
-        <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3635.8329615598925!2d72.8447!3d24.3364!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjTCsDIwJzExLjAiTiA3MsKwNTAnNDAuOSJF!5e0!3m2!1sen!2sin!4v1700000000000"
-            width="100%" height="400" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy">
-        </iframe>
-    </div>
-</section>
+        <div class="map-box-full">
+            <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3667.7317323561217!2d72.845482!3d24.3265648!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395d23fbbb6196cf%3A0xfc61656acb2d27fe!2sShakti%20bhawan!5e0!3m2!1sen!2sin!4v1694422945369!5m2!1sen!2sin"
+                width="100%" height="400" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+    </section>
 
     <section class="bottom-form">
         <div class="contact-form">
