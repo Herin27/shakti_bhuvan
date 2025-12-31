@@ -2247,7 +2247,7 @@ function countAmenities($amenities_string) {
 
                 // --- Determine the ID and Script based on recordType ---
                 let viewScript = 'view_details.php';
-                let editScript = 'edit_record.php';
+                let editScript = 'edit_room.php';
                 // let deletePath = '';
                 let finalId = numericalId;
                 // let deleteScript = 'delete_record.php';
@@ -2309,10 +2309,20 @@ function countAmenities($amenities_string) {
                         }
                     };
                 }
+                document.getElementById('action-view-link').href = `${viewScript}?id=${viewEditId}`;
+                document.getElementById('action-edit-link').href = `${editScript}?id=${viewEditId}`;
+                // viewEditId = recordId; // Use full string customer_id
+                // const recordId = document.getElementById('modal-record-id').textContent;
+                // const numericalId = this.getAttribute('href').split('=')[1]; // ID મેળવો
 
                 // actionModal લોજિકની અંદર આ ઉમેરો અથવા સુધારો
+                // actionModal લોજિકની અંદર આ સેક્શન શોધો
                 if (recordType === 'Room') {
                     editScript = 'edit_room.php';
+
+                    // આ લાઈન બદલો: recordId ને બદલે numericalId વાપરો
+                    viewEditId = numericalId;
+
                     const deleteBtn = document.getElementById('action-delete-link');
                     deleteBtn.style.display = 'block';
                     deleteBtn.href = `delete_room.php?id=${numericalId}`;
@@ -2323,7 +2333,7 @@ function countAmenities($amenities_string) {
 
                         if (confirm(`શું તમે ખરેખર રૂમ ટાઈપ "${rName}" ડિલીટ કરવા માંગો છો?`)) {
                             if (confirm(
-                                    "ચેતવણી: આ રૂમ ટાઈપ ડિલીટ કરવાથી તેની સાથે જોડાયેલા તમામ રૂમ નંબર્સ (Room Numbers) પણ ડિલીટ થઈ જશે. શું તમે આગળ વધવા માંગો છો?"
+                                    "ચેતવણી: આ રૂમ ટાઈપ ડિલીટ કરવાથી તમામ રૂમ નંબર્સ પણ ડિલીટ થશે."
                                 )) {
                                 window.location.href = this.href;
                             }
@@ -2335,20 +2345,17 @@ function countAmenities($amenities_string) {
                 //     viewScript = 'view_customer.php';
                 //     editScript = 'edit_customer.php';
                 // deleteScript = 'delete_customer.php';
-                viewEditId = recordId; // Use full string customer_id
                 // } else if (recordType === 'Booking') {
                 //     viewScript = 'view_booking.php';
                 //     editScript = 'edit_booking.php';
                 // deleteScript = 'delete_booking.php';
                 if (recordType === 'RoomNumber') {
                     viewScript = 'view_room_number.php';
-                    editScript = 'edit_room_number.php';
+                    // editScript = 'edit_room_number.php';
                     // deleteScript = 'delete_room_number.php';
                 }
 
                 // View and Edit Links
-                document.getElementById('action-view-link').href = `${viewScript}?id=${viewEditId}`;
-                document.getElementById('action-edit-link').href = `${editScript}?id=${viewEditId}`;
 
                 // const deleteBtn = document.getElementById('action-delete-link');
                 // if (deleteBtn) {
@@ -2373,8 +2380,6 @@ function countAmenities($amenities_string) {
                 // document.getElementById('action-delete-link').onclick = function(e) {
                 //     e.preventDefault(); // લિંકને સીધી ખુલતા અટકાવો
 
-                //     const recordId = document.getElementById('modal-record-id').textContent;
-                //     const numericalId = this.getAttribute('href').split('=')[1]; // ID મેળવો
 
                 //     // પહેલું વેરિફિકેશન
                 //     const firstCheck = confirm(

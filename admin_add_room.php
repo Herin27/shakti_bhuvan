@@ -386,7 +386,7 @@ $sql_room = "INSERT INTO rooms
 
                 <h3>Features</h3>
                 <div class="checkbox-group">
-                    <label><input type="checkbox" name="features[]" value="Sea View"> Sea View</label>
+                    <label><input type="checkbox" name="features[]" value="Mountain View"> Mountain View</label>
                     <label><input type="checkbox" name="features[]" value="Balcony"> Balcony</label>
                     <label><input type="checkbox" name="features[]" value="Jacuzzi"> Jacuzzi</label>
                     <label><input type="checkbox" name="features[]" value="Smart TV"> Smart TV</label>
