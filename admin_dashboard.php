@@ -65,6 +65,36 @@ if ($result_bookings) {
 // --- Available Rooms ni Ganatari (Count) ---
 $total_available_count = 0;
 
+// --- Dynamic Available Rooms Calculation (Simplified & Accurate) ---
+
+// ૧. Badha Physical Rooms ni list kadho
+$sql_all_physical = "SELECT room_number, room_type_id FROM room_numbers WHERE status != 'Maintenance'";
+$res_all_physical = mysqli_query($conn, $sql_all_physical);
+
+$total_available_in_range = 0;
+
+if ($res_all_physical) {
+    while ($room = mysqli_fetch_assoc($res_all_physical)) {
+        $is_occupied = false;
+        
+        // ૨. Check karo ke aa Room (Number + ID) occupied_rooms_data ma che?
+        // (occupied_rooms_data ma pehla thi j selected dates mujab no data che)
+        if (!empty($occupied_rooms_data)) {
+            foreach ($occupied_rooms_data as $occ) {
+                if ($occ['room_number'] == $room['room_number'] && $occ['type_id'] == $room['room_type_id']) {
+                    $is_occupied = true;
+                    break;
+                }
+            }
+        }
+        
+        // ૩. Jo room occupied na hoy to count +1 karo
+        if (!$is_occupied) {
+            $total_available_in_range++;
+        }
+    }
+}
+
 // Badha physical rooms ni list kadho
 $sql_physical_rooms = "SELECT room_number, room_type_id FROM room_numbers WHERE status != 'Maintenance'";
 $res_physical = mysqli_query($conn, $sql_physical_rooms);
@@ -1041,12 +1071,12 @@ function countAmenities($amenities_string) {
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <p class="card-title-text mb-1">Available in Range</p>
-                                <h3 class="card-value"><?php echo $total_available_count; ?></h3>
+                                <p class="card-title-text mb-1">Total Rooms</p>
+                                <h3 class="card-value"><?php echo number_format($total_available_in_range); ?></h3>
                             </div>
                             <i class="fas fa-bed fs-3 text-muted"></i>
                         </div>
-                        <small class="text-muted">Available rooms for selected dates</small>
+                        <small class="text-muted">--</small>
                     </div>
                 </div>
                 <div class="col-md-3">
