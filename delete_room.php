@@ -2,33 +2,25 @@
 include 'db.php';
 
 if (isset($_GET['id'])) {
-    $room_id = intval($_GET['id']);
+    $id = mysqli_real_escape_string($conn, $_GET['id']);
 
-    // ટ્રાન્ઝેક્શન શરૂ કરો જેથી જો કોઈ એક ક્વેરી ફેલ થાય તો ડેટા સુરક્ષિત રહે
-    mysqli_begin_transaction($conn);
+    // ૧. પહેલા તપાસો કે આ રૂમ ટાઈપ અસ્તિત્વમાં છે
+    $check_sql = "SELECT * FROM rooms WHERE id = '$id'";
+    $result = mysqli_query($conn, $check_sql);
 
-    try {
-        // ૧. પેલા આ રૂમ ટાઈપ સાથે જોડાયેલા રૂમ નંબર્સ ડિલીટ કરો (Foreign Key constraints ને કારણે)
-        mysqli_query($conn, "DELETE FROM room_numbers WHERE room_type_id = $room_id");
+    if (mysqli_num_rows($result) > 0) {
+        // ૨. રૂમ ટાઈપ ડિલીટ કરવાની ક્વેરી
+        $delete_sql = "DELETE FROM rooms WHERE id = '$id'";
 
-        // ૨. મુખ્ય રૂમ ટાઈપ ડિલીટ કરો
-        $sql_delete = "DELETE FROM rooms WHERE id = $room_id";
-        
-        if (mysqli_query($conn, $sql_delete)) {
-            mysqli_commit($conn);
-            echo "<script>
-                    alert('room is successfully deleted');
-                    window.location.href = 'admin_dashboard.php?section=manage-rooms-section';
-                  </script>";
+        if (mysqli_query($conn, $delete_sql)) {
+            // સફળતાપૂર્વક ડિલીટ થયા પછી મેનેજ રૂમ સેક્શન પર મોકલો
+            header("Location: admin_dashboard.php?section=manage-rooms-section&msg=room_deleted");
+            exit();
         } else {
-            throw new Exception("Error deleting record");
+            echo "ભૂલ: રૂમ ટાઈપ ડિલીટ થઈ શક્યો નથી. " . mysqli_error($conn);
         }
-    } catch (Exception $e) {
-        mysqli_rollback($conn);
-        echo "<script>
-                alert('Error: This room type cannot be deleted. It may have active bookings.');
-                window.location.href = 'admin_dashboard.php?section=manage-rooms-section';
-              </script>";
+    } else {
+        echo "રૂમ ટાઈપ મળ્યો નથી.";
     }
 }
 

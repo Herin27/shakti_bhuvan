@@ -2293,12 +2293,33 @@ function countAmenities($amenities_string) {
                     deleteBtn.onclick = function(e) {
                         e.preventDefault();
                         const cName = button.closest('tr').cells[1]
-                        .textContent; // કસ્ટમરનું નામ મેળવો
+                            .textContent; // કસ્ટમરનું નામ મેળવો
 
                         // ડબલ કન્ફર્મેશન
                         if (confirm(`શું તમે ખરેખર ગ્રાહક "${cName}" ને ડિલીટ કરવા માંગો છો?`)) {
                             if (confirm(
                                     "ચેતવણી: આ ગ્રાહકનો તમામ ડેટા અને બુકિંગ હિસ્ટ્રી પર અસર થઈ શકે છે. શું તમે ચોક્કસ છો?"
+                                )) {
+                                window.location.href = this.href;
+                            }
+                        }
+                    };
+                }
+
+                // actionModal લોજિકની અંદર આ ઉમેરો અથવા સુધારો
+                if (recordType === 'Room') {
+                    editScript = 'edit_room.php';
+                    const deleteBtn = document.getElementById('action-delete-link');
+                    deleteBtn.style.display = 'block';
+                    deleteBtn.href = `delete_room.php?id=${numericalId}`;
+
+                    deleteBtn.onclick = function(e) {
+                        e.preventDefault();
+                        const rName = document.getElementById('modal-record-id').textContent;
+
+                        if (confirm(`શું તમે ખરેખર રૂમ ટાઈપ "${rName}" ડિલીટ કરવા માંગો છો?`)) {
+                            if (confirm(
+                                    "ચેતવણી: આ રૂમ ટાઈપ ડિલીટ કરવાથી તેની સાથે જોડાયેલા તમામ રૂમ નંબર્સ (Room Numbers) પણ ડિલીટ થઈ જશે. શું તમે આગળ વધવા માંગો છો?"
                                     )) {
                                 window.location.href = this.href;
                             }
@@ -2315,10 +2336,7 @@ function countAmenities($amenities_string) {
                 //     viewScript = 'view_booking.php';
                 //     editScript = 'edit_booking.php';
                 // deleteScript = 'delete_booking.php';
-                if (recordType === 'Room') {
-                    editScript = 'edit_room.php';
-                    // deleteScript = 'delete_room.php'; // આ ફાઈલ આપણે ઉપર બનાવી
-                } else if (recordType === 'RoomNumber') {
+                if (recordType === 'RoomNumber') {
                     viewScript = 'view_room_number.php';
                     editScript = 'edit_room_number.php';
                     // deleteScript = 'delete_room_number.php';
