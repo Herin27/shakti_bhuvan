@@ -2027,7 +2027,7 @@ function countAmenities($amenities_string) {
                                     <select name="image_type" id="image_type" class="form-select" required>
                                         <option value="">-- Select Category --</option>
                                         <option value="Hotel View">Hotel View</option>
-                                        <option value="Luxury Suite">Luxury Suite</option>
+                                        <option value="Standard Non-AC">Standard Non-AC</option>
                                         <option value="Deluxe Room">Deluxe Room</option>
                                         <option value="Standard Room">Standard Room</option>
                                     </select>

@@ -9,7 +9,7 @@ while ($row = $result->fetch_assoc()) {
     $gallery[$row['image_type']][] = $row;
 }
 
-$categories = ['Hotel View', 'Luxury Suite', 'Deluxe Room', 'Standard Room'];
+$categories = ['Hotel View', 'Standard Non-AC', 'Deluxe Room', 'Standard Room'];
 ?>
 <!DOCTYPE html>
 <html lang="en">

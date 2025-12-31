@@ -136,6 +136,7 @@ mysqli_close($conn);
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Admin - Gallery Management</title>
@@ -143,79 +144,119 @@ mysqli_close($conn);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
     <style>
-        body { font-family: 'Open Sans', sans-serif; background: #f4f4f9; }
-        .container { padding-top: 30px; max-width: 900px; margin: auto; }
-        .card { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 12px; }
-        
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
-        .gallery-item { background: #fcfcfc; padding: 10px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
-        .gallery-item img { max-width: 100%; border-radius: 6px; height: 120px; object-fit: cover; }
-        .delete-btn { background: #e74c3c; color: white; margin-top: 5px; }
+    body {
+        font-family: 'Open Sans', sans-serif;
+        background: #f4f4f9;
+    }
+
+    .container {
+        padding-top: 30px;
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .card {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+    }
+
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .gallery-item {
+        background: #fcfcfc;
+        padding: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        text-align: center;
+    }
+
+    .gallery-item img {
+        max-width: 100%;
+        border-radius: 6px;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .delete-btn {
+        background: #e74c3c;
+        color: white;
+        margin-top: 5px;
+    }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1 class="mb-4">
-        <a href="admin_dashboard.php?section=gallery-section" class="text-secondary me-2"><i class="fas fa-arrow-left"></i></a>
-        Gallery Management
-    </h1>
+    <div class="container">
+        <h1 class="mb-4">
+            <a href="admin_dashboard.php?section=gallery-section" class="text-secondary me-2"><i
+                    class="fas fa-arrow-left"></i></a>
+            Gallery Management
+        </h1>
 
-    <?php if ($message): ?>
+        <?php if ($message): ?>
         <div class="alert alert-<?php echo $message_type; ?> alert-dismissible fade show" role="alert">
             <?php echo $message; ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-    <?php endif; ?>
+        <?php endif; ?>
 
-    <div class="card p-4 mb-4">
-        <h2>Upload New Images</h2>
-        <form method="post" enctype="multipart/form-data">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label for="image_type" class="form-label">Image Category:</label>
-                    <select name="image_type" id="image_type" class="form-select" required>
-                        <option value="">-- Select Category --</option>
-                        <option value="Hotel View">Hotel View</option>
-                        <option value="Luxury Suite">Luxury Suite</option>
-                        <option value="Deluxe Room">Deluxe Room</option>
-                        <option value="Standard Room">Standard Room</option>
-                    </select>
-                </div>
-
-                <div class="col-md-6">
-                    <label for="images" class="form-label">Select Images (Multiple):</label>
-                    <input type="file" name="images[]" id="images" class="form-control" multiple required>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" name="upload" class="btn btn-warning w-100"><i class="fas fa-upload me-2"></i> Upload</button>
-                </div>
-            </div>
-        </form>
-    </div>
-
-    <div class="card p-4">
-        <h2>Uploaded Images (<?php echo count($images); ?>)</h2>
-        <div class="gallery">
-            <?php if (!empty($images)): ?>
-                <?php foreach ($images as $img): ?>
-                    <div class="gallery-item">
-                        <img src="<?php echo htmlspecialchars($img['image_url']); ?>" alt="Gallery Image">
-                        <p class="small text-muted mb-1"><?php echo htmlspecialchars($img['image_type']); ?></p>
-                        
-                        <form method="post" onsubmit="return confirm('Are you sure you want to delete this image?');">
-                            <input type="hidden" name="image_id" value="<?php echo $img['id']; ?>">
-                            <button type="submit" name="delete" class="btn btn-danger btn-sm w-100 delete-btn"><i class="fas fa-trash"></i> Delete</button>
-                        </form>
+        <div class="card p-4 mb-4">
+            <h2>Upload New Images</h2>
+            <form method="post" enctype="multipart/form-data">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="image_type" class="form-label">Image Category:</label>
+                        <select name="image_type" id="image_type" class="form-select" required>
+                            <option value="">-- Select Category --</option>
+                            <option value="Hotel View">Hotel View</option>
+                            <option value="Standard Room">Standard Non-AC</option>
+                            <option value="Deluxe Room">Deluxe Room</option>
+                            <option value="Standard Room">Standard Room</option>
+                        </select>
                     </div>
+
+                    <div class="col-md-6">
+                        <label for="images" class="form-label">Select Images (Multiple):</label>
+                        <input type="file" name="images[]" id="images" class="form-control" multiple required>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" name="upload" class="btn btn-warning w-100"><i
+                                class="fas fa-upload me-2"></i> Upload</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="card p-4">
+            <h2>Uploaded Images (<?php echo count($images); ?>)</h2>
+            <div class="gallery">
+                <?php if (!empty($images)): ?>
+                <?php foreach ($images as $img): ?>
+                <div class="gallery-item">
+                    <img src="<?php echo htmlspecialchars($img['image_url']); ?>" alt="Gallery Image">
+                    <p class="small text-muted mb-1"><?php echo htmlspecialchars($img['image_type']); ?></p>
+
+                    <form method="post" onsubmit="return confirm('Are you sure you want to delete this image?');">
+                        <input type="hidden" name="image_id" value="<?php echo $img['id']; ?>">
+                        <button type="submit" name="delete" class="btn btn-danger btn-sm w-100 delete-btn"><i
+                                class="fas fa-trash"></i> Delete</button>
+                    </form>
+                </div>
                 <?php endforeach; ?>
-            <?php else: ?>
+                <?php else: ?>
                 <p class="text-muted text-center w-100">No images have been uploaded to the gallery yet.</p>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
