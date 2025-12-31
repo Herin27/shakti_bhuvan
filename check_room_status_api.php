@@ -15,6 +15,10 @@ $sql = "SELECT (
     (SELECT COUNT(*) FROM offline_booking 
      WHERE room_number = '$room' 
      AND NOT (checkout_date <= '$start' OR checkin_date >= '$end'))
+     +
+     (SELECT id FROM room_numbers 
+WHERE room_number = '$room' 
+AND room_type_id = '$room_type_id')
 ) AS total_conflicts";
 
 $result = mysqli_query($conn, $sql);

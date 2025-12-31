@@ -1196,7 +1196,7 @@ function countAmenities($amenities_string) {
                         <div class="d-flex flex-wrap gap-3 mb-4">
                             <?php foreach ($data['rooms'] as $room): 
                             $statusClass = $room['is_occupied'] ? 'occupied' : 'available';
-                            $clickAction = $room['is_occupied'] ? "alert('Room already booked for these dates')" : "openOfflineBooking('".$room['number']."', '".$view_checkin."')";
+                            $clickAction = $room['is_occupied'] ? "alert('Room already booked for these dates')" : "openOfflineBooking('".$room['number']."', '".$view_checkin."', '".$room['type_id']."')";
                         ?>
                             <div class="room-box <?= $statusClass ?>" onclick="<?= $clickAction ?>"
                                 style="cursor: pointer;" title="Room <?= $room['number'] ?>">
@@ -2603,13 +2603,25 @@ function countAmenities($amenities_string) {
         document.body.removeChild(link);
     }
     // admin_dashboard.php ના અંતમાં રહેલા સ્ક્રિપ્ટ ટેગમાં સુધારો
-    function openOfflineBooking(roomNum, checkin) {
+    function openOfflineBooking(roomNum, checkin, roomTypeId) { // roomTypeId ઉમેર્યું
         const checkoutInput = document.getElementsByName('checkout_date')[0];
         const checkinInput = document.getElementById('form_checkin_date');
         const submitBtn = document.querySelector('button[name="submit_offline"]');
 
         document.getElementById('display_room_no').innerText = roomNum;
         document.getElementById('form_room_number').value = roomNum;
+
+        // ફોર્મમાં એક hidden input ઉમેરવો પડશે room_type_id માટે
+        let typeInput = document.getElementById('form_room_type_id');
+        if (!typeInput) {
+            typeInput = document.createElement('input');
+            typeInput.type = 'hidden';
+            typeInput.name = 'room_type_id';
+            typeInput.id = 'form_room_type_id';
+            document.getElementById('offlineBookingModal').querySelector('form').appendChild(typeInput);
+        }
+        typeInput.value = roomTypeId;
+
         checkinInput.value = checkin;
 
         // Default checkout next day
@@ -2617,24 +2629,22 @@ function countAmenities($amenities_string) {
         nextDay.setDate(nextDay.getDate() + 1);
         checkoutInput.value = nextDay.toISOString().split('T')[0];
 
-        // Ajax ફંક્શન જે ચેક કરશે કે રૂમ ખાલી છે કે નહિ
         const checkAvailability = () => {
             let room = roomNum;
             let start = checkinInput.value;
             let end = checkoutInput.value;
+            let typeId = roomTypeId; // Type ID નો ઉપયોગ કરો
 
             if (!start || !end) return;
 
-            // એક નાની PHP ફાઈલ બનાવીશું 'check_room_conflict.php'
-            fetch(`check_room_status_api.php?room=${room}&start=${start}&end=${end}`)
+            // API માં room_type_id પણ મોકલો જેથી સાચો રૂમ ચેક થાય
+            fetch(`check_room_status_api.php?room=${room}&start=${start}&end=${end}&room_type_id=${typeId}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.is_booked) {
-                        alert(
-                            `Alert: Room ${room} is already booked between ${start} and ${end}. Please choose different dates.`
-                        );
-                        submitBtn.disabled = true; // બટન બંધ કરી દેશે
-                        submitBtn.innerText = "room Unavailable";
+                        alert(`Alert: Room ${room} is already booked for this category!`);
+                        submitBtn.disabled = true;
+                        submitBtn.innerText = "Room Unavailable";
                     } else {
                         submitBtn.disabled = false;
                         submitBtn.innerText = "Confirm Booking";
@@ -2642,7 +2652,6 @@ function countAmenities($amenities_string) {
                 });
         };
 
-        // જ્યારે પણ તારીખ બદલાય ત્યારે ચેક કરો
         checkinInput.onchange = checkAvailability;
         checkoutInput.onchange = checkAvailability;
 
