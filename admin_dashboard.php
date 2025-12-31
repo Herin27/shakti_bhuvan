@@ -1296,6 +1296,7 @@ function countAmenities($amenities_string) {
                                         <i class="fas fa-ellipsis-h"></i>
                                     </a>
                                 </td>
+
                             </tr>
                             <?php endforeach; ?>
                             <?php else: ?>
@@ -2137,18 +2138,21 @@ function countAmenities($amenities_string) {
                 <div class="modal-body pt-2">
                     <p class="text-muted small" id="modal-record-type-text"></p>
 
-                    <a href="#" class="btn btn-outline-secondary" id="action-view-link">
+                    <a href="#" class="btn btn-outline-secondary w-100 mb-2" id="action-view-link">
                         <i class="fas fa-eye me-2"></i> View Details
                     </a>
 
-                    <a href="#" class="btn btn-outline-primary" id="action-edit-link">
+                    <a href="#" class="btn btn-outline-primary w-100 mb-2" id="action-edit-link">
                         <i class="fas fa-edit me-2"></i> Edit Record
                     </a>
 
-                    <a href="delete_booking.php?id=<?= $booking['id'] ?>" class="btn btn-danger btn-sm"
-                        onclick="return (confirm('શું તમે ડિલીટ કરવા માંગો છો?') && confirm('છેલ્લી વાર પૂછું છું, શું તમે ખરેખર ચોક્કસ છો?'));">
-                        <i class="fas fa-trash me-1"></i> Delete
+                    <a href="#" class="btn btn-danger w-100" id="action-delete-link">
+                        <i class="fas fa-trash me-2"></i> Delete Permanently
                     </a>
+
+                    <!-- <a href="#" class="btn btn-danger w-100" id="action-delete-link">
+                        <i class="fas fa-trash me-2"></i> Delete Permanently
+                    </a> -->
                 </div>
             </div>
         </div>
@@ -2204,6 +2208,8 @@ function countAmenities($amenities_string) {
             }
         }
 
+
+
         // Check URL parameters on load for deep linking
         const urlParams = new URLSearchParams(window.location.search);
         const initialSection = urlParams.get('section') || 'dashboard-section';
@@ -2238,55 +2244,132 @@ function countAmenities($amenities_string) {
                 // --- Determine the ID and Script based on recordType ---
                 let viewScript = 'view_details.php';
                 let editScript = 'edit_record.php';
-                let deleteScript = 'delete_record.php';
+                // let deletePath = '';
+                let finalId = numericalId;
+                // let deleteScript = 'delete_record.php';
                 let viewEditId = numericalId; // Default to numerical ID
+
+                // મોડલ લોડ થાય ત્યારે ડિલીટ લિંક સેટ કરવી
+                if (recordType === 'Booking') {
+                    viewScript = 'view_booking.php';
+                    editScript = 'edit_booking.php';
+
+                    // ડિલીટ બટન માટેનું લોજિક
+                    const deleteBtn = document.getElementById('action-delete-link');
+                    deleteBtn.style.display = 'block'; // બટન બતાવો
+                    deleteBtn.href = `delete_booking.php?id=${numericalId}`;
+
+                    deleteBtn.onclick = function(e) {
+                        e.preventDefault();
+                        const bId = document.getElementById('modal-record-id').textContent;
+
+                        // પ્રથમ કન્ફર્મેશન
+                        if (confirm(`શું તમે ખરેખર બુકિંગ ${bId} ડિલીટ કરવા માંગો છો?`)) {
+                            // બીજું કન્ફર્મેશન (સુરક્ષા માટે)
+                            if (confirm(
+                                    "ચેતવણી: આ રેકોર્ડ કાયમી ધોરણે ડિલીટ થઈ જશે. શું તમે ચોક્કસ છો?"
+                                )) {
+                                window.location.href = this.href;
+                            }
+                        }
+                    };
+                } else {
+                    // જો બુકિંગ સિવાયનું સેક્શન હોય તો ડિલીટ બટન છુપાવી શકાય
+                    document.getElementById('action-delete-link').style.display = 'none';
+                }
 
                 if (recordType === 'Customer') {
                     viewScript = 'view_customer.php';
                     editScript = 'edit_customer.php';
-                    deleteScript = 'delete_customer.php';
-                    viewEditId = recordId; // Use full string customer_id
-                } else if (recordType === 'Booking') {
-                    viewScript = 'view_booking.php';
-                    editScript = 'edit_booking.php';
-                    deleteScript = 'delete_booking.php';
-                } else if (recordType === 'Room') {
+                    viewEditId = recordId; // full customer_id (e.g., CUST001)
+
+                    // ડિલીટ બટન માટેનું લોજિક
+                    const deleteBtn = document.getElementById('action-delete-link');
+                    deleteBtn.style.display = 'block';
+                    // અહીં આપણે numericalId અથવા recordId મોકલી શકીએ, 
+                    // પણ ડેટાબેઝ ક્વેરી માટે numericalId (primary key) વધુ સારું રહેશે.
+                    deleteBtn.href = `delete_customer.php?id=${numericalId}`;
+
+                    deleteBtn.onclick = function(e) {
+                        e.preventDefault();
+                        const cName = button.closest('tr').cells[1]
+                        .textContent; // કસ્ટમરનું નામ મેળવો
+
+                        // ડબલ કન્ફર્મેશન
+                        if (confirm(`શું તમે ખરેખર ગ્રાહક "${cName}" ને ડિલીટ કરવા માંગો છો?`)) {
+                            if (confirm(
+                                    "ચેતવણી: આ ગ્રાહકનો તમામ ડેટા અને બુકિંગ હિસ્ટ્રી પર અસર થઈ શકે છે. શું તમે ચોક્કસ છો?"
+                                    )) {
+                                window.location.href = this.href;
+                            }
+                        }
+                    };
+                }
+
+                // if (recordType === 'Customer') {
+                //     viewScript = 'view_customer.php';
+                //     editScript = 'edit_customer.php';
+                // deleteScript = 'delete_customer.php';
+                viewEditId = recordId; // Use full string customer_id
+                // } else if (recordType === 'Booking') {
+                //     viewScript = 'view_booking.php';
+                //     editScript = 'edit_booking.php';
+                // deleteScript = 'delete_booking.php';
+                if (recordType === 'Room') {
                     editScript = 'edit_room.php';
-                    deleteScript = 'delete_room.php'; // આ ફાઈલ આપણે ઉપર બનાવી
+                    // deleteScript = 'delete_room.php'; // આ ફાઈલ આપણે ઉપર બનાવી
                 } else if (recordType === 'RoomNumber') {
                     viewScript = 'view_room_number.php';
                     editScript = 'edit_room_number.php';
-                    deleteScript = 'delete_room_number.php';
+                    // deleteScript = 'delete_room_number.php';
                 }
 
                 // View and Edit Links
                 document.getElementById('action-view-link').href = `${viewScript}?id=${viewEditId}`;
                 document.getElementById('action-edit-link').href = `${editScript}?id=${viewEditId}`;
 
+                // const deleteBtn = document.getElementById('action-delete-link');
+                // if (deleteBtn) {
+                //     deleteBtn.href = `${deletePath}?id=${finalId}`;
+
+                //     // બે વાર કન્ફર્મ કરવા માટેનું લોજિક
+                //     deleteBtn.onclick = function(e) {
+                //         if (!confirm(`શું તમે ખરેખર આ ${recordType} ડિલીટ કરવા માંગો છો?`)) {
+                //             e.preventDefault();
+                //             return false;
+                //         }
+                //         if (!confirm(
+                //                 "ચેતવણી: આ ડેટા કાયમી ધોરણે ડિલીટ થઈ જશે. શું આગળ વધવું છે?")) {
+                //             e.preventDefault();
+                //             return false;
+                //         }
+                //     };
+                // }
+
                 // Delete Link uses the numerical ID
                 // મોડલની અંદર ડિલીટ લિંક સેટ કરવાનું લોજિક શોધો અને આ મુજબ બદલો
-                document.getElementById('action-delete-link').onclick = function(e) {
-                    e.preventDefault(); // લિંકને સીધી ખુલતા અટકાવો
+                // document.getElementById('action-delete-link').onclick = function(e) {
+                //     e.preventDefault(); // લિંકને સીધી ખુલતા અટકાવો
 
-                    const recordId = document.getElementById('modal-record-id').textContent;
-                    const numericalId = this.getAttribute('href').split('=')[1]; // ID મેળવો
+                //     const recordId = document.getElementById('modal-record-id').textContent;
+                //     const numericalId = this.getAttribute('href').split('=')[1]; // ID મેળવો
 
-                    // પહેલું વેરિફિકેશન
-                    const firstCheck = confirm(
-                        `Are you sure you want to delete ${recordType} ${recordId}?`);
+                //     // પહેલું વેરિફિકેશન
+                //     const firstCheck = confirm(
+                //         `Are you sure you want to delete ${recordType} ${recordId}?`);
 
-                    if (firstCheck) {
-                        // બીજું વેરિફિકેશન
-                        const secondCheck = confirm(
-                            "Alert: This action cannot be undone. Do you really want to proceed?"
-                        );
+                //     if (firstCheck) {
+                //         // બીજું વેરિફિકેશન
+                //         const secondCheck = confirm(
+                //             "Alert: This action cannot be undone. Do you really want to proceed?"
+                //         );
 
-                        if (secondCheck) {
-                            // જો બંને વાર 'OK' આપે તો જ પેજ રીડાયરેક્ટ થશે
-                            window.location.href = `delete_booking.php?id=${numericalId}`;
-                        }
-                    }
-                };
+                //         if (secondCheck) {
+                //             // જો બંને વાર 'OK' આપે તો જ પેજ રીડાયરેક્ટ થશે
+                //             window.location.href = `delete_booking.php?id=${numericalId}`;
+                //         }
+                //     }
+                // };
             });
         }
 
