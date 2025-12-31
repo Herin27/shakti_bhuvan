@@ -36,8 +36,8 @@ $final_payable = $subtotal + $tax_amount;
 $_SESSION['booking']['total_price'] = $final_payable;
 
 // --- Razorpay config ---
-$keyId = "rzp_live_Rxmk9kcaosHgx5";   
-$keySecret = "7t7U9HQb5ri6uSm9U219FGKY"; 
+$keyId = "rzp_test_RqeUyvsrea1Qdx";   
+$keySecret = "DypnwCtjMOpiwBcJmZKkeYbd";
 
 require('razorpay-php-master/Razorpay.php'); 
 use Razorpay\Api\Api;

@@ -3,8 +3,8 @@ session_start();
 error_reporting(0); 
 include 'db.php'; 
 
-$keyId = "rzp_live_Rxmk9kcaosHgx5";   
-$keySecret = "7t7U9HQb5ri6uSm9U219FGKY";
+$keyId = "rzp_test_RqeUyvsrea1Qdx";   
+$keySecret = "DypnwCtjMOpiwBcJmZKkeYbd";
 
 require('razorpay-php-master/Razorpay.php');
 use Razorpay\Api\Api;
@@ -29,30 +29,37 @@ $room_type_id = intval($_SESSION['booking']['room_id']);
 try {
     // --- STEP 1: તે ચોક્કસ તારીખે ખાલી હોય તેવો રૂમ શોધો ---
 // --- Updated Step 1: Find a room that is free Online AND Offline ---
+// --- Updated Step 1: Find a room by checking both number AND floor ---
 $checkin = $_SESSION['booking']['checkin'];
 $checkout = $_SESSION['booking']['checkout'];
 $room_type_id = intval($_SESSION['booking']['room_id']);
 
+// પહેલા આ રૂમ ટાઈપનો ફ્લોર કયો છે તે મેળવો
+// Step 1: તે જ Room Type અને તે જ Floor નો ખાલી રૂમ શોધો
+$room_type_id = intval($_SESSION['booking']['room_id']);
+$checkin = $_SESSION['booking']['checkin'];
+$checkout = $_SESSION['booking']['checkout'];
+
 $sql_assign = "SELECT rn.room_number 
                FROM room_numbers rn 
                WHERE rn.room_type_id = $room_type_id 
-               AND rn.status != 'Maintenance'
+               AND rn.status = 'Available'
                AND rn.room_number NOT IN (
-                   /* ૧. Online Bookings ચેક કરો */
+                   /* તે જ પ્રકારના અને તે જ ફ્લોરના રૂમનું ઓનલાઇન બુકિંગ ચેક કરો */
                    SELECT b.room_number 
                    FROM bookings b 
                    WHERE b.room_id = $room_type_id 
                    AND b.status IN ('Confirmed', 'Checked-in') 
-                   AND b.room_number IS NOT NULL
                    AND NOT (b.checkout <= '$checkin' OR b.checkin >= '$checkout')
-               ) 
+               )
                AND rn.room_number NOT IN (
-                   /* ૨. Offline Bookings ચેક કરો */
-                   SELECT o.room_number 
-                   FROM offline_booking o 
-                   WHERE NOT (o.checkout_date <= '$checkin' OR o.checkin_date >= '$checkout')
-               ) 
-               LIMIT 1";
+                   /* ઓફલાઇન બુકિંગ માટે પણ તે જ Room Type ના રૂમ ચેક કરો */
+                   SELECT ob.room_number 
+                   FROM offline_booking ob
+                   JOIN room_numbers rn2 ON ob.room_number = rn2.room_number
+                   WHERE rn2.room_type_id = $room_type_id
+                   AND NOT (ob.checkout_date <= '$checkin' OR ob.checkin_date >= '$checkout')
+               ) LIMIT 1";
 
 $result_assign = mysqli_query($conn, $sql_assign);
 

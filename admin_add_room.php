@@ -88,21 +88,23 @@ $sql_room = "INSERT INTO rooms
         $room_numbers_array = array_filter($room_numbers_array); // Remove empty values
 
         $room_insert_count = 0;
-        foreach ($room_numbers_array as $room_num) {
-            $safe_room_num = mysqli_real_escape_string($conn, $room_num);
-            
-            // Check if room number already exists globally (optional but good for UNIQUE constraint)
-            // Skip check for brevity, rely on UNIQUE key constraint in DB
-            
-            $sql_num = "INSERT INTO room_numbers 
-                (room_type_id, floor, room_number, status) 
-                VALUES 
-                ('$room_id', '$floor', '$safe_room_num', 'Available')";
-                
-            if (mysqli_query($conn, $sql_num)) {
-                $room_insert_count++;
-            }
+        // Loop ની અંદર (લાઈન ૯૦ આસપાસ)
+foreach ($room_numbers_array as $room_num) {
+    $safe_room_num = mysqli_real_escape_string($conn, $room_num);
+    
+    // ચેક કરો કે આ ફ્લોર પર આ રૂમ નંબર પહેલેથી છે કે નહીં
+    $check_exists = mysqli_query($conn, "SELECT id FROM room_numbers WHERE room_number = '$safe_room_num' AND floor = '$floor'");
+    
+    if (mysqli_num_rows($check_exists) == 0) {
+        $sql_num = "INSERT INTO room_numbers (room_type_id, floor, room_number, status) 
+                    VALUES ('$room_id', '$floor', '$safe_room_num', 'Available')";
+        if (mysqli_query($conn, $sql_num)) {
+            $room_insert_count++;
         }
+    } else {
+        // જો રૂમ પહેલેથી હોય તો અહીં મેસેજ સેટ કરી શકાય
+    }
+}
         
         echo "<script>alert('Room Type Added Successfully! " . $room_insert_count . " physical rooms added.');</script>";
         // Optional: Redirect

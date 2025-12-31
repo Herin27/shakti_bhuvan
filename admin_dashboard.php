@@ -28,13 +28,6 @@ function fetchSingleValue($conn, $sql) {
 // બાયડિફોલ્ટ આજની તારીખ સેટ કરો
 $start_date = $_GET['start_date'] ?? date('Y-m-d');
 $end_date   = $_GET['end_date']   ?? date('Y-m-d', strtotime('+1 day'));
-// $view_checkout = $_GET['dash_checkout'] ?? date('Y-m-d', strtotime('+1 day'));
-
-// // ૧. Total Bookings (Checked-out સિવાયના અને તારીખ મુજબ)
-// $sql_total_bookings = "SELECT COUNT(*) FROM bookings 
-//                        WHERE status != 'Checked-out' 
-//                        AND (checkin BETWEEN '$start_date' AND '$end_date')";
-// $total_bookings = fetchSingleValue($conn, $sql_total_bookings);
 
 // ૧. Total Active Bookings (પસંદ કરેલી તારીખના ગાળામાં જેઓ રૂમમાં છે)
 $sql_total_bookings = "SELECT COUNT(*) FROM bookings 
@@ -42,12 +35,7 @@ $sql_total_bookings = "SELECT COUNT(*) FROM bookings
                        AND NOT (checkout <= '$start_date' OR checkin >= '$end_date')";
 $total_bookings = fetchSingleValue($conn, $sql_total_bookings);
 
-// // ૨. Revenue (તારીખ મુજબ)
-// $sql_month_revenue = "SELECT SUM(total_price) FROM bookings 
-//                       WHERE (status = 'Confirmed' OR status = 'Checked-in') 
-//                       AND payment_status = 'Paid'
-//                       AND (checkin BETWEEN '$start_date' AND '$end_date')";
-// $revenue_filtered = fetchSingleValue($conn, $sql_month_revenue) ?: 0.00;
+
 
 // ૨. Revenue (તારીખ મુજબ - Overlap Logic)
 $sql_month_revenue = "SELECT SUM(total_price) FROM bookings 
@@ -74,7 +62,34 @@ if ($result_bookings) {
         $recent_bookings[] = $row;
     }
 }
+// --- Available Rooms ni Ganatari (Count) ---
+$total_available_count = 0;
 
+// Badha physical rooms ni list kadho
+$sql_physical_rooms = "SELECT room_number, room_type_id FROM room_numbers WHERE status != 'Maintenance'";
+$res_physical = mysqli_query($conn, $sql_physical_rooms);
+
+if ($res_physical) {
+    while ($room = mysqli_fetch_assoc($res_physical)) {
+        $is_occupied = false;
+        
+        // occupied_rooms_data ma check karo ke aa room book che ke nahi
+        // (Jo room_number ane type_id banne match thay to j occupied ganavo)
+        if (!empty($occupied_rooms_data)) {
+            foreach ($occupied_rooms_data as $occ) {
+                if ($occ['room_number'] == $room['room_number'] && $occ['type_id'] == $room['room_type_id']) {
+                    $is_occupied = true;
+                    break;
+                }
+            }
+        }
+        
+        // Jo room book na hoy, to count vadharo
+        if (!$is_occupied) {
+            $total_available_count++;
+        }
+    }
+}
 // --- Dynamic Available Rooms Calculation ---
 $today_date = date('Y-m-d'); // આજની તારીખ
 
@@ -184,32 +199,41 @@ $sql_all_rooms = "
 $res_rooms = mysqli_query($conn, $sql_all_rooms);
 
 // ૨. ઓનલાઇન અને ઓફલાઇન બંને બુકિંગમાંથી ઓક્યુપાઈડ રૂમ મેળવો
-$occupied_rooms_in_range = [];
+// ૨. ઓનલાઇન અને ઓફલાઇન બંને બુકિંગમાંથી ઓક્યુપાઈડ રૂમ મેળવો (રૂમ નંબર + ટાઈપ આઈડી સાથે)
+$occupied_rooms_data = []; // એરે ડિફાઈન કરવો જરૂરી છે જેથી foreach માં ભૂલ ના આવે
 
-// UNION ક્વેરી: bookings અને offline_booking બંનેમાંથી રૂમ નંબર લેશે
-// UNION ક્વેરીમાં સુધારો
 $sql_booked = "
-    (SELECT room_number 
+    (SELECT room_number, room_id as type_id
      FROM bookings 
      WHERE status IN ('Confirmed', 'Checked-in') 
      AND NOT (checkout <= '$view_checkin' OR checkin >= '$view_checkout'))
     UNION
-    (SELECT room_number 
-     FROM offline_booking 
-     WHERE NOT (checkout_date <= '$view_checkin' OR checkin_date >= '$view_checkout'))
+    (SELECT ob.room_number, rn.room_type_id as type_id
+     FROM offline_booking ob
+     JOIN room_numbers rn ON ob.room_number = rn.room_number
+     WHERE NOT (ob.checkout_date <= '$view_checkin' OR ob.checkin_date >= '$view_checkout'))
 ";
-// નોંધ: ઓફલાઇન બુકિંગમાં જો માત્ર ચેક-ઇન તારીખ જ હોય, તો તે મુજબ ફિલ્ટર થશે.
 
 $res_booked = mysqli_query($conn, $sql_booked);
-while($row = mysqli_fetch_assoc($res_booked)) {
-    $occupied_rooms_in_range[] = $row['room_number'];
+if ($res_booked) {
+    while($row = mysqli_fetch_assoc($res_booked)) {
+        $occupied_rooms_data[] = $row; // રૂમ નંબર અને ટાઈપ આઈડી બંને સેવ થશે
+    }
 }
 
 // ૩. ડેટા સ્ટ્રક્ચર તૈયાર કરો
 if ($res_rooms) {
     while ($row = mysqli_fetch_assoc($res_rooms)) {
-        // જો રૂમ ઓનલાઇન અથવા ઓફલાઇન બુકિંગમાં હોય તો 'is_occupied' true થશે
-        $isBooked = in_array($row['room_number'], $occupied_rooms_in_range);
+        // અહીં ચેક કરો કે રૂમ નંબર અને ટાઈપ આઈડી બંને મેચ થાય છે?
+        $isBooked = false;
+        if (!empty($occupied_rooms_data)) {
+            foreach($occupied_rooms_data as $occ) {
+                if($occ['room_number'] == $row['room_number'] && $occ['type_id'] == $row['room_type_id']) {
+                    $isBooked = true;
+                    break;
+                }
+            }
+        }
         
         $room_dashboard_data[$row['type_name']]['rooms'][] = [
             'number' => $row['room_number'],
@@ -264,7 +288,23 @@ $occupied_rooms = fetchSingleValue($conn, $sql_occupied_rooms);
 $maintenance_rooms = 0; // Fetched from room_numbers if possible
 $maintenance_rooms = fetchSingleValue($conn, "SELECT COUNT(*) FROM room_numbers WHERE status = 'Maintenance'");
 
+// =========================================================
+//           MANAGE ROOMS DATA FETCHING (FIXED COUNT)
+// =========================================================
 
+// ૧. જે રૂમ અત્યારે ખરેખર બુક છે (Online + Offline) તેમની સંખ્યા મેળવો
+// આપણે $occupied_rooms_data એરે જે પહેલા બનાવ્યો છે તેનો ઉપયોગ કરીશું
+$actual_occupied_count = count($occupied_rooms_data);
+
+// ૨. મેન્ટેનન્સમાં હોય તેવા રૂમ
+$maintenance_rooms = fetchSingleValue($conn, "SELECT COUNT(*) FROM room_numbers WHERE status = 'Maintenance'");
+
+// ૩. કુલ ફિઝિકલ રૂમ
+$total_rooms_physical = fetchSingleValue($conn, "SELECT COUNT(*) FROM room_numbers");
+
+// ૪. સાચો "Rooms Available Now" આંકડો
+// કુલ રૂમ - (બુક થયેલા રૂમ + મેન્ટેનન્સ વાળા રૂમ)
+$correct_available_now = $total_rooms_physical - ($actual_occupied_count + $maintenance_rooms);
 $room_inventory = [];
 $sql_room_inventory = "
     SELECT 
@@ -1002,11 +1042,11 @@ function countAmenities($amenities_string) {
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <p class="card-title-text mb-1">Available in Range</p>
-                                <h3 class="card-value"><?php echo number_format($available_rooms); ?></h3>
+                                <h3 class="card-value"><?php echo $total_available_count; ?></h3>
                             </div>
                             <i class="fas fa-bed fs-3 text-muted"></i>
                         </div>
-                        <small class="text-muted">For selected dates</small>
+                        <small class="text-muted">Available rooms for selected dates</small>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -1226,13 +1266,13 @@ function countAmenities($amenities_string) {
                 </div>
                 <div class="col-md-3">
                     <div class="stats-card">
-                        <p class="stats-value"><?php echo number_format($available_rooms); ?></p>
+                        <p class="stats-value text-success"><?php echo number_format($correct_available_now); ?></p>
                         <p class="stats-label">Rooms Available Now</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stats-card">
-                        <p class="stats-value"><?php echo number_format($occupied_rooms); ?></p>
+                        <p class="stats-value text-primary"><?php echo number_format($actual_occupied_count); ?></p>
                         <p class="stats-label">Rooms Occupied</p>
                     </div>
                 </div>

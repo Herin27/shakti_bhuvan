@@ -26,17 +26,30 @@ $notes = mysqli_real_escape_string($conn, trim($_POST['notes']));
 
 // --- Updated Availability Check Logic (Online + Offline) ---
 
-// ૧. આ રૂમ ટાઈપના કુલ કેટલા રૂમ છે તે શોધો
-$sql_total_rooms = "SELECT COUNT(*) as total FROM room_numbers WHERE room_type_id = $room_id";
+// ૧. આ રૂમ ટાઈપ અને ફ્લોરના કુલ કેટલા રૂમ છે?
+$sql_room_info = "SELECT floor FROM rooms WHERE id = $room_id";
+$res_info = mysqli_query($conn, $sql_room_info);
+$room_info = mysqli_fetch_assoc($res_info);
+$target_floor = $room_info['floor'];
+
+$sql_total_rooms = "SELECT COUNT(*) as total FROM room_numbers WHERE room_type_id = $room_id AND floor = '$target_floor'";
 $res_total = mysqli_query($conn, $sql_total_rooms);
 $total_rooms = mysqli_fetch_assoc($res_total)['total'];
 
-// ૨. પસંદ કરેલી તારીખ વચ્ચે ONLINE કેટલા રૂમ બુક છે તે શોધો
-$sql_online_booked = "SELECT room_number FROM bookings 
-                      WHERE room_id = $room_id 
-                      AND status IN ('Confirmed', 'Checked-in') 
-                      AND room_number IS NOT NULL
-                      AND NOT (checkout <= '$checkin' OR checkin >= '$checkout')";
+// ૨. ઓનલાઇન બુકિંગ ચેક (Specific Floor focus)
+$sql_online_booked = "SELECT b.room_number FROM bookings b
+                      JOIN rooms r ON b.room_id = r.id
+                      WHERE b.room_id = $room_id 
+                      AND r.floor = '$target_floor'
+                      AND b.status IN ('Confirmed', 'Checked-in') 
+                      AND NOT (b.checkout <= '$checkin' OR b.checkin >= '$checkout')";
+
+// ૩. ઓફલાઇન બુકિંગ ચેક (Specific Floor focus)
+$sql_offline_booked = "SELECT ob.room_number FROM offline_booking ob
+                       JOIN room_numbers rn ON ob.room_number = rn.room_number
+                       WHERE rn.room_type_id = $room_id 
+                       AND rn.floor = '$target_floor'
+                       AND NOT (ob.checkout_date <= '$checkin' OR ob.checkin_date >= '$checkout')";
 $res_online = mysqli_query($conn, $sql_online_booked);
 
 $booked_room_list = [];
@@ -46,8 +59,8 @@ while ($row = mysqli_fetch_assoc($res_online)) {
 
 // ૩. પસંદ કરેલી તારીખ વચ્ચે OFFLINE કેટલા રૂમ બુક છે તે શોધો
 // નોંધ: આપણે એ જ રૂમ નંબર્સ લેવાના જે આ ચોક્કસ $room_id ના હોય
-$sql_offline_booked = "SELECT room_number FROM offline_booking 
-                       WHERE NOT (checkout_date <= '$checkin' OR checkin_date >= '$checkout')";
+// $sql_offline_booked = "SELECT room_number FROM offline_booking 
+//                        WHERE NOT (checkout_date <= '$checkin' OR checkin_date >= '$checkout')";
 $res_offline = mysqli_query($conn, $sql_offline_booked);
 
 while ($row = mysqli_fetch_assoc($res_offline)) {
