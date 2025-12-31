@@ -7,6 +7,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// $redirect_url = 'admin_dashboard.php?section=settings-section';
 $redirect_url = 'admin_dashboard.php?section=settings-section';
 $upload_dir = 'uploads/';
 
@@ -15,43 +16,45 @@ function sanitize_input($conn, $data) {
     return mysqli_real_escape_string($conn, $data);
 }
 
+
+
 // =======================================================
 // A) Handle Image Deletion
 // =======================================================
-if (isset($_POST['delete_image'])) {
-    $image_id = intval($_POST['delete_image']);
+if (isset($_POST['btn_delete_hero'])) {
+    $image_id = intval($_POST['image_id_to_delete']);
 
-    // 1. Fetch the image path from the database
+    // ૧. પહેલા ડેટાબેઝમાંથી ઈમેજનો પાથ મેળવો (ફાઈલ ડિલીટ કરવા માટે)
     $sql_fetch = "SELECT background_image FROM hero_section WHERE id = $image_id";
     $result_fetch = mysqli_query($conn, $sql_fetch);
 
-    if ($result_fetch && $row = mysqli_fetch_assoc($result_fetch)) {
-        $image_path = $row['background_image'];
+    if ($result_fetch && mysqli_num_rows($result_fetch) > 0) {
+        $row = mysqli_fetch_assoc($result_fetch);
+        $file_path = $row['background_image'];
 
-        // 2. Delete the record from the database
-        $sql_delete_db = "DELETE FROM hero_section WHERE id = $image_id";
+        // ૨. ડેટાબેઝમાંથી રેકોર્ડ ડિલીટ કરો
+        $sql_delete = "DELETE FROM hero_section WHERE id = $image_id";
         
-        if (mysqli_query($conn, $sql_delete_db)) {
-            
-            // 3. Delete the physical file from the server
-            if (file_exists($image_path) && !is_dir($image_path)) {
-                @unlink($image_path); 
+        if (mysqli_query($conn, $sql_delete)) {
+            // ૩. ડેટાબેઝમાંથી ડિલીટ થયા પછી સર્વર પરથી ફાઈલ ડિલીટ કરો
+            if (!empty($file_path) && file_exists($file_path)) {
+                unlink($file_path);
             }
-
-            $message = "Hero image deleted successfully.";
-            header("Location: $redirect_url&status=success&msg=" . urlencode($message));
+            header("Location: $redirect_url&status=success&msg=Deleted");
             exit();
         } else {
-            $message = "Error deleting image from database: " . mysqli_error($conn);
+            header("Location: $redirect_url&status=error&msg=DBError");
+            exit();
         }
     } else {
-        $message = "Error: Image not found in database.";
+        header("Location: $redirect_url&status=error&msg=NotFound");
+        exit();
     }
-
-    header("Location: $redirect_url&status=error&msg=" . urlencode($message));
-    exit();
 }
-
+if (isset($_POST['delete_hero_action'])) {
+    $image_id = intval($_POST['image_id_to_delete']);
+    // ડિલીટ કરવાની બાકીની પ્રોસેસ...
+}
 
 // =======================================================
 // B) Handle New Image Upload

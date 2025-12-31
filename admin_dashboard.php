@@ -2065,12 +2065,16 @@ function countAmenities($amenities_string) {
                                     <div class="hero-card-body">
                                         <span
                                             class="hero-filename"><?php echo basename($image['background_image']); ?></span>
-                                        <input type="hidden" name="image_id[]" value="<?php echo $image['id']; ?>">
-                                        <button type="submit" name="delete_image" value="<?php echo $image['id']; ?>"
-                                            class="btn btn-sm btn-outline-danger border-0"
-                                            onclick="return confirm('Delete this hero slider image?');">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
+
+                                        <form method="POST" action="update_hero.php" style="display:inline;"
+                                            onsubmit="return confirm('ખરેખર આ ઈમેજ ડિલીટ કરવી છે?');">
+                                            <input type="hidden" name="image_id_to_delete"
+                                                value="<?php echo $image['id']; ?>">
+                                            <button type="submit" name="btn_delete_hero"
+                                                class="btn btn-sm btn-outline-danger border-0">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                                 <?php endforeach; ?>
@@ -2320,7 +2324,7 @@ function countAmenities($amenities_string) {
                         if (confirm(`શું તમે ખરેખર રૂમ ટાઈપ "${rName}" ડિલીટ કરવા માંગો છો?`)) {
                             if (confirm(
                                     "ચેતવણી: આ રૂમ ટાઈપ ડિલીટ કરવાથી તેની સાથે જોડાયેલા તમામ રૂમ નંબર્સ (Room Numbers) પણ ડિલીટ થઈ જશે. શું તમે આગળ વધવા માંગો છો?"
-                                    )) {
+                                )) {
                                 window.location.href = this.href;
                             }
                         }
