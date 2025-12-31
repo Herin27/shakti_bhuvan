@@ -41,7 +41,6 @@
             <a href="rooms.php">Rooms</a>
             <a href="gallery.php">Gallery</a>
             <a href="contact.php">Contact</a>
-            <a href="admin.php">Admin</a>
 
             <div class="mobile-contact-info">
                 <a href="rooms.php" class="book-btn">Book Now</a>

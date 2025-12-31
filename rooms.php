@@ -204,7 +204,7 @@ function getAmenityIcon($name) {
                     foreach(array_slice($amenities, 0, 4) as $amenity): 
                 ?>
                     <span class="tag"
-                        style="background: #5a4636; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; display: flex; align-items: center; gap: 5px;">
+                        style="background: #496b4a; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 0.8rem; display: flex; align-items: center; gap: 5px;">
                         <i class="fas <?php echo getAmenityIcon($amenity); ?>" style="color: #fff;"></i>
                         <?php echo htmlspecialchars(trim($amenity)); ?>
                     </span>
