@@ -81,6 +81,21 @@ try {
         /* Light, warm background */
     }
 
+    /* આ કોડ સૌથી ઉપર મૂકવો */
+    .header-divider {
+        display: block !important;
+        width: 100% !important;
+        height: 2px !important;
+        /* જાડાઈ વધારી છે જેથી સ્પષ્ટ દેખાય */
+        background-color: #d5931f !important;
+        /* ગોલ્ડન કલર */
+        margin: 0 0 20px 0 !important;
+        padding: 0 !important;
+        position: relative !important;
+        z-index: 9999 !important;
+        clear: both !important;
+    }
+
     li {
         list-style-type: none;
         margin-left: 10px;
@@ -284,6 +299,7 @@ if (file_exists('header.php')) {
     echo '<header class="navbar"><div class="logo-text"><h1>Shakti Bhuvan</h1><span>Premium Stays</span></div></header>';
 }
 ?>
+    <div class="header-divider"></div>
 
 
     <div class="container">

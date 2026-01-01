@@ -53,6 +53,18 @@
         line-height: 1.6;
     }
 
+    .header-divider {
+        width: 100%;
+        height: 3px;
+        /* લાઇનની જાડાઈ */
+        background-color: #f1c45f;
+        /* ઈમેજ મુજબનો ગોલ્ડન કલર */
+        margin-bottom: 30px;
+        /* હેડર અને કન્ટેન્ટ વચ્ચે જગ્યા રાખવા માટે */
+        display: block !important;
+        clear: both;
+    }
+
     .logo-icon img {
         width: 60px;
         height: auto;
@@ -167,6 +179,7 @@
             <a href="rooms.php" class="book-btn">Book Now</a>
         </div>
     </header>
+    <div class="header-divider"></div>
 
     <script>
     const mobileMenu = document.getElementById('mobile-menu');

@@ -27,6 +27,18 @@ $categories = ['Hotel View', 'Standard Non-AC', 'Deluxe Room', 'Standard Room'];
         rel="stylesheet">
 
     <style>
+    .header-divider {
+        width: 100%;
+        height: 3px;
+        /* લાઇનની જાડાઈ */
+        background-color: #f1c45f;
+        /* ઈમેજ મુજબનો ગોલ્ડન કલર */
+        margin-bottom: 30px;
+        /* હેડર અને કન્ટેન્ટ વચ્ચે જગ્યા રાખવા માટે */
+        display: block !important;
+        clear: both;
+    }
+
     :root {
         --primary-gold: #c4a36f;
         --dark-gold: #a57e3d;
@@ -251,6 +263,7 @@ $categories = ['Hotel View', 'Standard Non-AC', 'Deluxe Room', 'Standard Room'];
 <body>
 
     <?php include 'header.php'; ?>
+    <div class="header-divider"></div>
 
     <main>
         <div style="text-align: center;">

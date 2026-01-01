@@ -193,6 +193,21 @@ if (!$room) {
         transition: background 0.3s, box-shadow 0.2s;
     }
 
+    /* આ કોડ સૌથી ઉપર મૂકવો */
+    .header-divider {
+        display: block !important;
+        width: 100% !important;
+        height: 2px !important;
+        /* જાડાઈ વધારી છે જેથી સ્પષ્ટ દેખાય */
+        background-color: #d5931f !important;
+        /* ગોલ્ડન કલર */
+        margin: 0 0 20px 0 !important;
+        padding: 0 !important;
+        position: relative !important;
+        z-index: 9999 !important;
+        clear: both !important;
+    }
+
     .submit-btn-summary:hover {
         background: #d4a93d;
         box-shadow: 0 4px 10px rgba(241, 196, 95, 0.4);
@@ -281,6 +296,7 @@ if (!$room) {
 </head>
 
 <body>
+    <div class="header-divider"></div>
 
     <div class="booking-container">
         <div class="summary-card">

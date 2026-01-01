@@ -1,22 +1,24 @@
 <?php
 session_start();
+include 'db.php'; // ડેટાબેઝ કનેક્શન
 
-// Handle login submission
 $error = "";
-// admin.php માં લોગિન લોજિક બદલો
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    include 'db.php'; // ડેટાબેઝ કનેક્શન
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $password = $_POST['password'];
 
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = mysqli_real_escape_string($conn, $_POST['email']);
+    $password = mysqli_real_escape_string($conn, $_POST['password']);
+
+    // ડેટાબેઝમાં તપાસ કરો
     $sql = "SELECT * FROM admin WHERE email = '$email' AND password = '$password'";
     $result = mysqli_query($conn, $sql);
 
     if (mysqli_num_rows($result) == 1) {
+        // સફળ લોગિન: સેસન સેટ કરો અને ડેશબોર્ડ પર મોકલો
         $_SESSION['admin'] = $email;
         header("Location: admin_dashboard.php");
         exit();
     } else {
+        // નિષ્ફળ લોગિન
         $error = "Invalid email or password!";
     }
 }
@@ -28,6 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
     <title>Admin Login</title>
     <style>
     body {

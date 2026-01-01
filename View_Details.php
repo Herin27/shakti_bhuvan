@@ -1,6 +1,6 @@
 <?php
 include 'db.php';
-include 'header.php'; // Include header for navigation/styling
+// include 'header.php'; // Include header for navigation/styling
 
 $room_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -107,6 +107,19 @@ function renderStars($rating) {
 
     <style>
     /* Specific Styles for View_Details Page */
+
+    .header-divider {
+        width: 100%;
+        height: 3px;
+        /* લાઇનની જાડાઈ */
+        background-color: #f1c45f;
+        /* ઈમેજ મુજબનો ગોલ્ડન કલર */
+        margin-bottom: 30px;
+        /* હેડર અને કન્ટેન્ટ વચ્ચે જગ્યા રાખવા માટે */
+        display: block !important;
+        clear: both;
+    }
+
     .details-container {
         max-width: 1200px;
         margin: 50px auto;
@@ -365,11 +378,27 @@ function renderStars($rating) {
             order: -1;
             /* Move price/booking to top on mobile */
         }
+
+        .header-divider {
+            width: 100%;
+            height: 1.5px;
+            /* લાઇનની જાડાઈ */
+            background-color: #d5931f;
+            /* ઈમેજ મુજબનો ગોલ્ડન કલર */
+            margin-bottom: 30px;
+            /* હેડર અને કન્ટેન્ટ વચ્ચે જગ્યા રાખવા માટે */
+            display: block !important;
+            clear: both;
+        }
+
     }
     </style>
 </head>
 
 <body>
+    <?php include 'header.php'; ?>
+
+    <div class="header-divider"></div>
 
     <div class="details-container">
         <div class="main-content">

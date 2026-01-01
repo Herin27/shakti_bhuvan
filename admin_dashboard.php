@@ -1,4 +1,11 @@
 <?php
+session_start();
+
+// જો કોઈ એડમિન લોગિન સેસન ન મળે, તો સીધા લોગિન પેજ પર મોકલી દો
+if (!isset($_SESSION['admin'])) {
+    header("Location: admin.php");
+    exit();
+}
 // Include the database connection file using MySQLi
 // NOTE: Make sure db.php is available in the same directory
 include 'db.php'; 
@@ -596,6 +603,7 @@ function countAmenities($amenities_string) {
     if (empty($amenities_string)) return 0;
     return count(explode(',', $amenities_string));
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

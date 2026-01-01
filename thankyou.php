@@ -73,6 +73,21 @@ if ($booking) {
         font-family: 'Segoe UI', sans-serif;
     }
 
+    /* આ કોડ સૌથી ઉપર મૂકવો */
+    .header-divider {
+        display: block !important;
+        width: 100% !important;
+        height: 2px !important;
+        /* જાડાઈ વધારી છે જેથી સ્પષ્ટ દેખાય */
+        background-color: #d5931f !important;
+        /* ગોલ્ડન કલર */
+        margin: 0 0 20px 0 !important;
+        padding: 0 !important;
+        position: relative !important;
+        z-index: 9999 !important;
+        clear: both !important;
+    }
+
     .thankyou-card {
         max-width: 600px;
         margin: 60px auto;
@@ -127,6 +142,7 @@ if ($booking) {
 </head>
 
 <body>
+    <div class="header-divider"></div>
     <div class="container">
         <div class="thankyou-card">
             <div class="success-icon"><i class="fas fa-check-circle"></i></div>

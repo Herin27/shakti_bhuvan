@@ -1,11 +1,9 @@
 <?php
-// Start the session to access session variables
 session_start();
+session_unset();
+session_destroy();
 
-// 1. Unset all session variables
-$_SESSION = array();
-
-// 2. Destroy the session cookie
+// સેસન કુકીઝ પણ ક્લીયર કરો
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -14,10 +12,7 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// 3. Destroy the session itself
-session_destroy();
+header("Location: admin.php");
+exit();
 
-// 4. Redirect to the login page (or public homepage)
-header("Location: admin.php"); // Assuming your login page is admin_login.php
-exit;
 ?>
