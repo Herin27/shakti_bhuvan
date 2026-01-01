@@ -84,27 +84,59 @@ $sql_room = "INSERT INTO rooms
         $success = true;
 
         // --- SQL Insertion for Room Numbers ---
+        // $room_numbers_array = array_map('trim', explode(',', $room_numbers_list));
+        // $room_numbers_array = array_filter($room_numbers_array); // Remove empty values
+        // --- SQL Insertion for Room Numbers ---
         $room_numbers_array = array_map('trim', explode(',', $room_numbers_list));
         $room_numbers_array = array_filter($room_numbers_array); // Remove empty values
 
-        $room_insert_count = 0;
-        // Loop ની અંદર (લાઈન ૯૦ આસપાસ)
-foreach ($room_numbers_array as $room_num) {
-    $safe_room_num = mysqli_real_escape_string($conn, $room_num);
-    
-    // ચેક કરો કે આ ફ્લોર પર આ રૂમ નંબર પહેલેથી છે કે નહીં
-    $check_exists = mysqli_query($conn, "SELECT id FROM room_numbers WHERE room_number = '$safe_room_num' AND floor = '$floor'");
-    
-    if (mysqli_num_rows($check_exists) == 0) {
-        $sql_num = "INSERT INTO room_numbers (room_type_id, floor, room_number, status) 
-                    VALUES ('$room_id', '$floor', '$safe_room_num', 'Available')";
-        if (mysqli_query($conn, $sql_num)) {
-            $room_insert_count++;
+        // ફ્લોર મુજબ પ્રીફિક્સ નક્કી કરો
+        $prefix = "";
+        switch ($floor) {
+            case "Ground Floor": $prefix = "GF"; break;
+            case "1st Floor":    $prefix = "FF"; break;
+            case "2nd Floor":    $prefix = "SF"; break;
+            case "3rd Floor":    $prefix = "TF"; break;
+            case "4th Floor":    $prefix = "4F"; break;
+            default:             $prefix = "";   break;
         }
-    } else {
-        // જો રૂમ પહેલેથી હોય તો અહીં મેસેજ સેટ કરી શકાય
-    }
-}
+
+        $room_insert_count = 0;
+        foreach ($room_numbers_array as $room_num) {
+            // રૂમ નંબરની આગળ પ્રીફિક્સ ઉમેરો (દા.ત. FF + 101 = FF101)
+            $formatted_room_num = $prefix . $room_num;
+            $safe_room_num = mysqli_real_escape_string($conn, $formatted_room_num);
+            
+            // ચેક કરો કે આ રૂમ નંબર પહેલેથી છે કે નહીં
+            $check_exists = mysqli_query($conn, "SELECT id FROM room_numbers WHERE room_number = '$safe_room_num'");
+            
+            if (mysqli_num_rows($check_exists) == 0) {
+                $sql_num = "INSERT INTO room_numbers (room_type_id, floor, room_number, status) 
+                            VALUES ('$room_id', '$floor', '$safe_room_num', 'Available')";
+                if (mysqli_query($conn, $sql_num)) {
+                    $room_insert_count++;
+                }
+            }
+        }
+
+//         $room_insert_count = 0;
+//         // Loop ની અંદર (લાઈન ૯૦ આસપાસ)
+// foreach ($room_numbers_array as $room_num) {
+//     $safe_room_num = mysqli_real_escape_string($conn, $room_num);
+    
+//     // ચેક કરો કે આ ફ્લોર પર આ રૂમ નંબર પહેલેથી છે કે નહીં
+//     $check_exists = mysqli_query($conn, "SELECT id FROM room_numbers WHERE room_number = '$safe_room_num' AND floor = '$floor'");
+    
+//     if (mysqli_num_rows($check_exists) == 0) {
+//         $sql_num = "INSERT INTO room_numbers (room_type_id, floor, room_number, status) 
+//                     VALUES ('$room_id', '$floor', '$safe_room_num', 'Available')";
+//         if (mysqli_query($conn, $sql_num)) {
+//             $room_insert_count++;
+//         }
+//     } else {
+//         // જો રૂમ પહેલેથી હોય તો અહીં મેસેજ સેટ કરી શકાય
+//     }
+// }
         
         echo "<script>alert('Room Type Added Successfully! " . $room_insert_count . " physical rooms added.');</script>";
         // Optional: Redirect

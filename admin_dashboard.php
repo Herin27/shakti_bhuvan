@@ -585,7 +585,7 @@ $total_period_bookings = count($report_detailed_bookings);
 
 
 // Close the MySQLi connection
-mysqli_close($conn); 
+
 
 // --- Helper Functions for Room Inventory ---
 function getRoomTypeAndCount($name) {
@@ -1004,6 +1004,8 @@ function countAmenities($amenities_string) {
             <a class="nav-link active" data-target="dashboard-section"><i class="fas fa-home me-2"></i>Dashboard</a>
             <a class="nav-link active" data-target="room-dashboard-section"><i class="fas fa-th-large me-2"></i> Room
                 Dashboard</a>
+            <a class="nav-link" data-target="multiple-offline-booking-section"><i
+                    class="fas fa-layer-group me-2"></i>Multiple Offline Booking</a>
             <a class="nav-link" data-target="today-checkouts-section">
                 <i class="fas fa-bell me-2 text-danger"></i> Today's Checkouts
                 <?php if($total_today_checkouts > 0): ?>
@@ -1032,6 +1034,9 @@ function countAmenities($amenities_string) {
     </div>
 
     <div class="main-content">
+
+
+
 
         <div id="dashboard-section" class="content-section">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -1208,7 +1213,7 @@ function countAmenities($amenities_string) {
                         ?>
                             <div class="room-box <?= $statusClass ?>" onclick="<?= $clickAction ?>"
                                 style="cursor: pointer;" title="Room <?= $room['number'] ?>">
-                                R<?= htmlspecialchars($room['number']) ?>
+                                <?= htmlspecialchars($room['number']) ?>
                             </div>
                             <?php endforeach; ?>
                         </div>
@@ -1226,6 +1231,12 @@ function countAmenities($amenities_string) {
                 <?php endforeach; ?>
             </div>
         </div>
+
+
+
+
+
+
 
 
 
@@ -2015,6 +2026,8 @@ function countAmenities($amenities_string) {
         </div>
 
 
+
+
         <div id="gallery-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2>Gallery Management</h2>
@@ -2112,10 +2125,81 @@ function countAmenities($amenities_string) {
             </div>
         </div>
 
-        <!-- <div id="reviews-section" class="content-section" style="display: none;">
-            <h2>Customer Reviews</h2>
-            <p>Content for Reviews will go here...</p>
-        </div> -->
+        <div id="multiple-offline-booking-section" class="content-section" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-layer-group me-2"></i> Multiple Offline Booking</h2>
+            </div>
+            <hr class="mt-0">
+
+            <div class="dashboard-card">
+                <form action="process_multiple_offline.php" method="POST">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Customer Name</label>
+                            <input type="text" name="customer_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Phone Number</label>
+                            <input type="tel" name="phone" class="form-control" maxlength="10" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Payment Status</label>
+                            <select name="payment_status" class="form-select">
+                                <option value="Pending">Pending</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Partial">Partial</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Check-in Date</label>
+                            <input type="date" name="checkin_date" class="form-control" value="<?= date('Y-m-d') ?>"
+                                required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Check-out Date</label>
+                            <input type="date" name="checkout_date" class="form-control"
+                                value="<?= date('Y-m-d', strtotime('+1 day')) ?>" required>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3">Select Rooms to Book:</h5>
+                    <div class="row g-3">
+                        <?php
+                // અવેલેબલ રૂમ લાવવા માટેની ક્વેરી
+                $sql_bulk_rooms = "SELECT rn.room_number, r.name as type_name FROM room_numbers rn 
+                                  JOIN rooms r ON rn.room_type_id = r.id 
+                                  WHERE rn.status = 'Available' ORDER BY rn.room_number ASC";
+                $res_bulk = mysqli_query($conn, $sql_bulk_rooms);
+                
+                if ($res_bulk && mysqli_num_rows($res_bulk) > 0) {
+                    while($row = mysqli_fetch_assoc($res_bulk)):
+                    ?>
+                        <div class="col-md-2 col-6">
+                            <div class="border p-2 rounded text-center bg-light">
+                                <input type="checkbox" name="selected_rooms[]" value="<?= $row['room_number'] ?>"
+                                    class="form-check-input">
+                                <label class="form-check-label d-block small">
+                                    <strong><?= $row['room_number'] ?></strong><br>
+                                    <span class="text-muted" style="font-size: 10px;"><?= $row['type_name'] ?></span>
+                                </label>
+                            </div>
+                        </div>
+                        <?php 
+                    endwhile;
+                } else {
+                    echo "<div class='col-12'><p class='text-danger'>No available rooms to show.</p></div>";
+                }
+                ?>
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <button type="submit" name="bulk_book" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-check-circle me-2"></i>Confirm Group Booking
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <div id="settings-section" class="content-section" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -2207,6 +2291,8 @@ function countAmenities($amenities_string) {
 
             </div>
         </div>
+
+
     </div>
 
     <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
@@ -2238,6 +2324,8 @@ function countAmenities($amenities_string) {
                 </div>
             </div>
         </div>
+
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -2691,5 +2779,8 @@ function countAmenities($amenities_string) {
     }
     </script>
 </body>
+<?php
+mysqli_close($conn); 
+?>
 
 </html>

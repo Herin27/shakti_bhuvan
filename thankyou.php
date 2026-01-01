@@ -2,7 +2,6 @@
 session_start();
 include 'db.php';
 
-// PHPMailer ફાઈલો ઈમ્પોર્ટ કરો
 require 'PHPMailer/Exception.php';
 require 'PHPMailer/PHPMailer.php';
 require 'PHPMailer/SMTP.php';
@@ -17,15 +16,17 @@ if (!isset($_GET['booking_id'])) {
 
 $booking_id = intval($_GET['booking_id']);
 
-// ડેટાબેઝમાંથી વિગતો લો - આમાં razorpay_id પણ આવી જશે
-$sql = "SELECT * FROM bookings WHERE id = $booking_id";
+// ડેટાબેઝમાંથી સંપૂર્ણ વિગતો લો (રૂમની વિગત સાથે)
+$sql = "SELECT b.*, r.name as room_name, r.ac_status 
+        FROM bookings b 
+        JOIN rooms r ON b.room_id = r.id 
+        WHERE b.id = $booking_id";
 $result = mysqli_query($conn, $sql);
 $booking = mysqli_fetch_assoc($result);
 
 if ($booking) {
     $user_email = $booking['email'];
-    $user_name = $booking['customer_name'];
-    $payment_ref_id = $booking['razorpay_id']; // Razorpay Reference ID
+    $admin_email = 'shaktibhuvanambaji@gmail.com'; // એડમિન ઈમેલ
 
     $mail = new PHPMailer(true);
 
@@ -38,19 +39,71 @@ if ($booking) {
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
 
-        $mail->setFrom('herin7151@gmail.com', 'Hotel Royal');
-        $mail->addAddress($user_email);
+        $mail->setFrom('herin7151@gmail.com', 'Shakti Bhuvan');
+        
+        // બંનેને મેઈલ મોકલવા માટે
+        $mail->addAddress($user_email); 
+        $mail->addAddress($admin_email); 
 
         $mail->isHTML(true);
-        $mail->Subject = 'Booking Confirmation - #' . $booking_id;
-        // ઈમેલની બોડીમાં Reference ID ઉમેર્યો છે
-        $mail->Body    = "<h3>Hello $user_name,</h3>
-                          <p>Your booking has been successfully confirmed.</p>
-                          <p><b>Booking ID:</b> #$booking_id</p>
-                          <p><b>Payment Ref. : #</b> $payment_ref_id</p>
-                          <p>Thank you for choosing Hotel Royal!</p>";
+        $mail->Subject = 'Booking Confirmed - #' . $booking_id . ' (Shakti Bhuvan)';
 
+        // Attractive HTML Email Template
+        $mailContent = "
+        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 10px; overflow: hidden;'>
+            <div style='background: #d5931f; color: white; padding: 20px; text-align: center;'>
+                <h2>Booking Confirmation</h2>
+            </div>
+            <div style='padding: 20px;'>
+                <p>Hello <strong>{$booking['customer_name']}</strong>,</p>
+                <p>Your booking at <strong>Shakti Bhuvan</strong> has been successfully confirmed. Below are your details:</p>
+                
+                <table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>
+                    <tr style='background: #f9f9f9;'>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'><strong>Booking ID</strong></td>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'>#{$booking_id}</td>
+                    </tr>
+                    <tr>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'><strong>Room Type</strong></td>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'>{$booking['room_name']} ({$booking['ac_status']})</td>
+                    </tr>
+                    <tr style='background: #f9f9f9;'>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'><strong>Check-in</strong></td>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'>{$booking['checkin']}</td>
+                    </tr>
+                    <tr>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'><strong>Check-out</strong></td>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'>{$booking['checkout']}</td>
+                    </tr>
+                    <tr style='background: #f9f9f9;'>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'><strong>Total Price</strong></td>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'>₹" . number_format($booking['total_price'], 2) . "</td>
+                    </tr>
+                    <tr>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee;'><strong>Transaction ID</strong></td>
+                        <td style='padding: 10px; border-bottom: 1px solid #eee; color: green;'>{$booking['razorpay_id']}</td>
+                    </tr>
+                    <tr>
+    <td style='padding: 10px; border-bottom: 1px solid #eee;'><strong>Phone</strong></td>
+    <td style='padding: 10px; border-bottom: 1px solid #eee;'>{$booking['phone']}</td>
+</tr>
+                </table>
+
+                <div style='background: #fff8e1; padding: 15px; border-radius: 5px; border: 1px solid #ffe082;'>
+                    <p style='margin: 0;'><strong>Note:</strong> Please carry a valid ID proof during check-in.</p>
+                </div>
+
+                <p style='margin-top: 20px;'>Thank you for choosing Shakti Bhuvan!</p>
+                <p>Regards,<br>Team Shakti Bhuvan</p>
+            </div>
+            <div style='background: #eee; padding: 10px; text-align: center; font-size: 12px; color: #777;'>
+                Shakti Bhuvan, Ambaji, Gujarat.
+            </div>
+        </div>";
+
+        $mail->Body = $mailContent;
         $mail->send();
+
     } catch (Exception $e) {
         // Error handling
     }
