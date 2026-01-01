@@ -243,12 +243,12 @@ if (!$room) {
 
         /* Summary card ne top par lavva mate order change kari sakay */
         .summary-card {
-            order: 1;
+            order: 2;
             /* Price summary pehla dekhay */
         }
 
         .booking-form {
-            order: 2;
+            order: 1;
             /* Form niche dekhay */
         }
     }

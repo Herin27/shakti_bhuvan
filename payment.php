@@ -283,7 +283,7 @@ try {
         }
 
         .booking-box {
-            order: -1;
+            order: 1;
             /* Payment box first on mobile */
         }
     }

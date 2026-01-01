@@ -375,9 +375,10 @@ function renderStars($rating) {
         }
 
         .sidebar {
-            order: -1;
+            order: 1;
             /* Move price/booking to top on mobile */
         }
+
 
         .header-divider {
             width: 100%;

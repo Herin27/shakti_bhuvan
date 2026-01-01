@@ -692,20 +692,59 @@ margin-top: 10px;
 
 /* Responsive */
 @media (max-width: 768px) {
-    .hero-section h1 {
-        font-size: 32px;
-    }
-    .hero-section p {
-        font-size: 14px;
-    }
-    .search-box {
+    .hero-section {
+        height: auto !important; /* ફિક્સ હાઈટ કાઢી નાખવી જેથી કન્ટેન્ટ મુજબ બોક્સ મોટું થાય */
+        min-height: 100vh; /* ઓછામાં ઓછી આખી સ્ક્રીન રોકે */
+        padding: 120px 20px 50px 20px; /* ઉપરથી થોડી જગ્યા વધારવી જેથી લોગો સાથે અથડાય નહીં */
+        display: flex;
         flex-direction: column;
-        gap: 12px;
+        justify-content: center;
     }
-    .search-box input,
-    .search-box select,
+
+    .hero-content {
+        top: 0 !important;
+        transform: none !important; /* સેન્ટર કરવા માટેનું ટ્રાન્સફોર્મ કાઢી નાખવું */
+        margin-top: 20px;
+    }
+
+    .hero-section h1 {
+        font-size: 28px !important;
+        line-height: 1.2;
+        margin-top: 0 !important; /* વધારાનું માર્જિન કાઢવું */
+    }
+
+    .hero-section p {
+        font-size: 15px !important;
+        margin-left: 0 !important;
+        margin-bottom: 20px !important;
+    }
+
+    .hero-buttons {
+        flex-direction: row; /* બટન્સ બાજુ-બાજુમાં રાખવા હોય તો */
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .hero-buttons button {
+        flex: 1; /* બન્ને બટન સરખા ભાગે વહેંચાય */
+        padding: 10px 5px !important;
+        font-size: 14px !important;
+    }
+
+    .search-box {
+        padding: 15px !important;
+        margin-top: 10px !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .search-box input, 
+    .search-box select, 
     .search-box button {
-        width: 100%;
+        padding: 10px !important;
+        font-size: 14px !important;
+        height: 45px; /* બધાની હાઈટ સરખી રાખવી */
     }
 }
 
