@@ -442,7 +442,9 @@ function renderStars($rating) {
             <div class="detail-box">
                 <h3>Key Details</h3>
                 <ul class="detail-list">
-                    <li><strong>Size:</strong> <?php echo htmlspecialchars($room['size'] ?? 'N/A'); ?></li>
+                    <!-- <li><strong>Size:</strong> 
+                    <?php echo htmlspecialchars($room['size'] ?? 'N/A'); ?>
+                </li> -->
                     <li><strong>Bed Type:</strong> <?php echo htmlspecialchars($room['bed_type'] ?? 'N/A'); ?></li>
                     <li><strong>Max Guests:</strong> <?php echo htmlspecialchars($room['guests'] ?? 'N/A'); ?></li>
                     <li><strong>Floor:</strong> <?php echo htmlspecialchars($room['floor'] ?? 'N/A'); ?></li>

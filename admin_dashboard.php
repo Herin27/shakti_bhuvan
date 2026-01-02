@@ -37,10 +37,26 @@ $start_date = $_GET['start_date'] ?? date('Y-m-d');
 $end_date   = $_GET['end_date']   ?? date('Y-m-d', strtotime('+1 day'));
 
 // ૧. Total Active Bookings (પસંદ કરેલી તારીખના ગાળામાં જેઓ રૂમમાં છે)
+// ૧. Total Active Online Bookings (તમે ઓલરેડી કરેલું છે)
 $sql_total_bookings = "SELECT COUNT(*) FROM bookings 
                        WHERE status NOT IN ('Checked-out', 'Cancelled') 
                        AND NOT (checkout <= '$start_date' OR checkin >= '$end_date')";
 $total_bookings = fetchSingleValue($conn, $sql_total_bookings);
+
+// ૨. Total Offline Bookings (નવું ઉમેરો)
+$sql_total_offline = "SELECT COUNT(*) FROM offline_booking 
+                      WHERE NOT (checkout_date <= '$start_date' OR checkin_date >= '$end_date')";
+$total_offline_count = fetchSingleValue($conn, $sql_total_offline);
+
+// ૩. Total Today's Checkouts (નવું ઉમેરો - આજના આંકડા માટે)
+$today_str = date('Y-m-d');
+$sql_checkouts_count = "SELECT 
+    (SELECT COUNT(*) FROM bookings WHERE checkout = '$today_str' AND status IN ('Confirmed', 'Checked-in')) + 
+    (SELECT COUNT(*) FROM offline_booking WHERE checkout_date = '$today_str') 
+    as total_checkouts";
+$total_checkouts_today = fetchSingleValue($conn, $sql_checkouts_count);
+
+
 
 
 
@@ -71,6 +87,21 @@ if ($result_bookings) {
 }
 // --- Available Rooms ni Ganatari (Count) ---
 $total_available_count = 0;
+// ૪. પસંદ કરેલી તારીખ મુજબ Offline Bookings ફેચ કરો
+$latest_offline_bookings = [];
+
+// Overlap Logic: જે બુકિંગ પસંદ કરેલી તારીખના ગાળામાં આવતા હોય
+$sql_latest_offline = "SELECT id, room_number, customer_name, checkin_date, checkout_date, payment_status 
+                       FROM offline_booking 
+                       WHERE NOT (checkout_date <= '$start_date' OR checkin_date >= '$end_date')
+                       ORDER BY created_at DESC LIMIT 5";
+
+$result_offline_recent = mysqli_query($conn, $sql_latest_offline);
+if ($result_offline_recent) {
+    while ($row = mysqli_fetch_assoc($result_offline_recent)) {
+        $latest_offline_bookings[] = $row;
+    }
+}
 
 // --- Dynamic Available Rooms Calculation (Simplified & Accurate) ---
 
@@ -1087,53 +1118,51 @@ function countAmenities($amenities_string) {
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <p class="card-title-text mb-1">Total Bookings</p>
+                                <p class="card-title-text mb-1">Online Bookings</p>
                                 <h3 class="card-value"><?php echo number_format($total_bookings); ?></h3>
                             </div>
-                            <i class="fas fa-calendar-check fs-3 text-muted"></i>
+                            <i class="fas fa-globe fs-3 text-primary"></i>
                         </div>
-                        <small>--</small>
-                        <!-- <small class="text-success"><i class="fas fa-arrow-up me-1"></i> 4.2% more than last
-                            month</small> -->
+                        <small class="text-muted">Active online guests</small>
                     </div>
                 </div>
+
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <p class="card-title-text mb-1">Total Rooms</p>
-                                <h3 class="card-value"><?php echo number_format($total_available_in_range); ?></h3>
+                                <p class="card-title-text mb-1">Offline Bookings</p>
+                                <h3 class="card-value"><?php echo number_format($total_offline_count); ?></h3>
                             </div>
-                            <i class="fas fa-bed fs-3 text-muted"></i>
+                            <i class="fas fa-walking fs-3 text-success"></i>
                         </div>
-                        <small class="text-muted">--</small>
+                        <small class="text-muted">Direct walk-in guests</small>
                     </div>
                 </div>
+
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <p class="card-title-text mb-1">Revenue </p>
-                                <h3 class="card-value"> <?php echo number_format($revenue_filtered, 2); ?></h3>
+                                <p class="card-title-text mb-1">Total Revenue</p>
+                                <h3 class="card-value">₹<?php echo number_format($revenue_filtered, 2); ?></h3>
                             </div>
                             <i class="fas fa-money-bill-wave fs-3 text-muted"></i>
                         </div>
-                        <small>--</small>
-                        <!-- <small class="text-success"><i class="fas fa-arrow-up me-1"></i> 7.8% up from last month</small> -->
+                        <small class="text-muted">Based on filter</small>
                     </div>
                 </div>
+
                 <div class="col-md-3">
                     <div class="dashboard-card">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <p class="card-title-text mb-1">Occupancy Rate</p>
-                                <h3 class="card-value"><?php echo $occupancy_rate; ?>%</h3>
+                                <p class="card-title-text mb-1">Today's Checkouts</p>
+                                <h3 class="card-value"><?php echo $total_checkouts_today; ?></h3>
                             </div>
-                            <i class="fas fa-chart-line fs-3 text-muted"></i>
+                            <i class="fas fa-door-open fs-3 text-danger"></i>
                         </div>
-                        <small>--</small>
-                        <!-- <small class="text-danger"><i class="fas fa-arrow-down me-1"></i> 2% less than last
-                            month</small> -->
+                        <small class="text-muted">Pending room vacates</small>
                     </div>
                 </div>
             </div>
@@ -1188,6 +1217,59 @@ function countAmenities($amenities_string) {
                             <?php else: ?>
                             <tr>
                                 <td colspan="6" class="text-center">No bookings found.</td>
+                            </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="dashboard-card mt-4">
+                <h5 class="card-title mb-3 text-success">
+                    <i class="fas fa-walking me-2"></i>
+                    Offline Bookings (Between <?= date('d M', strtotime($start_date)) ?> -
+                    <?= date('d M', strtotime($end_date)) ?>)
+                    Trent 5
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-borderless align-middle">
+                        <thead>
+                            <tr class="table-light">
+                                <th>Room No.</th>
+                                <th>Customer Name</th>
+                                <th>Check-in</th>
+                                <th>Check-out</th>
+                                <th>Payment</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($latest_offline_bookings) > 0): ?>
+                            <?php foreach ($latest_offline_bookings as $off_book): ?>
+                            <tr>
+                                <td><span class="badge bg-dark">R-<?php echo $off_book['room_number']; ?></span></td>
+                                <td><strong><?php echo htmlspecialchars($off_book['customer_name']); ?></strong></td>
+                                <td><?php echo date('d M, Y', strtotime($off_book['checkin_date'])); ?></td>
+                                <td><?php echo date('d M, Y', strtotime($off_book['checkout_date'])); ?></td>
+                                <td>
+                                    <?php 
+                                    $p_status = $off_book['payment_status'];
+                                    $p_class = ($p_status == 'Paid') ? 'bg-success' : (($p_status == 'Partial') ? 'bg-info text-dark' : 'bg-danger');
+                                ?>
+                                    <span class="badge <?php echo $p_class; ?>"><?php echo $p_status; ?></span>
+                                </td>
+                                <td>
+                                    <a href="process_offline_checkout.php?id=<?php echo $off_book['id']; ?>&room=<?php echo $off_book['room_number']; ?>"
+                                        class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Check-out confirm karvu che?')">
+                                        Checkout
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php else: ?>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">આ તારીખના ગાળામાં કોઈ ઓફલાઇન બુકિંગ
+                                    નથી.</td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
@@ -2152,11 +2234,11 @@ function countAmenities($amenities_string) {
                 <form action="process_multiple_offline.php" method="POST">
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Customer Name</label>
+                            <label class="form-label fw-bold">Customer</label>
                             <input type="text" name="customer_name" class="form-control" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Phone Number</label>
+                            <label class="form-label fw-bold">Contact No.</label>
                             <input type="tel" name="phone" class="form-control" maxlength="10" required>
                         </div>
                         <div class="col-md-4">
@@ -2168,27 +2250,46 @@ function countAmenities($amenities_string) {
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Check-in Date</label>
+                            <label class="form-label fw-bold">Check-in</label>
                             <input type="date" name="checkin_date" class="form-control" value="<?= date('Y-m-d') ?>"
                                 required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">Check-out Date</label>
+                            <label class="form-label fw-bold">Check-out</label>
                             <input type="date" name="checkout_date" class="form-control"
                                 value="<?= date('Y-m-d', strtotime('+1 day')) ?>" required>
                         </div>
                     </div>
 
 
-                    <h5 class="mb-4 text-muted">Select Rooms by Category:</h5>
+                    <h5 class="mb-4 text-muted">Select Rooms ::</h5>
                     <div class="row">
                         <?php
     // રૂમ ડેટા મેળવવા માટેની ક્વેરી
-    $sql_bulk_rooms = "SELECT rn.room_number, r.name as type_name FROM room_numbers rn 
-                       JOIN rooms r ON rn.room_type_id = r.id 
-                       WHERE rn.status = 'Available' 
-                       ORDER BY r.name ASC, rn.room_number ASC";
-    $res_bulk = mysqli_query($conn, $sql_bulk_rooms);
+    // ૧. તારીખ ફિલ્ટર લો (જો સેટ ન હોય તો આજની તારીખ)
+$bulk_checkin  = $_POST['checkin_date'] ?? date('Y-m-d');
+$bulk_checkout = $_POST['checkout_date'] ?? date('Y-m-d', strtotime('+1 day'));
+
+// ૨. એવી ક્વેરી જે ઓનલાઇન બુકિંગ અને ઓફલાઇન બુકિંગ બંને ચેક કરે
+$sql_bulk_rooms = "SELECT rn.room_number, r.name as type_name 
+                   FROM room_numbers rn 
+                   JOIN rooms r ON rn.room_type_id = r.id 
+                   WHERE rn.status != 'Maintenance' 
+                   AND rn.room_number NOT IN (
+                       /* ૧. ઓનલાઇન બુકિંગ ચેક કરો */
+                       SELECT DISTINCT room_number FROM bookings 
+                       WHERE status IN ('Confirmed', 'Checked-in') 
+                       AND room_number IS NOT NULL
+                       AND NOT (checkout <= '$bulk_checkin' OR checkin >= '$bulk_checkout')
+                   )
+                   AND rn.room_number NOT IN (
+                       /* ૨. ઓફલાઇન બુકિંગ ચેક કરો */
+                       SELECT DISTINCT room_number FROM offline_booking 
+                       WHERE NOT (checkout_date <= '$bulk_checkin' OR checkin_date >= '$bulk_checkout')
+                   )
+                   ORDER BY r.name ASC, rn.room_number ASC";
+
+$res_bulk = mysqli_query($conn, $sql_bulk_rooms);
 
     $rooms_by_type = [];
     while($row = mysqli_fetch_assoc($res_bulk)) {
