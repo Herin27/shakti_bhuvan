@@ -10,7 +10,7 @@ if (isset($_POST['bulk_book'])) {
     $selected_rooms = $_POST['selected_rooms']; // Array of room numbers
 
     if (empty($selected_rooms)) {
-        echo "<script>alert('મહેરબાની કરીને ઓછામાં ઓછો એક રૂમ પસંદ કરો.'); window.history.back();</script>";
+        echo "<script>alert('Please select at least one room.'); window.history.back();</script>";
         exit;
     }
 
@@ -30,7 +30,7 @@ if (isset($_POST['bulk_book'])) {
     }
 
     echo "<script>
-            alert('$success_count રૂમ સફળતાપૂર્વક બુક થઈ ગયા છે.');
+            alert('$success_count Rooms booked successfully.');
             window.location.href = 'admin_dashboard.php?section=offline-bookings-section';
           </script>";
 }
@@ -66,7 +66,7 @@ if (isset($_POST['bulk_book'])) {
     }
 
     echo "<script>
-            alert('$success_count રૂમ સફળતાપૂર્વક બુક થઈ ગયા છે.');
+            alert('$success_count Rooms booked successfully.');
             window.location.href = 'admin_dashboard.php?section=offline-bookings-section';
           </script>";
 }

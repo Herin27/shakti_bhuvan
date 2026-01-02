@@ -912,9 +912,26 @@ function countAmenities($amenities_string) {
         text-align: center;
     }
 
+    .room-selector-card .btn-check:checked+.btn {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+    }
+
+    .room-selector-card .btn {
+        transition: all 0.2s ease;
+        border-radius: 8px;
+    }
+
+    .room-selector-card .btn:hover {
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+
     /* ===========================
-   MOBILE RESPONSIVE UPDATES
-=========================== */
+    MOBILE RESPONSIVE UPDATES
+    =========================== */
 
     @media (max-width: 991px) {
 
@@ -1639,7 +1656,7 @@ function countAmenities($amenities_string) {
                                 <td>#<?php echo $off['id']; ?></td>
                                 <td>
                                     <span
-                                        class="badge bg-primary fs-6">R-<?php echo htmlspecialchars($off['room_number']); ?></span>
+                                        class="badge bg-primary fs-6"><?php echo htmlspecialchars($off['room_number']); ?></span>
                                 </td>
                                 <td>
                                     <strong><?php echo htmlspecialchars($off['customer_name']); ?></strong><br>
@@ -2162,34 +2179,62 @@ function countAmenities($amenities_string) {
                         </div>
                     </div>
 
-                    <h5 class="mb-3">Select Rooms to Book:</h5>
-                    <div class="row g-3">
+
+                    <h5 class="mb-4 text-muted">Select Rooms by Category:</h5>
+                    <div class="row">
                         <?php
-                // અવેલેબલ રૂમ લાવવા માટેની ક્વેરી
-                $sql_bulk_rooms = "SELECT rn.room_number, r.name as type_name FROM room_numbers rn 
-                                  JOIN rooms r ON rn.room_type_id = r.id 
-                                  WHERE rn.status = 'Available' ORDER BY rn.room_number ASC";
-                $res_bulk = mysqli_query($conn, $sql_bulk_rooms);
-                
-                if ($res_bulk && mysqli_num_rows($res_bulk) > 0) {
-                    while($row = mysqli_fetch_assoc($res_bulk)):
-                    ?>
-                        <div class="col-md-2 col-6">
-                            <div class="border p-2 rounded text-center bg-light">
-                                <input type="checkbox" name="selected_rooms[]" value="<?= $row['room_number'] ?>"
-                                    class="form-check-input">
-                                <label class="form-check-label d-block small">
-                                    <strong><?= $row['room_number'] ?></strong><br>
-                                    <span class="text-muted" style="font-size: 10px;"><?= $row['type_name'] ?></span>
-                                </label>
+    // રૂમ ડેટા મેળવવા માટેની ક્વેરી
+    $sql_bulk_rooms = "SELECT rn.room_number, r.name as type_name FROM room_numbers rn 
+                       JOIN rooms r ON rn.room_type_id = r.id 
+                       WHERE rn.status = 'Available' 
+                       ORDER BY r.name ASC, rn.room_number ASC";
+    $res_bulk = mysqli_query($conn, $sql_bulk_rooms);
+
+    $rooms_by_type = [];
+    while($row = mysqli_fetch_assoc($res_bulk)) {
+        $rooms_by_type[$row['type_name']][] = $row['room_number'];
+    }
+
+    if (!empty($rooms_by_type)) {
+        $type_id = 0; // JS માટે યુનિક આઈડી
+        foreach ($rooms_by_type as $type => $rooms): 
+            $type_id++;
+            $safe_type_name = "type_" . $type_id;
+        ?>
+                        <div class="col-12 mb-4 p-3 border rounded bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                <h6 class="text-primary mb-0"><i class="fas fa-hotel me-2"></i><?= $type ?></h6>
+                                <div class="form-check">
+                                    <input class="form-check-input select-all-rooms" type="checkbox"
+                                        id="select_all_<?= $safe_type_name ?>"
+                                        data-target-class="<?= $safe_type_name ?>">
+                                    <label class="form-check-label small fw-bold"
+                                        for="select_all_<?= $safe_type_name ?>">
+                                        Select All <?= $type ?>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="row g-2">
+                                <?php foreach ($rooms as $room_no): ?>
+                                <div class="col-md-2 col-4">
+                                    <label class="room-selector-card w-100">
+                                        <input type="checkbox" name="selected_rooms[]" value="<?= $room_no ?>"
+                                            class="btn-check <?= $safe_type_name ?>" id="room_<?= $room_no ?>">
+                                        <div class="btn btn-outline-secondary w-100 py-3">
+                                            <span class="d-block fw-bold"><?= $room_no ?></span>
+                                            <small style="font-size: 10px;">Available</small>
+                                        </div>
+                                    </label>
+                                </div>
+                                <?php endforeach; ?>
                             </div>
                         </div>
-                        <?php 
-                    endwhile;
-                } else {
-                    echo "<div class='col-12'><p class='text-danger'>No available rooms to show.</p></div>";
-                }
-                ?>
+                        <?php endforeach;
+    } else {
+        echo "<div class='col-12'><p class='text-danger'>No available rooms to show.</p></div>";
+    }
+    ?>
                     </div>
 
                     <div class="mt-4 text-center">
@@ -2777,6 +2822,40 @@ function countAmenities($amenities_string) {
         link.href = url;
         link.click();
     }
+    </script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select All functionality
+        const selectAllCheckboxes = document.querySelectorAll('.select-all-rooms');
+
+        selectAllCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const targetClass = this.getAttribute('data-target-class');
+                const roomCheckboxes = document.querySelectorAll('.' + targetClass);
+
+                roomCheckboxes.forEach(roomCheck => {
+                    roomCheck.checked = this.checked;
+                });
+            });
+        });
+
+        // જો કોઈ એક રૂમ અન-ચેક થાય તો "Select All" પણ અન-ચેક થઈ જાય તે માટે (Optional)
+        const allRoomInputs = document.querySelectorAll('.btn-check');
+        allRoomInputs.forEach(input => {
+            input.addEventListener('change', function() {
+                const targetClass = this.classList[1]; // Get the type class
+                const parentSelectAll = document.querySelector(
+                    `[data-target-class="${targetClass}"]`);
+                const sameTypeRooms = document.querySelectorAll('.' + targetClass);
+                const allChecked = Array.from(sameTypeRooms).every(r => r.checked);
+
+                if (parentSelectAll) {
+                    parentSelectAll.checked = allChecked;
+                }
+            });
+        });
+    });
     </script>
 </body>
 <?php
